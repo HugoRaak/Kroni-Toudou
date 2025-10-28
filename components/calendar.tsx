@@ -2,17 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { CalendarTask, getTasksForDateRange, getTasksForDate } from "@/lib/calendar-utils";
+import { CalendarTask, getTasksForDate } from "@/lib/calendar-utils";
+import { Task } from "@/lib/types";
+import { getTasksForTodayAction, getTasksForDateRangeAction } from "@/app/actions/tasks";
 
 type CalendarView = "today" | "week" | "month";
 
-interface CalendarProps {
-  userId: string;
-}
-
-export function Calendar({ userId }: CalendarProps) {
+export function Calendar({ userId }: { userId: string }) {
   const [currentView, setCurrentView] = useState<CalendarView>("today");
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
+  const [todayTasks, setTodayTasks] = useState<{
+    periodic: Task[];
+    specific: Task[];
+    whenPossible: {
+      inProgress: Task[];
+      notStarted: Task[];
+    };
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,26 +28,29 @@ export function Calendar({ userId }: CalendarProps) {
   const loadTasks = async () => {
     setLoading(true);
     try {
-      const now = new Date();
-      const startDate = new Date(now);
-      const endDate = new Date(now);
-
       if (currentView === "today") {
-        // Pas de changement nécessaire
-      } else if (currentView === "week") {
-        startDate.setDate(now.getDate() - now.getDay() + 1); // Lundi
-        endDate.setDate(startDate.getDate() + 6); // Dimanche
-      } else if (currentView === "month") {
-        startDate.setDate(1); // Premier du mois
-        endDate.setMonth(now.getMonth() + 1, 0); // Dernier du mois
-      }
+        const todayData = await getTasksForTodayAction(userId);
+        setTodayTasks(todayData);
+      } else {
+        const now = new Date();
+        const startDate = new Date(now);
+        const endDate = new Date(now);
 
-      const tasksData = await getTasksForDateRange(
-        userId,
-        startDate.toISOString().split('T')[0],
-        endDate.toISOString().split('T')[0]
-      );
-      setTasks(tasksData);
+        if (currentView === "week") {
+          startDate.setDate(now.getDate() - now.getDay() + 1); // Lundi
+          endDate.setDate(startDate.getDate() + 6); // Dimanche
+        } else if (currentView === "month") {
+          startDate.setDate(1); // Premier du mois
+          endDate.setMonth(now.getMonth() + 1, 0); // Dernier du mois
+        }
+
+        const tasksData = await getTasksForDateRangeAction(
+          userId,
+          startDate.toISOString().split('T')[0],
+          endDate.toISOString().split('T')[0]
+        );
+        setTasks(tasksData);
+      }
     } catch (error) {
       console.error('Error loading tasks:', error);
     } finally {
@@ -104,8 +113,6 @@ export function Calendar({ userId }: CalendarProps) {
 
   const renderTodayView = () => {
     const { day, month, year, dayName } = getCurrentDate();
-    const today = new Date().toISOString().split('T')[0];
-    const todayTasks = getTasksForDate(tasks, today);
     
     return (
       <div className="space-y-4">
@@ -118,30 +125,141 @@ export function Calendar({ userId }: CalendarProps) {
         <div className="min-h-[400px] rounded-lg border border-border bg-card p-6">
           {loading ? (
             <p className="text-center text-muted-foreground">Chargement...</p>
-          ) : todayTasks.length === 0 ? (
+          ) : !todayTasks ? (
             <p className="text-center text-muted-foreground">
               Aucune tâche pour aujourd'hui
             </p>
           ) : (
-            <div className="space-y-2">
-              {todayTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="rounded-lg border border-border bg-secondary/50 p-3"
-                >
-                  <div className="font-medium text-foreground">{task.task}</div>
-                  {task.description && (
-                    <div className="text-sm text-muted-foreground">
-                      {task.description}
-                    </div>
-                  )}
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {task.type === 'specific' && '📅 Date spécifique'}
-                    {task.type === 'periodic' && '🔄 Périodique'}
-                    {task.type === 'when_possible' && '⏰ Quand possible'}
+            <div className="space-y-6">
+              {/* Tâches périodiques */}
+              {todayTasks.periodic.length > 0 && (
+                <div>
+                  <h3 className="mb-3 text-lg font-semibold text-foreground">
+                    🔄 Tâches périodiques
+                  </h3>
+                  <div className="space-y-2">
+                    {todayTasks.periodic.map((task) => (
+                      <div
+                        key={task.id}
+                        className="rounded-lg border border-border bg-secondary/50 p-3"
+                      >
+                        <div className="font-medium text-foreground">{task.title}</div>
+                        {task.description && (
+                          <div className="text-sm text-muted-foreground">
+                            {task.description}
+                          </div>
+                        )}
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          {task.frequency === 'quotidien' && '📅 Quotidien'}
+                          {task.frequency === 'hebdomadaire' && `📅 Hebdomadaire (${task.day})`}
+                          {task.frequency === 'mensuel' && `📅 Mensuel (${task.day})`}
+                          {task.frequency === 'annuel' && `📅 Annuel (${task.day})`}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* Tâches à date précise */}
+              {todayTasks.specific.length > 0 && (
+                <div>
+                  <h3 className="mb-3 text-lg font-semibold text-foreground">
+                    📅 Tâches à date précise
+                  </h3>
+                  <div className="space-y-2">
+                    {todayTasks.specific.map((task) => (
+                      <div
+                        key={task.id}
+                        className="rounded-lg border border-border bg-secondary/50 p-3"
+                      >
+                        <div className="font-medium text-foreground">{task.title}</div>
+                        {task.description && (
+                          <div className="text-sm text-muted-foreground">
+                            {task.description}
+                          </div>
+                        )}
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          📅 Échéance: {task.due_on}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tâches quand je peux */}
+              {(todayTasks.whenPossible.inProgress.length > 0 || todayTasks.whenPossible.notStarted.length > 0) && (
+                <div>
+                  <h3 className="mb-3 text-lg font-semibold text-foreground">
+                    ⏰ Quand je peux
+                  </h3>
+                  
+                  {/* Tâches en cours */}
+                  {todayTasks.whenPossible.inProgress.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="mb-2 text-sm font-medium text-foreground">
+                        En cours ({todayTasks.whenPossible.inProgress.length})
+                      </h4>
+                      <div className="space-y-2">
+                        {todayTasks.whenPossible.inProgress.map((task) => (
+                          <div
+                            key={task.id}
+                            className="rounded-lg border border-green-200 bg-green-50 p-3"
+                          >
+                            <div className="font-medium text-foreground">{task.title}</div>
+                            {task.description && (
+                              <div className="text-sm text-muted-foreground">
+                                {task.description}
+                              </div>
+                            )}
+                            <div className="mt-1 text-xs text-green-600">
+                              ✅ En cours
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tâches pas encore commencées */}
+                  {todayTasks.whenPossible.notStarted.length > 0 && (
+                    <div>
+                      <h4 className="mb-2 text-sm font-medium text-foreground">
+                        Pas encore commencées ({todayTasks.whenPossible.notStarted.length})
+                      </h4>
+                      <div className="space-y-2">
+                        {todayTasks.whenPossible.notStarted.map((task) => (
+                          <div
+                            key={task.id}
+                            className="rounded-lg border border-border bg-secondary/50 p-3"
+                          >
+                            <div className="font-medium text-foreground">{task.title}</div>
+                            {task.description && (
+                              <div className="text-sm text-muted-foreground">
+                                {task.description}
+                              </div>
+                            )}
+                            <div className="mt-1 text-xs text-muted-foreground">
+                              ⏳ Pas encore commencée
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Message si aucune tâche */}
+              {todayTasks.periodic.length === 0 && 
+               todayTasks.specific.length === 0 && 
+               todayTasks.whenPossible.inProgress.length === 0 && 
+               todayTasks.whenPossible.notStarted.length === 0 && (
+                <p className="text-center text-muted-foreground">
+                  Aucune tâche pour aujourd'hui
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -190,7 +308,7 @@ export function Calendar({ userId }: CalendarProps) {
                         key={task.id}
                         className="rounded bg-secondary/50 p-1 text-xs"
                       >
-                        <div className="truncate font-medium">{task.task}</div>
+                        <div className="truncate font-medium">{task.title}</div>
                       </div>
                     ))
                   )}
@@ -253,7 +371,7 @@ export function Calendar({ userId }: CalendarProps) {
                         key={task.id}
                         className="rounded bg-secondary/50 p-1 text-xs"
                       >
-                        <div className="truncate font-medium">{task.task}</div>
+                        <div className="truncate font-medium">{task.title}</div>
                       </div>
                     ))
                   )}

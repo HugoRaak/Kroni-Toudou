@@ -126,7 +126,7 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
       <div className="space-y-2">
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full cursor-pointer" 
           disabled={loading || emailSent}
         >
           {loading ? "Chargement..." : mode === "login" ? "Se connecter" : "S'inscrire"}
@@ -136,7 +136,7 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
           <Button 
             type="button" 
             variant="outline" 
-            className="w-full" 
+            className="w-full cursor-pointer" 
             onClick={resetForm}
           >
             Recommencer
@@ -167,7 +167,7 @@ export function AuthDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="cursor-pointer">
           Se connecter
         </Button>
       </DialogTrigger>
@@ -184,7 +184,7 @@ export function AuthDialog() {
           <Button
             variant="link"
             onClick={() => handleModeChange(mode === "login" ? "signup" : "login")}
-            className="text-sm"
+            className="text-sm cursor-pointer"
           >
             {mode === "login" 
               ? "Pas de compte ? S'inscrire" 

@@ -46,7 +46,7 @@ export function Navbar() {
                 <span className="text-sm text-muted-foreground">
                   {user.user_metadata?.username || user.email}
                 </span>
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <Button variant="outline" size="sm" onClick={handleSignOut} className="cursor-pointer">
                   Déconnexion
                 </Button>
               </>
