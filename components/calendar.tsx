@@ -1,12 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { CalendarTask, getTasksForDateRange, getTasksForDate } from "@/lib/calendar-utils";
 
 type CalendarView = "today" | "week" | "month";
 
 export function Calendar() {
   const [currentView, setCurrentView] = useState<CalendarView>("today");
+  const [tasks, setTasks] = useState<CalendarTask[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Pour l'instant, on utilise un userId factice
+  // Plus tard, on intégrera l'authentification
+  const userId = "temp-user-id";
+
+  useEffect(() => {
+    loadTasks();
+  }, [currentView]);
+
+  const loadTasks = async () => {
+    setLoading(true);
+    try {
+      const now = new Date();
+      const startDate = new Date(now);
+      const endDate = new Date(now);
+
+      if (currentView === "today") {
+        // Pas de changement nécessaire
+      } else if (currentView === "week") {
+        startDate.setDate(now.getDate() - now.getDay() + 1); // Lundi
+        endDate.setDate(startDate.getDate() + 6); // Dimanche
+      } else if (currentView === "month") {
+        startDate.setDate(1); // Premier du mois
+        endDate.setMonth(now.getMonth() + 1, 0); // Dernier du mois
+      }
+
+      const tasksData = await getTasksForDateRange(
+        userId,
+        startDate.toISOString().split('T')[0],
+        endDate.toISOString().split('T')[0]
+      );
+      setTasks(tasksData);
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getCurrentDate = () => {
     const now = new Date();
@@ -63,6 +104,8 @@ export function Calendar() {
 
   const renderTodayView = () => {
     const { day, month, year, dayName } = getCurrentDate();
+    const today = new Date().toISOString().split('T')[0];
+    const todayTasks = getTasksForDate(tasks, today);
     
     return (
       <div className="space-y-4">
@@ -73,9 +116,34 @@ export function Calendar() {
           </p>
         </div>
         <div className="min-h-[400px] rounded-lg border border-border bg-card p-6">
-          <p className="text-center text-muted-foreground">
-            Aucune tâche pour aujourd'hui
-          </p>
+          {loading ? (
+            <p className="text-center text-muted-foreground">Chargement...</p>
+          ) : todayTasks.length === 0 ? (
+            <p className="text-center text-muted-foreground">
+              Aucune tâche pour aujourd'hui
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {todayTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="rounded-lg border border-border bg-secondary/50 p-3"
+                >
+                  <div className="font-medium text-foreground">{task.task}</div>
+                  {task.description && (
+                    <div className="text-sm text-muted-foreground">
+                      {task.description}
+                    </div>
+                  )}
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {task.type === 'specific' && '📅 Date spécifique'}
+                    {task.type === 'periodic' && '🔄 Périodique'}
+                    {task.type === 'when_possible' && '⏰ Quand possible'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -90,26 +158,51 @@ export function Calendar() {
           <h2 className="text-2xl font-bold text-foreground">Semaine</h2>
         </div>
         <div className="grid grid-cols-7 gap-2">
-          {weekDates.map((day, index) => (
-            <div
-              key={index}
-              className={`rounded-lg border p-3 text-center ${
-                day.isToday
-                  ? "border-primary bg-primary/10"
-                  : "border-border bg-card"
-              }`}
-            >
-              <div className="text-sm font-medium text-muted-foreground">
-                {day.dayName}
+          {weekDates.map((day, index) => {
+            const dayDate = new Date();
+            dayDate.setDate(dayDate.getDate() - dayDate.getDay() + 1 + index);
+            const dayString = dayDate.toISOString().split('T')[0];
+            const dayTasks = getTasksForDate(tasks, dayString);
+            
+            return (
+              <div
+                key={index}
+                className={`rounded-lg border p-3 text-center ${
+                  day.isToday
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-card"
+                }`}
+              >
+                <div className="text-sm font-medium text-muted-foreground">
+                  {day.dayName}
+                </div>
+                <div className="text-lg font-semibold text-foreground">
+                  {day.date}
+                </div>
+                <div className="mt-2 min-h-[60px] space-y-1">
+                  {loading ? (
+                    <div className="text-xs text-muted-foreground">...</div>
+                  ) : dayTasks.length === 0 ? (
+                    <div className="text-xs text-muted-foreground">-</div>
+                  ) : (
+                    dayTasks.slice(0, 3).map((task) => (
+                      <div
+                        key={task.id}
+                        className="rounded bg-secondary/50 p-1 text-xs"
+                      >
+                        <div className="truncate font-medium">{task.task}</div>
+                      </div>
+                    ))
+                  )}
+                  {dayTasks.length > 3 && (
+                    <div className="text-xs text-muted-foreground">
+                      +{dayTasks.length - 3} autres
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="text-lg font-semibold text-foreground">
-                {day.date}
-              </div>
-              <div className="mt-2 min-h-[60px] text-xs text-muted-foreground">
-                {/* Espace pour les tâches */}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -131,24 +224,48 @@ export function Calendar() {
               {day}
             </div>
           ))}
-          {monthDates.map((date, index) => (
-            <div
-              key={index}
-              className={`min-h-[80px] rounded-lg border p-2 ${
-                date.isToday
-                  ? "border-primary bg-primary/10"
-                  : date.isCurrentMonth
-                  ? "border-border bg-card"
-                  : "border-transparent bg-muted/30"
-              }`}
-            >
-              <div className="text-sm font-medium text-foreground">
-                {date.isCurrentMonth ? date.date : ""}
+          {monthDates.map((date, index) => {
+            const dateString = new Date(now.getFullYear(), date.month, date.date).toISOString().split('T')[0];
+            const dayTasks = getTasksForDate(tasks, dateString);
+            
+            return (
+              <div
+                key={index}
+                className={`min-h-[80px] rounded-lg border p-2 ${
+                  date.isToday
+                    ? "border-primary bg-primary/10"
+                    : date.isCurrentMonth
+                    ? "border-border bg-card"
+                    : "border-transparent bg-muted/30"
+                }`}
+              >
+                <div className="text-sm font-medium text-foreground">
+                  {date.isCurrentMonth ? date.date : ""}
+                </div>
+                <div className="mt-1 space-y-1">
+                  {loading ? (
+                    <div className="text-xs text-muted-foreground">...</div>
+                  ) : dayTasks.length === 0 ? (
+                    <div className="text-xs text-muted-foreground">-</div>
+                  ) : (
+                    dayTasks.slice(0, 2).map((task) => (
+                      <div
+                        key={task.id}
+                        className="rounded bg-secondary/50 p-1 text-xs"
+                      >
+                        <div className="truncate font-medium">{task.task}</div>
+                      </div>
+                    ))
+                  )}
+                  {dayTasks.length > 2 && (
+                    <div className="text-xs text-muted-foreground">
+                      +{dayTasks.length - 2}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="mt-1 text-xs text-muted-foreground">
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
