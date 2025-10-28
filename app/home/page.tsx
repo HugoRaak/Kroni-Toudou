@@ -2,6 +2,7 @@ import { supabaseServerReadOnly } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
 import { Calendar } from '@/components/calendar';
+import { FloatingAddButton } from '@/components/floating-add-button';
 
 export default async function Home() {
   const supabase = await supabaseServerReadOnly();
@@ -17,6 +18,7 @@ export default async function Home() {
       <main className="container mx-auto px-4 py-8">
         <Calendar userId={user.id} />
       </main>
+      <FloatingAddButton userId={user.id} />
     </div>
   );
 }
