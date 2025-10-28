@@ -1,9 +1,9 @@
-import { supabaseServer } from '../supabase-server';
+import { supabaseServerReadOnly } from '../supabase-server';
 import { Task } from '../types';
 
 // Fonctions de lecture pour Server Components
 export async function getTasks(userId: string): Promise<Task[]> {
-  const supabase = await supabaseServer();
+  const supabase = await supabaseServerReadOnly();
   
   const { data, error } = await supabase
     .from('tasks')

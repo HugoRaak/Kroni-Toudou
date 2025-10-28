@@ -1,10 +1,10 @@
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseServerReadOnly } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
 import { Calendar } from '@/components/calendar';
 
 export default async function Home() {
-  const supabase = await supabaseServer();
+  const supabase = await supabaseServerReadOnly();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
