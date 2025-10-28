@@ -134,12 +134,12 @@ export function FloatingAddButton({ userId }: FloatingAddButtonProps) {
         <DialogHeader>
             <DialogTitle>Nouvelle tâche</DialogTitle>
         </DialogHeader>
-         <div className="max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4">
+         <div className="max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-1">
             <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label htmlFor="title" className="block text-sm font-medium text-foreground mb-1">
+                <div className="block text-sm font-medium text-foreground mb-1">
                 Titre *
-                </label>
+                </div>
                 <Input
                 id="title"
                 type="text"
