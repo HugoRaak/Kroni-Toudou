@@ -15,7 +15,7 @@ export default async function Home() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
-        <Calendar />
+        <Calendar userId={user.id} />
       </main>
     </div>
   );

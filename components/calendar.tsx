@@ -6,14 +6,14 @@ import { CalendarTask, getTasksForDateRange, getTasksForDate } from "@/lib/calen
 
 type CalendarView = "today" | "week" | "month";
 
-export function Calendar() {
+interface CalendarProps {
+  userId: string;
+}
+
+export function Calendar({ userId }: CalendarProps) {
   const [currentView, setCurrentView] = useState<CalendarView>("today");
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Pour l'instant, on utilise un userId factice
-  // Plus tard, on intégrera l'authentification
-  const userId = "temp-user-id";
 
   useEffect(() => {
     loadTasks();
