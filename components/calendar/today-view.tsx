@@ -44,6 +44,11 @@ export function TodayView({
           </svg>
         </Button>
         <div className="text-center">
+          {date.toDateString() === (new Date()).toDateString() && (
+            <span className="inline-block mb-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              Aujourd'hui
+            </span>
+          )}
           <h2 className="text-2xl font-bold text-foreground">{dayName}</h2>
           <p className="text-lg text-muted-foreground">
             {day} {month} {year}

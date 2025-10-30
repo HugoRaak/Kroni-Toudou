@@ -19,7 +19,7 @@ export function ViewSwitcher({
         size="sm"
         className="cursor-pointer"
       >
-        Aujourd'hui
+        Jour
       </Button>
       <Button
         variant={value === "week" ? "default" : "outline"}
