@@ -93,3 +93,50 @@ export async function deleteTaskAction(id: string): Promise<boolean> {
 
   return true;
 }
+
+export async function createTaskFromForm(userId: string, formData: FormData): Promise<Task | null> {
+  const title = String(formData.get('title') || '');
+  const description = String(formData.get('description') || '');
+  const taskType = String(formData.get('taskType') || '');
+  const frequencyRaw = String(formData.get('frequency') || '');
+  const dayRaw = String(formData.get('day') || '');
+  const due_onRaw = String(formData.get('due_on') || '');
+  const postponed_daysRaw = String(formData.get('postponed_days') || '');
+  const is_remote = formData.get('is_remote') != null;
+
+  // Préparer les données selon le type de tâche
+  let taskData = {
+    userId,
+    title,
+    description,
+    frequency: undefined as Frequency | undefined,
+    day: undefined as DayOfWeek | undefined,
+    due_on: undefined as string | undefined,
+    postponed_days: undefined as number | undefined,
+    in_progress: undefined as boolean | undefined,
+    is_remote,
+  };
+
+  // Adapter les données selon le type
+  if (taskType === 'periodic') {
+    taskData.frequency = frequencyRaw ? (frequencyRaw as Frequency) : undefined;
+    taskData.day = dayRaw ? (dayRaw as DayOfWeek) : undefined;
+  } else if (taskType === 'specific') {
+    taskData.due_on = due_onRaw || undefined;
+    taskData.postponed_days = postponed_daysRaw ? Number(postponed_daysRaw) : undefined;
+  } else if (taskType === 'when-possible') {
+    taskData.in_progress = formData.get('in_progress') != null;
+  }
+
+  return await createTaskAction(
+    taskData.userId,
+    taskData.title,
+    taskData.description,
+    taskData.frequency,
+    taskData.day,
+    taskData.due_on,
+    taskData.postponed_days,
+    taskData.in_progress,
+    taskData.is_remote
+  );
+}

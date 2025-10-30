@@ -5,6 +5,11 @@ import { Navbar } from '@/components/navbar';
 import { getTasks } from '@/lib/db/tasks';
 import { Task } from '@/lib/types';
 import Image from 'next/image';
+import TaskItem from '@/components/task-item';
+import { revalidatePath } from 'next/cache';
+import { updateTaskAction, deleteTaskAction } from '@/app/actions/tasks';
+import { FloatingAddButton } from '@/components/floating-add-button';
+import { createTaskFromForm } from '@/app/actions/tasks';
 
 function Section({
   title,
@@ -47,7 +52,7 @@ function Section({
         <div className={`h-1 ${c.bar}`} />
         <div className="p-4 flex items-center justify-between relative">
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-background border shadow-sm">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background border shadow-sm">
               {icon}
             </span>
             <h2 className={`text-base font-semibold ${c.title}`}>{title}</h2>
@@ -64,39 +69,68 @@ function Section({
   );
 }
 
-function TaskItem({ task }: { task: Task }) {
-  return (
-    <div className="rounded-md border p-4 bg-card/50 backdrop-blur-sm hover:bg-card transition-colors shadow-xs hover:shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="font-medium text-foreground">{task.title}</h3>
-          {task.description && (
-            <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
-          )}
-        </div>
-        {task.in_progress ? (
-          <span className="text-xs px-2 py-1 rounded bg-blue-500/10 text-blue-700 border border-blue-500/20">En cours</span>
-        ) : null}
-      </div>
-      <div className="text-xs text-muted-foreground mt-3 flex flex-wrap gap-2">
-        {task.frequency && (
-          <span className="px-2 py-1 rounded border bg-muted/50">{task.frequency}</span>
-        )}
-        {task.day && (
-          <span className="px-2 py-1 rounded border bg-muted/50">{task.day}</span>
-        )}
-        {task.due_on && (
-          <span className="px-2 py-1 rounded border bg-muted/50">{new Date(task.due_on).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-        )}
-        {typeof task.postponed_days === 'number' && (
-          <span className="px-2 py-1 rounded border bg-muted/50">à reporter dans {task.postponed_days} jours</span>
-        )}
-        <span className={`px-2 py-1 rounded border ${task.is_remote ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
-          {task.is_remote ? 'Distanciel' : 'Présentiel'}
-        </span>
-      </div>
-    </div>
-  );
+async function updateTaskFromForm(formData: FormData) {
+  'use server';
+  const id = String(formData.get('id'));
+  const title = String(formData.get('title') || '');
+  const description = String(formData.get('description') || '');
+  const taskType = String(formData.get('taskType') || '');
+  const frequencyRaw = String(formData.get('frequency') || '');
+  const dayRaw = String(formData.get('day') || '');
+  const due_onRaw = String(formData.get('due_on') || '');
+  const postponed_daysRaw = String(formData.get('postponed_days') || '');
+  const is_remote = formData.get('is_remote') != null;
+
+  // Préparer les données selon le type de tâche
+  let updates: Partial<Task> = {
+    title,
+    description,
+    is_remote,
+    frequency: undefined,
+    day: undefined,
+    due_on: undefined,
+    postponed_days: undefined,
+    in_progress: undefined,
+  };
+
+  // Adapter les données selon le type
+  if (taskType === 'periodic') {
+    updates.frequency = frequencyRaw ? (frequencyRaw as Task['frequency']) : undefined;
+    updates.day = dayRaw ? (dayRaw as Task['day']) : undefined;
+  } else if (taskType === 'specific') {
+    updates.due_on = due_onRaw || undefined;
+    updates.postponed_days = postponed_daysRaw ? Number(postponed_daysRaw) : undefined;
+  } else if (taskType === 'when-possible') {
+    updates.in_progress = formData.get('in_progress') != null;
+  }
+
+  const result = await updateTaskAction(id, updates);
+  revalidatePath('/mes-taches');
+  return !!result;
+}
+
+async function createTaskAction(formData: FormData) {
+  'use server';
+  const supabase = await supabaseServerReadOnly();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return null;
+  }
+  
+  const result = await createTaskFromForm(user.id, formData);
+  if (result) {
+    revalidatePath('/mes-taches');
+    revalidatePath('/');
+  }
+  return result;
+}
+
+async function deleteTask(id: string) {
+  'use server';
+  const result = await deleteTaskAction(id);
+  revalidatePath('/mes-taches');
+  return result;
 }
 
 export default async function MesTachesPage() {
@@ -149,7 +183,9 @@ export default async function MesTachesPage() {
               {periodic.length === 0 ? (
                 <div className="text-sm text-muted-foreground">Aucune tâche périodique.</div>
               ) : (
-                periodic.map(task => <TaskItem key={task.id} task={task} />)
+                periodic.map(task => (
+                  <TaskItem key={task.id} task={task} onSubmit={updateTaskFromForm} onDelete={deleteTask} />
+                ))
               )}
             </Section>
 
@@ -169,7 +205,9 @@ export default async function MesTachesPage() {
               {specificDate.length === 0 ? (
                 <div className="text-sm text-muted-foreground">Aucune tâche avec date précise.</div>
               ) : (
-                specificDate.map(task => <TaskItem key={task.id} task={task} />)
+                specificDate.map(task => (
+                  <TaskItem key={task.id} task={task} onSubmit={updateTaskFromForm} onDelete={deleteTask} />
+                ))
               )}
             </Section>
 
@@ -178,20 +216,23 @@ export default async function MesTachesPage() {
               count={whenPossible.length}
               accent="orange"
               icon={(
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-orange-700">
-                  <path d="M20 6L9 17l-5-5" strokeWidth="2" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-orange-700">
+                  <path d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z" strokeWidth="2" />
                 </svg>
               )}
             >
               {whenPossible.length === 0 ? (
                 <div className="text-sm text-muted-foreground">Aucune tâche libre.</div>
               ) : (
-                whenPossible.map(task => <TaskItem key={task.id} task={task} />)
+                whenPossible.map(task => (
+                  <TaskItem key={task.id} task={task} onSubmit={updateTaskFromForm} onDelete={deleteTask} />
+                ))
               )}
             </Section>
           </div>
         )}
       </main>
+      <FloatingAddButton userId={user.id} onSubmit={createTaskAction} />
     </div>
   );
 }
