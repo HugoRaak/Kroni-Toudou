@@ -110,6 +110,7 @@ export function Calendar({ userId }: { userId: string }) {
             loading={loading}
             tasks={dayTasks}
             workMode={dayWorkMode}
+            onModeSaved={loadTasks}
             onPrev={navigatePrevious}
             onNext={navigateNext}
           />
