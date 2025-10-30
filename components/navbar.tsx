@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/actions/auth";
 import { getCurrentUser } from "@/app/actions/auth";
@@ -40,9 +41,17 @@ export function Navbar() {
             </h1>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {user ? (
               <>
+                <div className="hidden sm:flex items-center space-x-3 mr-2">
+                  <Link href="/home" className="text-sm text-foreground hover:underline">
+                    Accueil
+                  </Link>
+                  <Link href="/mes-taches" className="text-sm text-foreground hover:underline">
+                    Mes tâches
+                  </Link>
+                </div>
                 <span className="text-sm text-muted-foreground">
                   {user.user_metadata?.username || user.email}
                 </span>
