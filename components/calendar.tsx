@@ -83,10 +83,6 @@ export function Calendar({ userId }: { userId: string }) {
     setCurrentDate(newDate);
   };
 
-  const goToToday = () => {
-    setCurrentDate(new Date());
-  };
-
   const getCurrentDate = () => {
     return {
       day: currentDate.getDate(),
@@ -119,7 +115,6 @@ export function Calendar({ userId }: { userId: string }) {
     const month = currentDate.getMonth();
     
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay() + 1); // Lundi
     
@@ -336,8 +331,7 @@ export function Calendar({ userId }: { userId: string }) {
           {weekDates.map((day, index) => {
             const dayDate = new Date(startOfWeek);
             dayDate.setDate(startOfWeek.getDate() + index);
-            const dayString = dayDate.toISOString().split('T')[0];
-            const dayTasks = getTasksForDate(tasks, dayString);
+            const dayTasks = getTasksForDate(tasks, dayDate);
             
             return (
               <div
@@ -421,8 +415,7 @@ export function Calendar({ userId }: { userId: string }) {
             </div>
           ))}
           {monthDates.map((date, index) => {
-            const dateString = new Date(currentDate.getFullYear(), date.month, date.date).toISOString().split('T')[0];
-            const dayTasks = getTasksForDate(tasks, dateString);
+            const dayTasks = getTasksForDate(tasks, new Date(currentDate.getFullYear(), date.month, date.date));
             
             return (
               <div

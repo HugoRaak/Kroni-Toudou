@@ -1,5 +1,6 @@
 import { Task, Frequency, DayOfWeek } from './types';
 import { getTasks } from './db/tasks';
+import { log } from 'console';
 
 export interface CalendarTask {
   id: string;
@@ -19,23 +20,6 @@ function getDayName(date: Date): DayOfWeek {
   return days[date.getDay()];
 }
 
-// Helper function to check if a date is the first occurrence of a day in the month
-function isFirstDayOfMonth(date: Date, targetDay: DayOfWeek): boolean {
-  const dayName = getDayName(date);
-  if (dayName !== targetDay) return false;
-  
-  // Check if it's the first occurrence of this day in the month
-  const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-  const firstTargetDay = new Date(firstDayOfMonth);
-  
-  // Find the first occurrence of the target day
-  while (getDayName(firstTargetDay) !== targetDay) {
-    firstTargetDay.setDate(firstTargetDay.getDate() + 1);
-  }
-  
-  return date.getDate() === firstTargetDay.getDate();
-}
-
 // Filter tasks by type
 export function filterTasksByType(tasks: Task[]): {
   periodic: Task[];
@@ -52,7 +36,6 @@ export function filterTasksByType(tasks: Task[]): {
 // Get periodic tasks for a specific date
 export function getPeriodicTasksForDate(tasks: Task[], date: Date): Task[] {
   const dayName = getDayName(date);
-  const dateString = date.toISOString().split('T')[0];
   
   return tasks.filter(task => {
     if (!task.frequency) return false;
@@ -65,12 +48,7 @@ export function getPeriodicTasksForDate(tasks: Task[], date: Date): Task[] {
         return task.day === dayName;
       
       case 'mensuel':
-        return task.day === dayName && isFirstDayOfMonth(date, task.day);
-      
-      case 'annuel':
-        // For annual tasks, we could implement more complex logic
-        // For now, we'll consider them as monthly for simplicity
-        return task.day === dayName && isFirstDayOfMonth(date, task.day);
+        return task.day === dayName && date.getDate() <= 7;
       
       default:
         return false;
@@ -130,9 +108,24 @@ export async function getTasksForDateRange(
   const tasks: CalendarTask[] = [];
   
   // Add periodic tasks (weekly and monthly only for week/month view)
-  const periodicForView = periodic.filter(task => 
-    task.frequency === 'hebdomadaire' || task.frequency === 'mensuel'
-  );
+  // Keep only periodic tasks that have at least one occurrence within [start, end]
+  const periodicForView = periodic.filter(task => {
+    if (task.frequency !== 'hebdomadaire' && task.frequency !== 'mensuel') return false;
+    if (!task.day) return false;
+
+    // Iterate through the date range to detect at least one matching occurrence
+    const cursor = new Date(start);
+    while (cursor <= end) {
+      if (task.frequency === 'hebdomadaire') {
+        if (getDayName(cursor) === task.day) return true;
+      } else if (task.frequency === 'mensuel') {
+        // Include only if the first occurrence of the task's weekday in its month falls within the range
+        if (getDayName(cursor) === task.day && cursor.getDate() <= 7) return true;
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return false;
+  });
   
   // Add specific date tasks
   const specificForRange = specific.filter(task => {
@@ -160,13 +153,12 @@ export async function getTasksForDateRange(
 }
 
 // Get tasks for a specific date (legacy function for compatibility)
-export function getTasksForDate(tasks: CalendarTask[], dateString: string): CalendarTask[] {
-  const date = new Date(dateString);
+export function getTasksForDate(tasks: CalendarTask[], date: Date): CalendarTask[] {
   const dayName = getDayName(date);
   
   return tasks.filter(task => {
     if (task.type === 'specific') {
-      return task.due_on === dateString;
+      return task.due_on === date.toISOString().split('T')[0];
     }
     
     if (task.type === 'periodic' && task.frequency && task.day) {
@@ -174,7 +166,7 @@ export function getTasksForDate(tasks: CalendarTask[], dateString: string): Cale
         case 'hebdomadaire':
           return task.day === dayName;
         case 'mensuel':
-          return task.day === dayName && isFirstDayOfMonth(date, task.day);
+          return task.day === dayName && date.getDate() <= 7;
         default:
           return false;
       }
