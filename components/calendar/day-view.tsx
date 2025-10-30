@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { setWorkdayForUserAction } from "@/app/actions/workdays";
 import { Task } from "@/lib/types";
@@ -136,7 +137,52 @@ export function DayView({
       </div>
       <div className="min-h-[400px] rounded-lg border border-border bg-card p-6">
         {loading ? (
-          <p className="text-center text-muted-foreground">Chargement...</p>
+          <div className="space-y-6">
+            <div>
+              <div className="mb-3 flex items-center justify-between">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-6 w-24" />
+              </div>
+              <div className="space-y-2">
+                <div className="rounded-lg border border-border bg-secondary/50 p-3">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="mt-2 h-3 w-2/3" />
+                </div>
+                <div className="rounded-lg border border-border bg-secondary/50 p-3">
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="mt-2 h-3 w-1/2" />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Skeleton className="mb-3 h-5 w-40" />
+              <div className="space-y-2">
+                <div className="rounded-lg border border-border bg-secondary/50 p-3">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="mt-2 h-3 w-2/3" />
+                </div>
+                <div className="rounded-lg border border-border bg-secondary/50 p-3">
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="mt-2 h-3 w-1/2" />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Skeleton className="mb-3 h-5 w-48" />
+              <div className="space-y-2">
+                <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="mt-2 h-3 w-2/3" />
+                </div>
+                <div className="rounded-lg border border-border bg-secondary/50 p-3">
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="mt-2 h-3 w-1/2" />
+                </div>
+              </div>
+            </div>
+          </div>
         ) : !tasks ? (
           <p className="text-center text-muted-foreground">{workMode === 'Congé' ? 'Là c\'est repos !' : 'Aucune tâche pour ce jour'}</p>
         ) : (

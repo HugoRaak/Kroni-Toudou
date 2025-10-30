@@ -118,7 +118,7 @@ export function MonthView({
       <div className="grid grid-cols-7 gap-1">
         {["L", "M", "M", "J", "V", "S", "D"].map((day, index) => (
           <div key={index} className="p-2 text-center text-sm font-medium text-muted-foreground">
-            {day}
+            {loading ? <div className="mx-auto h-3 w-6 rounded bg-accent animate-pulse" /> : day}
           </div>
         ))}
         {monthDates.map((date, index) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function CalendarHeader({
   title,
@@ -33,9 +34,18 @@ export function CalendarHeader({
         </svg>
       </Button>
       <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none">
-        <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-        {subtitle && (
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
+        {loading ? (
+          <div className="flex flex-col items-center gap-2">
+            <Skeleton className="h-7 w-40" />
+            {subtitle !== undefined && <Skeleton className="h-4 w-52" />}
+          </div>
+        ) : (
+          <>
+            <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground">{subtitle}</p>
+            )}
+          </>
         )}
       </div>
       <div className="flex items-center gap-2">

@@ -66,7 +66,11 @@ export function DayCell({
       ) : (
         <div className="mt-2 space-y-1" style={{ minHeight: `${minContentHeight}px` }}>
           {loading ? (
-            <div className="text-xs text-muted-foreground">...</div>
+            <>
+              <div className="h-3 w-3/4 rounded bg-accent/70 animate-pulse" />
+              <div className="h-3 w-2/3 rounded bg-accent/60 animate-pulse" />
+              <div className="h-3 w-1/2 rounded bg-accent/50 animate-pulse" />
+            </>
           ) : tasks.length === 0 ? (
             <div className="text-xs text-muted-foreground">-</div>
           ) : (
