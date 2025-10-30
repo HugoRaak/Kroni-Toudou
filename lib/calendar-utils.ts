@@ -1,6 +1,6 @@
 import { Task, Frequency, DayOfWeek } from './types';
 import { getTasks } from './db/tasks';
-import { log } from 'console';
+import { getWorkday } from './db/workdays';
 
 export interface CalendarTask {
   id: string;
@@ -86,11 +86,22 @@ export async function getTasksForToday(userId: string, date?: Date): Promise<{
   const { periodic, specific, whenPossible } = filterTasksByType(allTasks);
   
   const today = date ? date : new Date();
+  const iso = today.toISOString().split('T')[0];
+  const workMode = (await getWorkday(userId, iso)) ?? 'Présentiel';
+
+  const filterByMode = (tasks: Task[]): Task[] => {
+    if (workMode === 'Congé') return [];
+    const remote = workMode === 'Distanciel';
+    return tasks.filter(t => (remote ? t.is_remote === true : t.is_remote === false));
+  };
   
   return {
-    periodic: getPeriodicTasksForDate(periodic, today),
-    specific: getSpecificTasksForDate(specific, today),
-    whenPossible: getWhenPossibleTasks(whenPossible)
+    periodic: filterByMode(getPeriodicTasksForDate(periodic, today)),
+    specific: filterByMode(getSpecificTasksForDate(specific, today)),
+    whenPossible: {
+      inProgress: filterByMode(getWhenPossibleTasks(whenPossible).inProgress),
+      notStarted: filterByMode(getWhenPossibleTasks(whenPossible).notStarted),
+    }
   };
 }
 

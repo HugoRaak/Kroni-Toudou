@@ -7,6 +7,7 @@ import { CalendarTask } from "@/lib/calendar-utils";
 import WeekView from "@/components/calendar/week-view";
 import MonthView from "@/components/calendar/month-view";
 import { getTasksForTodayAction, getTasksForDateRangeAction } from "@/app/actions/tasks";
+import { getWorkdayAction, getWorkdaysForRangeAction } from "@/app/actions/workdays";
 
 type CalendarView = "day" | "week" | "month";
 
@@ -19,6 +20,8 @@ export function Calendar({ userId }: { userId: string }) {
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
   const [dayTasks, setDayTasks] = useState<DayTasksData>(null);
   const [loading, setLoading] = useState(true);
+  const [dayWorkMode, setDayWorkMode] = useState<"Présentiel" | "Distanciel" | "Congé">("Présentiel");
+  const [workdaysMap, setWorkdaysMap] = useState<Record<string, "Présentiel" | "Distanciel" | "Congé">>({});
 
   useEffect(() => {
     loadTasks();
@@ -28,8 +31,12 @@ export function Calendar({ userId }: { userId: string }) {
     setLoading(true);
     try {
       if (currentView === "day") {
-        const dayData = await getTasksForTodayAction(userId, dayDate);
+        const [dayData, mode] = await Promise.all([
+          getTasksForTodayAction(userId, dayDate),
+          getWorkdayAction(userId, dayDate),
+        ]);
         setDayTasks(dayData);
+        setDayWorkMode(mode ?? "Présentiel");
       } else {
         const anchor = currentView === "week" ? weekDate : monthDate;
         const startDate = new Date(anchor);
@@ -43,12 +50,12 @@ export function Calendar({ userId }: { userId: string }) {
           endDate.setMonth(anchor.getMonth() + 1, 0); // Dernier du mois
         }
 
-        const tasksData = await getTasksForDateRangeAction(
-          userId,
-          startDate,
-          endDate
-        );
+        const [tasksData, workdays] = await Promise.all([
+          getTasksForDateRangeAction(userId, startDate, endDate),
+          getWorkdaysForRangeAction(userId, startDate, endDate),
+        ]);
         setTasks(tasksData);
+        setWorkdaysMap(workdays);
       }
     } catch (error) {
       console.error('Error loading tasks:', error);
@@ -56,6 +63,8 @@ export function Calendar({ userId }: { userId: string }) {
       setLoading(false);
     }
   };
+
+  // No setter: work mode is informational only
 
   // Navigation functions
   const navigatePrevious = () => {
@@ -100,6 +109,7 @@ export function Calendar({ userId }: { userId: string }) {
             date={dayDate}
             loading={loading}
             tasks={dayTasks}
+            workMode={dayWorkMode}
             onPrev={navigatePrevious}
             onNext={navigateNext}
           />
@@ -108,6 +118,7 @@ export function Calendar({ userId }: { userId: string }) {
           <WeekView
             anchorDate={weekDate}
             tasks={tasks}
+            workdays={workdaysMap}
             loading={loading}
             onPrev={navigatePrevious}
             onNext={navigateNext}
@@ -117,6 +128,7 @@ export function Calendar({ userId }: { userId: string }) {
           <MonthView
             anchorDate={monthDate}
             tasks={tasks}
+            workdays={workdaysMap}
             loading={loading}
             onPrev={navigatePrevious}
             onNext={navigateNext}

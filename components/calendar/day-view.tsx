@@ -16,12 +16,14 @@ export function DayView({
   date,
   loading,
   tasks,
+  workMode,
   onPrev,
   onNext,
 }: {
   date: Date;
   loading: boolean;
   tasks: DayTasksData;
+  workMode: "Présentiel" | "Distanciel" | "Congé";
   onPrev: () => void;
   onNext: () => void;
 }) {
@@ -53,6 +55,19 @@ export function DayView({
           <p className="text-lg text-muted-foreground">
             {day} {month} {year}
           </p>
+          <div className="mt-2">
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border ${
+                workMode === 'Congé'
+                  ? 'bg-red-50 text-red-700 border-red-200'
+                  : workMode === 'Distanciel'
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              }`}
+            >
+              {workMode === 'Distanciel' ? 'Remote' : workMode}
+            </span>
+          </div>
         </div>
         <Button
           variant="outline"
