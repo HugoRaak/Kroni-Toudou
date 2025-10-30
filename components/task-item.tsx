@@ -13,9 +13,10 @@ type TaskItemProps = {
   task: Task;
   onSubmit: (formData: FormData) => Promise<boolean>;
   onDelete?: (id: string) => Promise<boolean>;
+  showProgressStatus?: boolean;
 };
 
-export default function TaskItem({ task, onSubmit, onDelete }: TaskItemProps) {
+export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus = false }: TaskItemProps) {
   const [open, setOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -54,6 +55,9 @@ export default function TaskItem({ task, onSubmit, onDelete }: TaskItemProps) {
             {typeof task.postponed_days === "number" ? (
               <span className="px-2 py-1 rounded border bg-muted/50">à reporter dans {task.postponed_days} jours</span>
             ) : null}
+            {showProgressStatus && task.in_progress && (
+              <span className="px-2 py-1 rounded border bg-muted/50">En cours</span>
+            )}
             <span className={`px-2 py-1 rounded border ${task.is_remote ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
               {task.is_remote ? "Distanciel" : "Présentiel"}
             </span>

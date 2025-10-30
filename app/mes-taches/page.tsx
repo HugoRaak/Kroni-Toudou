@@ -145,7 +145,14 @@ export default async function MesTachesPage() {
 
   const periodic = tasks.filter(t => !!t.frequency);
   const specificDate = tasks.filter(t => !t.frequency && !!t.due_on);
-  const whenPossible = tasks.filter(t => !t.frequency && !t.due_on);
+  const whenPossible = tasks
+    .filter(t => !t.frequency && !t.due_on)
+    .sort((a, b) => {
+      // Trier : d'abord celles en cours (in_progress: true), puis les autres
+      if (a.in_progress === b.in_progress) return 0;
+      if (a.in_progress) return -1; // a en cours vient avant
+      return 1; // b en cours vient avant
+    });
 
   const isEmpty = tasks.length === 0;
 
@@ -225,7 +232,7 @@ export default async function MesTachesPage() {
                 <div className="text-sm text-muted-foreground">Aucune tâche libre.</div>
               ) : (
                 whenPossible.map(task => (
-                  <TaskItem key={task.id} task={task} onSubmit={updateTaskFromForm} onDelete={deleteTask} />
+                  <TaskItem key={task.id} task={task} onSubmit={updateTaskFromForm} onDelete={deleteTask} showProgressStatus={true} />
                 ))
               )}
             </Section>
