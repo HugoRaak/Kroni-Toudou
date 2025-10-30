@@ -55,19 +55,21 @@ export function DayView({
           <p className="text-lg text-muted-foreground">
             {day} {month} {year}
           </p>
-          <div className="mt-2">
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border ${
-                workMode === 'Congé'
-                  ? 'bg-red-50 text-red-700 border-red-200'
-                  : workMode === 'Distanciel'
-                  ? 'bg-blue-50 text-blue-700 border-blue-200'
-                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-              }`}
-            >
-              {workMode === 'Distanciel' ? 'Remote' : workMode}
-            </span>
-          </div>
+          {!loading && (
+            <div className="mt-2">
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border ${
+                  workMode === 'Congé'
+                    ? 'bg-red-50 text-red-700 border-red-200'
+                    : workMode === 'Distanciel'
+                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                }`}
+              >
+                {workMode === 'Distanciel' ? 'Remote' : workMode}
+              </span>
+            </div>
+          )}
         </div>
         <Button
           variant="outline"
@@ -84,7 +86,7 @@ export function DayView({
         {loading ? (
           <p className="text-center text-muted-foreground">Chargement...</p>
         ) : !tasks ? (
-          <p className="text-center text-muted-foreground">Aucune tâche pour aujourd'hui</p>
+          <p className="text-center text-muted-foreground">{workMode === 'Congé' ? 'Là c\'est repos !' : 'Aucune tâche pour ce jour'}</p>
         ) : (
           <div className="space-y-6">
             {tasks.periodic.length > 0 && (
@@ -174,7 +176,7 @@ export function DayView({
               tasks.specific.length === 0 &&
               tasks.whenPossible.inProgress.length === 0 &&
               tasks.whenPossible.notStarted.length === 0 && (
-                <p className="text-center text-muted-foreground">Aucune tâche pour aujourd'hui</p>
+                <p className="text-center text-muted-foreground">{workMode === 'Congé' ? 'Là c\'est repos !' : 'Aucune tâche pour ce jour'}</p>
               )}
           </div>
         )}
