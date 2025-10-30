@@ -45,8 +45,8 @@ export function Calendar({ userId }: { userId: string }) {
 
         const tasksData = await getTasksForDateRangeAction(
           userId,
-          startDate.toISOString().split('T')[0],
-          endDate.toISOString().split('T')[0]
+          startDate,
+          endDate
         );
         setTasks(tasksData);
       }

@@ -24,13 +24,14 @@ export function MonthView({
   startDate.setDate(startDate.getDate() - firstDay.getDay() + 1);
 
   const monthDates = (() => {
-    const dates: { date: number; month: number; isCurrentMonth: boolean; isToday: boolean }[] = [];
+    const dates: { date: number; month: number; year: number; isCurrentMonth: boolean; isToday: boolean }[] = [];
     const dateIterator = new Date(startDate);
     const today = new Date();
     for (let i = 0; i < 42; i++) {
       dates.push({
         date: dateIterator.getDate(),
         month: dateIterator.getMonth(),
+        year: dateIterator.getFullYear(),
         isCurrentMonth: dateIterator.getMonth() === month,
         isToday: dateIterator.toDateString() === today.toDateString(),
       });
@@ -65,7 +66,7 @@ export function MonthView({
           </div>
         ))}
         {monthDates.map((date, index) => {
-          const dayTasks = getTasksForDate(tasks, new Date(year, date.month, date.date));
+          const dayTasks = getTasksForDate(tasks, new Date(date.year, date.month, date.date));
           return (
             <div
               key={index}
@@ -77,7 +78,7 @@ export function MonthView({
                   : "border-transparent bg-muted/30"
               }`}
             >
-              <div className="text-sm font-medium text-foreground">{date.isCurrentMonth ? date.date : ""}</div>
+              <div className="text-sm font-medium text-foreground">{date.date}</div>
               <div className="mt-1 space-y-1">
                 {loading ? (
                   <div className="text-xs text-muted-foreground">...</div>

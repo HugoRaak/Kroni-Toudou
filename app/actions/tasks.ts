@@ -10,8 +10,8 @@ export async function getTasksForTodayAction(userId: string, date: Date) {
 
 export async function getTasksForDateRangeAction(
   userId: string,
-  startDate: string,
-  endDate: string
+  startDate: Date,
+  endDate: Date
 ) {
   return await getTasksForDateRange(userId, startDate, endDate);
 }

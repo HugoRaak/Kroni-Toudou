@@ -97,14 +97,12 @@ export async function getTasksForToday(userId: string, date?: Date): Promise<{
 // Get tasks for a date range (week/month view)
 export async function getTasksForDateRange(
   userId: string,
-  startDate: string,
-  endDate: string
+  startDate: Date,
+  endDate: Date
 ): Promise<CalendarTask[]> {
   const allTasks = await getTasks(userId);
   const { periodic, specific } = filterTasksByType(allTasks);
   
-  const start = new Date(startDate);
-  const end = new Date(endDate);
   const tasks: CalendarTask[] = [];
   
   // Add periodic tasks (weekly and monthly only for week/month view)
@@ -114,8 +112,8 @@ export async function getTasksForDateRange(
     if (!task.day) return false;
 
     // Iterate through the date range to detect at least one matching occurrence
-    const cursor = new Date(start);
-    while (cursor <= end) {
+    const cursor = new Date(startDate);
+    while (cursor <= endDate) {
       if (task.frequency === 'hebdomadaire') {
         if (getDayName(cursor) === task.day) return true;
       } else if (task.frequency === 'mensuel') {
@@ -131,7 +129,7 @@ export async function getTasksForDateRange(
   const specificForRange = specific.filter(task => {
     if (!task.due_on) return false;
     const taskDate = new Date(task.due_on);
-    return taskDate >= start && taskDate <= end;
+    return taskDate >= startDate && taskDate <= endDate;
   });
   
   // Convert to CalendarTask format
