@@ -4,8 +4,8 @@ import { getTasksForToday, getTasksForDateRange } from "@/lib/calendar-utils";
 import { supabaseServer } from "@/lib/supabase-server";
 import { Task, Frequency, DayOfWeek } from "@/lib/types";
 
-export async function getTasksForTodayAction(userId: string) {
-  return await getTasksForToday(userId);
+export async function getTasksForTodayAction(userId: string, date: Date) {
+  return await getTasksForToday(userId, date);
 }
 
 export async function getTasksForDateRangeAction(

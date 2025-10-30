@@ -10,7 +10,10 @@ type CalendarView = "today" | "week" | "month";
 
 export function Calendar({ userId }: { userId: string }) {
   const [currentView, setCurrentView] = useState<CalendarView>("today");
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  // Independent anchors per view
+  const [todayDate, setTodayDate] = useState<Date>(new Date());
+  const [weekDate, setWeekDate] = useState<Date>(new Date());
+  const [monthDate, setMonthDate] = useState<Date>(new Date());
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
   const [todayTasks, setTodayTasks] = useState<{
     periodic: Task[];
@@ -24,24 +27,25 @@ export function Calendar({ userId }: { userId: string }) {
 
   useEffect(() => {
     loadTasks();
-  }, [currentView, currentDate]);
+  }, [currentView, todayDate, weekDate, monthDate]);
 
   const loadTasks = async () => {
     setLoading(true);
     try {
       if (currentView === "today") {
-        const todayData = await getTasksForTodayAction(userId);
+        const todayData = await getTasksForTodayAction(userId, todayDate);
         setTodayTasks(todayData);
       } else {
-        const startDate = new Date(currentDate);
-        const endDate = new Date(currentDate);
+        const anchor = currentView === "week" ? weekDate : monthDate;
+        const startDate = new Date(anchor);
+        const endDate = new Date(anchor);
 
         if (currentView === "week") {
-          startDate.setDate(currentDate.getDate() - currentDate.getDay() + 1); // Lundi
+          startDate.setDate(anchor.getDate() - anchor.getDay() + 1); // Lundi
           endDate.setDate(startDate.getDate() + 6); // Dimanche
         } else if (currentView === "month") {
           startDate.setDate(1); // Premier du mois
-          endDate.setMonth(currentDate.getMonth() + 1, 0); // Dernier du mois
+          endDate.setMonth(anchor.getMonth() + 1, 0); // Dernier du mois
         }
 
         const tasksData = await getTasksForDateRangeAction(
@@ -60,41 +64,49 @@ export function Calendar({ userId }: { userId: string }) {
 
   // Navigation functions
   const navigatePrevious = () => {
-    const newDate = new Date(currentDate);
     if (currentView === "today") {
-      newDate.setDate(currentDate.getDate() - 1);
+      const d = new Date(todayDate);
+      d.setDate(d.getDate() - 1);
+      setTodayDate(d);
     } else if (currentView === "week") {
-      newDate.setDate(currentDate.getDate() - 7);
+      const d = new Date(weekDate);
+      d.setDate(d.getDate() - 7);
+      setWeekDate(d);
     } else if (currentView === "month") {
-      newDate.setMonth(currentDate.getMonth() - 1);
+      const d = new Date(monthDate);
+      d.setMonth(d.getMonth() - 1);
+      setMonthDate(d);
     }
-    setCurrentDate(newDate);
   };
 
   const navigateNext = () => {
-    const newDate = new Date(currentDate);
     if (currentView === "today") {
-      newDate.setDate(currentDate.getDate() + 1);
+      const d = new Date(todayDate);
+      d.setDate(d.getDate() + 1);
+      setTodayDate(d);
     } else if (currentView === "week") {
-      newDate.setDate(currentDate.getDate() + 7);
+      const d = new Date(weekDate);
+      d.setDate(d.getDate() + 7);
+      setWeekDate(d);
     } else if (currentView === "month") {
-      newDate.setMonth(currentDate.getMonth() + 1);
+      const d = new Date(monthDate);
+      d.setMonth(d.getMonth() + 1);
+      setMonthDate(d);
     }
-    setCurrentDate(newDate);
   };
 
   const getCurrentDate = () => {
     return {
-      day: currentDate.getDate(),
-      month: currentDate.toLocaleDateString("fr-FR", { month: "long" }),
-      year: currentDate.getFullYear(),
-      dayName: currentDate.toLocaleDateString("fr-FR", { weekday: "long" }),
+      day: todayDate.getDate(),
+      month: todayDate.toLocaleDateString("fr-FR", { month: "long" }),
+      year: todayDate.getFullYear(),
+      dayName: todayDate.toLocaleDateString("fr-FR", { weekday: "long" }),
     };
   };
 
   const getWeekDates = () => {
-    const startOfWeek = new Date(currentDate);
-    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1); // Lundi
+    const startOfWeek = new Date(weekDate);
+    startOfWeek.setDate(weekDate.getDate() - weekDate.getDay() + 1); // Lundi
     
     const weekDates = [];
     const today = new Date();
@@ -111,8 +123,8 @@ export function Calendar({ userId }: { userId: string }) {
   };
 
   const getMonthDates = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
     
     const firstDay = new Date(year, month, 1);
     const startDate = new Date(firstDay);
@@ -139,11 +151,33 @@ export function Calendar({ userId }: { userId: string }) {
     
     return (
       <div className="space-y-4">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground">{dayName}</h2>
-          <p className="text-lg text-muted-foreground">
-            {day} {month} {year}
-          </p>
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={navigatePrevious}
+            className="cursor-pointer hover:bg-primary/10 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </Button>
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-foreground">{dayName}</h2>
+            <p className="text-lg text-muted-foreground">
+              {day} {month} {year}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={navigateNext}
+            className="cursor-pointer hover:bg-primary/10 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Button>
         </div>
         <div className="min-h-[400px] rounded-lg border border-border bg-card p-6">
           {loading ? (
@@ -292,8 +326,8 @@ export function Calendar({ userId }: { userId: string }) {
 
   const renderWeekView = () => {
     const weekDates = getWeekDates();
-    const startOfWeek = new Date(currentDate);
-    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1);
+    const startOfWeek = new Date(weekDate);
+    startOfWeek.setDate(weekDate.getDate() - weekDate.getDay() + 1);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     
@@ -313,7 +347,7 @@ export function Calendar({ userId }: { userId: string }) {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-foreground">Semaine</h2>
             <p className="text-sm text-muted-foreground">
-              {startOfWeek.getDate()} - {endOfWeek.getDate()} {endOfWeek.toLocaleDateString("fr-FR", { month: "long" })} {endOfWeek.getFullYear()}
+              {startOfWeek.getDate()} {startOfWeek.toLocaleDateString("fr-FR", { month: "long" }).slice(0, 3)} - {endOfWeek.getDate()} {endOfWeek.toLocaleDateString("fr-FR", { month: "long" }).slice(0, 3)} {endOfWeek.getFullYear()}
             </p>
           </div>
           <Button
@@ -379,7 +413,7 @@ export function Calendar({ userId }: { userId: string }) {
 
   const renderMonthView = () => {
     const monthDates = getMonthDates();
-    const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+    const monthName = monthDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
     
     return (
       <div className="space-y-4">
@@ -415,7 +449,7 @@ export function Calendar({ userId }: { userId: string }) {
             </div>
           ))}
           {monthDates.map((date, index) => {
-            const dayTasks = getTasksForDate(tasks, new Date(currentDate.getFullYear(), date.month, date.date));
+            const dayTasks = getTasksForDate(tasks, new Date(monthDate.getFullYear(), date.month, date.date));
             
             return (
               <div

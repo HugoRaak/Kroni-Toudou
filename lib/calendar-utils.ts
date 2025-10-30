@@ -74,7 +74,7 @@ export function getWhenPossibleTasks(tasks: Task[]): {
 }
 
 // Get all tasks for today's view
-export async function getTasksForToday(userId: string): Promise<{
+export async function getTasksForToday(userId: string, date?: Date): Promise<{
   periodic: Task[];
   specific: Task[];
   whenPossible: {
@@ -85,7 +85,7 @@ export async function getTasksForToday(userId: string): Promise<{
   const allTasks = await getTasks(userId);
   const { periodic, specific, whenPossible } = filterTasksByType(allTasks);
   
-  const today = new Date();
+  const today = date ? date : new Date();
   
   return {
     periodic: getPeriodicTasksForDate(periodic, today),
