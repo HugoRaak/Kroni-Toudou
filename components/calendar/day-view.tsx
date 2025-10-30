@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Task } from "@/lib/types";
 
-export type TodayTasksData = {
+export type DayTasksData = {
   periodic: Task[];
   specific: Task[];
   whenPossible: {
@@ -12,7 +12,7 @@ export type TodayTasksData = {
   };
 } | null;
 
-export function TodayView({
+export function DayView({
   date,
   loading,
   tasks,
@@ -21,7 +21,7 @@ export function TodayView({
 }: {
   date: Date;
   loading: boolean;
-  tasks: TodayTasksData;
+  tasks: DayTasksData;
   onPrev: () => void;
   onNext: () => void;
 }) {
@@ -44,7 +44,7 @@ export function TodayView({
           </svg>
         </Button>
         <div className="text-center">
-          {date.toDateString() === (new Date()).toDateString() && (
+          {date.toDateString() === new Date().toDateString() && (
             <span className="inline-block mb-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
               Aujourd'hui
             </span>
@@ -168,6 +168,6 @@ export function TodayView({
   );
 }
 
-export default TodayView;
+export default DayView;
 
 

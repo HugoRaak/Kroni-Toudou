@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 
-export type CalendarView = "today" | "week" | "month";
+export type CalendarView = "day" | "week" | "month";
 
 export function ViewSwitcher({
   value,
@@ -14,8 +14,8 @@ export function ViewSwitcher({
   return (
     <div className="flex justify-center space-x-2">
       <Button
-        variant={value === "today" ? "default" : "outline"}
-        onClick={() => onChange("today")}
+        variant={value === "day" ? "default" : "outline"}
+        onClick={() => onChange("day")}
         size="sm"
         className="cursor-pointer"
       >

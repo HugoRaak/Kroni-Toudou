@@ -1,37 +1,35 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import TodayView, { TodayTasksData } from "@/components/calendar/today-view";
+import DayView, { DayTasksData } from "@/components/calendar/day-view";
 import ViewSwitcher from "@/components/calendar/view-switcher";
 import { CalendarTask } from "@/lib/calendar-utils";
 import WeekView from "@/components/calendar/week-view";
 import MonthView from "@/components/calendar/month-view";
-import { Task } from "@/lib/types";
 import { getTasksForTodayAction, getTasksForDateRangeAction } from "@/app/actions/tasks";
 
-type CalendarView = "today" | "week" | "month";
+type CalendarView = "day" | "week" | "month";
 
 export function Calendar({ userId }: { userId: string }) {
-  const [currentView, setCurrentView] = useState<CalendarView>("today");
+  const [currentView, setCurrentView] = useState<CalendarView>("day");
   // Independent anchors per view
-  const [todayDate, setTodayDate] = useState<Date>(new Date());
+  const [dayDate, setDayDate] = useState<Date>(new Date());
   const [weekDate, setWeekDate] = useState<Date>(new Date());
   const [monthDate, setMonthDate] = useState<Date>(new Date());
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
-  const [todayTasks, setTodayTasks] = useState<TodayTasksData>(null);
+  const [dayTasks, setDayTasks] = useState<DayTasksData>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadTasks();
-  }, [currentView, todayDate, weekDate, monthDate]);
+  }, [currentView, dayDate, weekDate, monthDate]);
 
   const loadTasks = async () => {
     setLoading(true);
     try {
-      if (currentView === "today") {
-        const todayData = await getTasksForTodayAction(userId, todayDate);
-        setTodayTasks(todayData);
+      if (currentView === "day") {
+        const dayData = await getTasksForTodayAction(userId, dayDate);
+        setDayTasks(dayData);
       } else {
         const anchor = currentView === "week" ? weekDate : monthDate;
         const startDate = new Date(anchor);
@@ -61,10 +59,10 @@ export function Calendar({ userId }: { userId: string }) {
 
   // Navigation functions
   const navigatePrevious = () => {
-    if (currentView === "today") {
-      const d = new Date(todayDate);
+    if (currentView === "day") {
+      const d = new Date(dayDate);
       d.setDate(d.getDate() - 1);
-      setTodayDate(d);
+      setDayDate(d);
     } else if (currentView === "week") {
       const d = new Date(weekDate);
       d.setDate(d.getDate() - 7);
@@ -77,10 +75,10 @@ export function Calendar({ userId }: { userId: string }) {
   };
 
   const navigateNext = () => {
-    if (currentView === "today") {
-      const d = new Date(todayDate);
+    if (currentView === "day") {
+      const d = new Date(dayDate);
       d.setDate(d.getDate() + 1);
-      setTodayDate(d);
+      setDayDate(d);
     } else if (currentView === "week") {
       const d = new Date(weekDate);
       d.setDate(d.getDate() + 7);
@@ -97,11 +95,11 @@ export function Calendar({ userId }: { userId: string }) {
       <ViewSwitcher value={currentView} onChange={setCurrentView} />
 
       <div className="rounded-lg border border-border bg-card p-6">
-        {currentView === "today" && (
-          <TodayView
-            date={todayDate}
+        {currentView === "day" && (
+          <DayView
+            date={dayDate}
             loading={loading}
-            tasks={todayTasks}
+            tasks={dayTasks}
             onPrev={navigatePrevious}
             onNext={navigateNext}
           />
