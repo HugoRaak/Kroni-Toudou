@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { AuthDialog } from "@/components/auth-server";
 
 export function Navbar() {
   const [user, setUser] = useState<any>(null);
@@ -116,7 +117,7 @@ export function Navbar() {
             ) : (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground hidden sm:inline">Non connecté</span>
-                <Link href="/login" className={`${linkBase} ${linkInactive}`}>Se connecter</Link>
+                <AuthDialog />
               </div>
             )}
           </div>

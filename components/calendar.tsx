@@ -125,6 +125,7 @@ export function Calendar({ userId }: { userId: string }) {
             loading={loading}
             onPrev={navigatePrevious}
             onNext={navigateNext}
+            onSaved={loadTasks}
           />
         )}
         {currentView === "month" && (
@@ -135,6 +136,7 @@ export function Calendar({ userId }: { userId: string }) {
             loading={loading}
             onPrev={navigatePrevious}
             onNext={navigateNext}
+            onSaved={loadTasks}
           />
         )}
       </div>

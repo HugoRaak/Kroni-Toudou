@@ -14,6 +14,7 @@ export function WeekView({
   loading,
   onPrev,
   onNext,
+  onSaved,
 }: {
   anchorDate: Date;
   tasks: CalendarTask[];
@@ -21,6 +22,7 @@ export function WeekView({
   loading: boolean;
   onPrev: () => void;
   onNext: () => void;
+  onSaved: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [localWorkdays, setLocalWorkdays] = useState<Record<string, "Présentiel" | "Distanciel" | "Congé">>({});
@@ -71,6 +73,8 @@ export function WeekView({
         }
       }
       await Promise.all(promises);
+      // Notify parent to reload data so UI reflects latest workdays
+      onSaved();
       setEditing(false);
     } finally {
       setSaving(false);
