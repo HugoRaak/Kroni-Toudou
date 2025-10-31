@@ -5,69 +5,12 @@ import { Navbar } from '@/components/navbar';
 import { getTasks } from '@/lib/db/tasks';
 import { Task } from '@/lib/types';
 import Image from 'next/image';
-import TaskItem from '@/components/task-item';
 import { revalidatePath } from 'next/cache';
 import { updateTaskAction, deleteTaskAction } from '@/app/actions/tasks';
 import { FloatingAddButton } from '@/components/floating-add-button';
 import { createTaskFromForm } from '@/app/actions/tasks';
+import { SectionWithFilters } from '@/components/section-with-filters';
 
-function Section({
-  title,
-  count,
-  accent,
-  icon,
-  children,
-}: {
-  title: string;
-  count: number;
-  accent: 'yellow' | 'violet' | 'orange';
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  const accentClasses: Record<string, { bar: string; chip: string; headerBg: string; title: string }> = {
-    yellow: {
-      bar: 'bg-yellow-400/30',
-      chip: 'bg-yellow-100 text-yellow-900',
-      headerBg: 'from-yellow-200/50 to-transparent',
-      title: 'text-yellow-900',
-    },
-    violet: {
-      bar: 'bg-violet-500/20',
-      chip: 'bg-violet-500/10 text-violet-700',
-      headerBg: 'from-violet-500/10 to-transparent',
-      title: 'text-violet-800',
-    },
-    orange: {
-      bar: 'bg-orange-600/25',
-      chip: 'bg-orange-50 text-orange-800',
-      headerBg: 'from-orange-200/40 to-transparent',
-      title: 'text-orange-800',
-    },
-  };
-  const c = accentClasses[accent];
-  return (
-    <section className="mb-8 group transition-transform">
-      <div className={`relative rounded-md border overflow-hidden shadow-sm hover:shadow-md transition-shadow` }>
-        <div className={`absolute inset-0 bg-gradient-to-b ${c.headerBg} pointer-events-none`} />
-        <div className={`h-1 ${c.bar}`} />
-        <div className="p-4 flex items-center justify-between relative">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background border shadow-sm">
-              {icon}
-            </span>
-            <h2 className={`text-base font-semibold ${c.title}`}>{title}</h2>
-          </div>
-          <span className={`text-xs px-2 py-1 rounded ${c.chip}`}>{count} tâche{count > 1 ? 's' : ''}</span>
-        </div>
-        <div className="p-4 pt-0">
-          <div className="grid gap-3">
-            {children}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 async function updateTaskFromForm(formData: FormData) {
   'use server';
@@ -144,7 +87,13 @@ export default async function MesTachesPage() {
   const tasks = await getTasks(user.id);
 
   const periodic = tasks.filter(t => !!t.frequency);
-  const specificDate = tasks.filter(t => !t.frequency && !!t.due_on);
+  const specificDate = tasks
+    .filter(t => !t.frequency && !!t.due_on)
+    .sort((a, b) => {
+      // Trier par date ascendante (du plus ancien au plus récent)
+      if (!a.due_on || !b.due_on) return 0;
+      return a.due_on.localeCompare(b.due_on);
+    });
   const whenPossible = tasks
     .filter(t => !t.frequency && !t.due_on)
     .sort((a, b) => {
@@ -191,7 +140,7 @@ export default async function MesTachesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Section
+            <SectionWithFilters
               title="Périodiques"
               count={periodic.length}
               accent="yellow"
@@ -201,17 +150,14 @@ export default async function MesTachesPage() {
                   <path d="M12 6v6l4 2" strokeWidth="2" />
                 </svg>
               )}
-            >
-              {periodic.length === 0 ? (
-                <div className="text-sm text-muted-foreground">Aucune tâche périodique.</div>
-              ) : (
-                periodic.map(task => (
-                  <TaskItem key={task.id} task={task} onSubmit={updateTaskFromForm} onDelete={deleteTask} />
-                ))
-              )}
-            </Section>
+              tasks={periodic}
+              showFrequencyFilter={true}
+              onSubmit={updateTaskFromForm}
+              onDelete={deleteTask}
+              emptyMessage="Aucune tâche périodique."
+            />
 
-            <Section
+            <SectionWithFilters
               title="À date précise"
               count={specificDate.length}
               accent="violet"
@@ -223,17 +169,14 @@ export default async function MesTachesPage() {
                   <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" />
                 </svg>
               )}
-            >
-              {specificDate.length === 0 ? (
-                <div className="text-sm text-muted-foreground">Aucune tâche avec date précise.</div>
-              ) : (
-                specificDate.map(task => (
-                  <TaskItem key={task.id} task={task} onSubmit={updateTaskFromForm} onDelete={deleteTask} />
-                ))
-              )}
-            </Section>
+              tasks={specificDate}
+              showFrequencyFilter={false}
+              onSubmit={updateTaskFromForm}
+              onDelete={deleteTask}
+              emptyMessage="Aucune tâche avec date précise."
+            />
 
-            <Section
+            <SectionWithFilters
               title="Quand je peux"
               count={whenPossible.length}
               accent="orange"
@@ -242,15 +185,13 @@ export default async function MesTachesPage() {
                   <path d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z" strokeWidth="2" />
                 </svg>
               )}
-            >
-              {whenPossible.length === 0 ? (
-                <div className="text-sm text-muted-foreground">Aucune tâche libre.</div>
-              ) : (
-                whenPossible.map(task => (
-                  <TaskItem key={task.id} task={task} onSubmit={updateTaskFromForm} onDelete={deleteTask} showProgressStatus={true} />
-                ))
-              )}
-            </Section>
+              tasks={whenPossible}
+              showFrequencyFilter={false}
+              onSubmit={updateTaskFromForm}
+              onDelete={deleteTask}
+              showProgressStatus={true}
+              emptyMessage="Aucune tâche libre."
+            />
           </div>
         )}
       </main>

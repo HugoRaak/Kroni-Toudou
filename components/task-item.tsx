@@ -70,7 +70,7 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
           </DialogDescription>
         </DialogHeader>
         
-        <div className="max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-1">
+        <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-1">
           <form
             onSubmit={(e) => {
               e.preventDefault();
