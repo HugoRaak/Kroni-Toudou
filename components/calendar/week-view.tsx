@@ -5,6 +5,7 @@ import DayCell from "./day-cell";
 import CalendarHeader from "./calendar-header";
 import { CalendarTask, getTasksForDate } from "@/lib/calendar-utils";
 import { setWorkdayForUserAction } from "@/app/actions/workdays";
+import { DayTasksDialog } from "./day-tasks-dialog";
 
 export function WeekView({
   anchorDate,
@@ -24,6 +25,8 @@ export function WeekView({
   const [editing, setEditing] = useState(false);
   const [localWorkdays, setLocalWorkdays] = useState<Record<string, "Présentiel" | "Distanciel" | "Congé">>({});
   const [saving, setSaving] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!editing) setLocalWorkdays(workdays);
@@ -36,11 +39,15 @@ export function WeekView({
   };
 
   const handleDayClick = (dateObj: Date) => {
-    if (!editing) return;
-    const iso = dateObj.toISOString().split('T')[0];
-    const current = (localWorkdays[iso] ?? 'Présentiel');
-    const next = cycleMode(current);
-    setLocalWorkdays((prev: Record<string, "Présentiel" | "Distanciel" | "Congé">) => ({ ...prev, [iso]: next }));
+    if (editing) {
+      const iso = dateObj.toISOString().split('T')[0];
+      const current = (localWorkdays[iso] ?? 'Présentiel');
+      const next = cycleMode(current);
+      setLocalWorkdays((prev: Record<string, "Présentiel" | "Distanciel" | "Congé">) => ({ ...prev, [iso]: next }));
+    } else {
+      setSelectedDate(dateObj);
+      setDialogOpen(true);
+    }
   };
 
   const handleStartEdit = () => {
@@ -137,6 +144,23 @@ export function WeekView({
           <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-500" /> Congé</div>
         </div>
       )}
+      {selectedDate && (() => {
+        const iso = selectedDate.toISOString().split('T')[0];
+        const mode = (workdays[iso] ?? 'Présentiel');
+        const dayTasksAll = getTasksForDate(tasks, selectedDate);
+        const dayTasks = mode === 'Congé'
+          ? []
+          : dayTasksAll.filter(t => (mode === 'Distanciel' ? t.is_remote === true : t.is_remote === false));
+        return (
+          <DayTasksDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            date={selectedDate}
+            tasks={dayTasks}
+            workMode={mode}
+          />
+        );
+      })()}
     </div>
   );
 }

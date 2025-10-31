@@ -36,9 +36,6 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
                 <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
               ) : null}
             </div>
-            {task.in_progress ? (
-              <span className="text-xs px-2 py-1 rounded bg-blue-500/10 text-blue-700 border border-blue-500/20">En cours</span>
-            ) : null}
           </div>
           <div className="text-xs text-muted-foreground mt-3 flex flex-wrap gap-2">
             {task.frequency ? (

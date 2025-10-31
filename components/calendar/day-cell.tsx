@@ -48,7 +48,7 @@ export function DayCell({
 
   return (
     <div
-      className={`relative rounded-lg border p-2 text-center ${editing ? 'cursor-pointer select-none' : ''} ${baseContainerClasses}`}
+      className={`relative rounded-lg border p-2 text-center cursor-pointer ${editing ? 'select-none' : ''} ${baseContainerClasses}`}
       onClick={onClick}
     >
       {!editing && !loading && (
@@ -74,11 +74,18 @@ export function DayCell({
           ) : tasks.length === 0 ? (
             <div className="text-xs text-muted-foreground">-</div>
           ) : (
-            tasks.slice(0, taskLimit).map(task => (
-              <div key={task.id} className="rounded bg-secondary/50 p-1 text-xs">
-                <div className="truncate font-medium">{task.title}</div>
-              </div>
-            ))
+            tasks.slice(0, taskLimit).map(task => {
+              const taskColors = task.type === 'periodic' 
+                ? 'bg-yellow-100/50 border-yellow-400/30'
+                : task.type === 'specific'
+                ? 'bg-violet-500/10 border-violet-500/20'
+                : 'bg-orange-50 border-orange-600/25';
+              return (
+                <div key={task.id} className={`rounded border p-1 text-xs ${taskColors}`}>
+                  <div className="truncate font-medium">{task.title}</div>
+                </div>
+              );
+            })
           )}
           {tasks.length > taskLimit && (
             <div className="text-xs text-muted-foreground">+{tasks.length - taskLimit}{taskLimit === 3 ? ' autres' : ''}</div>

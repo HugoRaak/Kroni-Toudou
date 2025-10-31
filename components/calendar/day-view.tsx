@@ -189,20 +189,20 @@ export function DayView({
           <div className="space-y-6">
             {tasks.periodic.length > 0 && (
               <div>
-                <h3 className="mb-3 text-lg font-semibold text-foreground">🔄 Tâches périodiques</h3>
+                <h3 className="mb-3 text-lg font-semibold text-yellow-900 flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-yellow-700">
+                    <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                    <path d="M12 6v6l4 2" strokeWidth="2" />
+                  </svg>
+                  Tâches périodiques
+                </h3>
                 <div className="space-y-2">
                   {tasks.periodic.map((task) => (
-                    <div key={task.id} className="rounded-lg border border-border bg-secondary/50 p-3">
+                    <div key={task.id} className="rounded-lg border border-yellow-400/30 bg-yellow-100/50 p-3">
                       <div className="font-medium text-foreground">{task.title}</div>
                       {task.description && (
                         <div className="text-sm text-muted-foreground">{task.description}</div>
                       )}
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        {task.frequency === "quotidien" && "📅 Quotidien"}
-                        {task.frequency === "hebdomadaire" && `📅 Hebdomadaire (${task.day})`}
-                        {task.frequency === "mensuel" && `📅 Mensuel (${task.day})`}
-                        {task.frequency === "annuel" && `📅 Annuel (${task.day})`}
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -211,15 +211,22 @@ export function DayView({
 
             {tasks.specific.length > 0 && (
               <div>
-                <h3 className="mb-3 text-lg font-semibold text-foreground">📅 Tâches à date précise</h3>
+                <h3 className="mb-3 text-lg font-semibold text-violet-800 flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-violet-700">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" />
+                    <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" />
+                    <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" />
+                  </svg>
+                  Tâches à date précise
+                </h3>
                 <div className="space-y-2">
                   {tasks.specific.map((task) => (
-                    <div key={task.id} className="rounded-lg border border-border bg-secondary/50 p-3">
+                    <div key={task.id} className="rounded-lg border border-violet-500/20 bg-violet-500/10 p-3">
                       <div className="font-medium text-foreground">{task.title}</div>
                       {task.description && (
                         <div className="text-sm text-muted-foreground">{task.description}</div>
                       )}
-                      <div className="mt-1 text-xs text-muted-foreground">📅 Échéance: {task.due_on}</div>
                     </div>
                   ))}
                 </div>
@@ -228,7 +235,12 @@ export function DayView({
 
             {(tasks.whenPossible.inProgress.length > 0 || tasks.whenPossible.notStarted.length > 0) && (
               <div>
-                <h3 className="mb-3 text-lg font-semibold text-foreground">⏰ Quand je peux</h3>
+                <h3 className="mb-3 text-lg font-semibold text-orange-800 flex items-center gap-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-orange-700">
+                    <path d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z" strokeWidth="2" />
+                  </svg>
+                  Quand je peux
+                </h3>
 
                 {tasks.whenPossible.inProgress.length > 0 && (
                   <div className="mb-4">
@@ -237,12 +249,11 @@ export function DayView({
                     </h4>
                     <div className="space-y-2">
                       {tasks.whenPossible.inProgress.map((task) => (
-                        <div key={task.id} className="rounded-lg border border-green-200 bg-green-50 p-3">
+                        <div key={task.id} className="rounded-lg border border-orange-600/25 bg-orange-50 p-3">
                           <div className="font-medium text-foreground">{task.title}</div>
                           {task.description && (
                             <div className="text-sm text-muted-foreground">{task.description}</div>
                           )}
-                          <div className="mt-1 text-xs text-green-600">✅ En cours</div>
                         </div>
                       ))}
                     </div>
@@ -256,12 +267,11 @@ export function DayView({
                     </h4>
                     <div className="space-y-2">
                       {tasks.whenPossible.notStarted.map((task) => (
-                        <div key={task.id} className="rounded-lg border border-border bg-secondary/50 p-3">
+                        <div key={task.id} className="rounded-lg border border-orange-600/25 bg-orange-50 p-3">
                           <div className="font-medium text-foreground">{task.title}</div>
                           {task.description && (
                             <div className="text-sm text-muted-foreground">{task.description}</div>
                           )}
-                          <div className="mt-1 text-xs text-muted-foreground">⏳ Pas encore commencée</div>
                         </div>
                       ))}
                     </div>
