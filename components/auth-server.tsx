@@ -75,6 +75,7 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Votre nom d'utilisateur"
+            autoComplete="username"
             required
             disabled={emailSent}
           />
@@ -91,6 +92,7 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="votre@email.com"
+          autoComplete="email"
           required
           disabled={emailSent}
         />
@@ -106,6 +108,7 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
+          autoComplete={mode === "login" ? "current-password" : "new-password"}
           required
           disabled={emailSent}
         />
@@ -150,6 +153,11 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
 export function AuthDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSuccess = () => {
     setIsOpen(false);
@@ -163,6 +171,14 @@ export function AuthDialog() {
   const resetForm = () => {
     // Cette fonction sera appelée par le composant AuthForm
   };
+
+  if (!mounted) {
+    return (
+      <Button variant="outline" size="sm" className="cursor-pointer" disabled>
+        Se connecter
+      </Button>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

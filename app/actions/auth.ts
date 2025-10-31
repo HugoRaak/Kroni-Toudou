@@ -3,6 +3,37 @@
 import { supabaseServer } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
 
+function translateError(errorMessage: string): string {
+  const errorLower = errorMessage.toLowerCase();
+  
+  if (errorLower.includes('invalid login credentials') || errorLower.includes('invalid credentials')) {
+    return "Identifiants invalides. Vérifiez votre email et votre mot de passe.";
+  }
+  if (errorLower.includes('email not confirmed')) {
+    return "Votre email n'est pas confirmé. Veuillez vérifier votre boîte de réception.";
+  }
+  if (errorLower.includes('user already registered') || errorLower.includes('already registered')) {
+    return "Cet utilisateur est déjà enregistré.";
+  }
+  if (errorLower.includes('password should be at least') || errorLower.includes('password too short')) {
+    return "Le mot de passe doit contenir au moins 6 caractères.";
+  }
+  if (errorLower.includes('email already exists') || errorLower.includes('user already exists')) {
+    return "Cet email est déjà utilisé.";
+  }
+  if (errorLower.includes('invalid email')) {
+    return "Adresse email invalide.";
+  }
+  if (errorLower.includes('email rate limit')) {
+    return "Trop de tentatives. Veuillez réessayer plus tard.";
+  }
+  if (errorLower.includes('signup disabled')) {
+    return "Les inscriptions sont actuellement désactivées.";
+  }
+  
+  return "Une erreur est survenue lors de l'authentification. Veuillez réessayer.";
+}
+
 export async function signIn(email: string, password: string) {
   const supabase = await supabaseServer();
   
@@ -12,7 +43,7 @@ export async function signIn(email: string, password: string) {
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: translateError(error.message) };
   }
 
   return { success: true, user: data.user };
@@ -33,7 +64,7 @@ export async function signUp(email: string, password: string, username: string) 
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: translateError(error.message) };
   }
 
   // Si l'utilisateur doit confirmer son email

@@ -77,7 +77,7 @@ export function Navbar() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="inline-flex items-center gap-2 rounded-full border px-3 h-8 text-sm bg-background hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                      className="inline-flex items-center gap-2 rounded-full border px-3 h-8 text-sm bg-background hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 cursor-pointer"
                       aria-label="Ouvrir le menu utilisateur"
                     >
                       <span className="grid h-6 w-6 place-items-center rounded-full bg-primary/10 text-foreground text-xs font-medium">
@@ -102,14 +102,14 @@ export function Navbar() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/home">Accueil</Link>
+                      <Link href="/home" className="cursor-pointer">Accueil</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/mes-taches">Mes tâches</Link>
+                      <Link href="/mes-taches" className="cursor-pointer">Mes tâches</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <button onClick={handleSignOut} className="w-full text-left">Déconnexion</button>
+                      <button onClick={handleSignOut} className="w-full text-left cursor-pointer">Déconnexion</button>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

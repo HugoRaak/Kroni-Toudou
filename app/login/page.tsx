@@ -21,7 +21,9 @@ export default async function LoginPage({
               alt="Kroni le dinosaure"
               width={120}
               height={120}
+              style={{ height: "auto", width: "auto" }}
               className="mx-auto rounded-full"
+              loading="eager"
             />
             <h2 className="text-2xl font-bold text-foreground">
               Bienvenue sur Kroni-Toudou !
