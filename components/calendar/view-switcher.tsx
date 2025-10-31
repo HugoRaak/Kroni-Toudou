@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export type CalendarView = "day" | "week" | "month";
 
@@ -12,7 +13,14 @@ export function ViewSwitcher({
   onChange: (view: CalendarView) => void;
 }) {
   return (
-    <div className="flex justify-center space-x-2">
+    <div className="flex items-center justify-center gap-2">
+      <Image 
+        src="/kroni-calendar.png" 
+        alt="Kroni calendrier" 
+        width={64} 
+        height={64} 
+        className="rounded-md pointer-events-none select-none mr-4"
+      />
       <Button
         variant={value === "day" ? "default" : "outline"}
         onClick={() => onChange("day")}
@@ -37,6 +45,13 @@ export function ViewSwitcher({
       >
         Mois
       </Button>
+      <Image 
+        src="/kroni-sleepy.png" 
+        alt="Kroni endormi" 
+        width={64}
+        height={64} 
+        className="rounded-md pointer-events-none select-none ml-4"
+      />
     </div>
   );
 }

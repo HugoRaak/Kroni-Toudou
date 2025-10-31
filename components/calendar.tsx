@@ -100,7 +100,7 @@ export function Calendar({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <ViewSwitcher value={currentView} onChange={setCurrentView} />
 
       <div className="rounded-lg border border-border bg-card p-6">

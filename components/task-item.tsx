@@ -92,7 +92,15 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
             <TaskForm task={task} />
             
             <div className="flex flex-col gap-3 pt-4">
-              <div className="flex space-x-2">
+              <div className="relative">
+                <Image 
+                  src="/kroni-pointing-down2.png" 
+                  alt="Kroni pointe vers le bas" 
+                  width={72} 
+                  height={72} 
+                  className="absolute left-3/4 -translate-x-1/2 -top-13 rounded-md pointer-events-none select-none z-10"
+                />
+                <div className="flex space-x-2 w-full">
                 <DialogClose asChild>
                   <Button type="button" variant="outline" className="flex-1 cursor-pointer" disabled={isPending || isDeleting}>
                     Annuler
@@ -108,6 +116,7 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
                     "Enregistrer"
                   )}
                 </Button>
+                </div>
               </div>
               {onDelete && (
                 <Button

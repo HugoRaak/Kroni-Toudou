@@ -8,6 +8,7 @@ import { createTaskFromForm } from "@/app/actions/tasks";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface FloatingAddButtonProps {
   userId: string;
@@ -63,7 +64,15 @@ export function FloatingAddButton({ userId, onSubmit }: FloatingAddButtonProps) 
           >
             <TaskForm />
             
-            <div className="flex space-x-2 pt-4">
+            <div className="relative pt-4">
+              <Image 
+                src="/kroni-pointing-down2.png" 
+                alt="Kroni pointe vers le bas" 
+                width={72} 
+                height={72} 
+                className="absolute left-3/4 -translate-x-1/2 -top-9 rounded-md pointer-events-none select-none z-10"
+              />
+              <div className="flex space-x-2 w-full">
               <DialogClose asChild>
                 <Button
                   type="button"
@@ -88,6 +97,7 @@ export function FloatingAddButton({ userId, onSubmit }: FloatingAddButtonProps) 
                   "Créer"
                 )}
               </Button>
+              </div>
             </div>
           </form>
         </div>
