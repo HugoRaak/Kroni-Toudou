@@ -20,6 +20,7 @@ export function ViewSwitcher({
         width={64} 
         height={64} 
         className="rounded-md pointer-events-none select-none mr-4"
+        loading="eager"
       />
       <Button
         variant={value === "day" ? "default" : "outline"}

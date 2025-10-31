@@ -6,7 +6,7 @@ import ViewSwitcher from "@/components/calendar/view-switcher";
 import { CalendarTask } from "@/lib/calendar-utils";
 import WeekView from "@/components/calendar/week-view";
 import MonthView from "@/components/calendar/month-view";
-import { getTasksForTodayAction, getTasksForDateRangeAction } from "@/app/actions/tasks";
+import { getTasksForDayAction, getTasksForDateRangeAction } from "@/app/actions/tasks";
 import { getWorkdayAction, getWorkdaysForRangeAction } from "@/app/actions/workdays";
 
 type CalendarView = "day" | "week" | "month";
@@ -32,9 +32,10 @@ export function Calendar({ userId }: { userId: string }) {
     try {
       if (currentView === "day") {
         const [dayData, mode] = await Promise.all([
-          getTasksForTodayAction(userId, dayDate),
+          getTasksForDayAction(userId, dayDate),
           getWorkdayAction(userId, dayDate),
         ]);
+        console.log(dayData);
         setDayTasks(dayData);
         setDayWorkMode(mode ?? "Présentiel");
       } else {
@@ -54,6 +55,7 @@ export function Calendar({ userId }: { userId: string }) {
           getTasksForDateRangeAction(userId, startDate, endDate),
           getWorkdaysForRangeAction(userId, startDate, endDate),
         ]);
+        console.log(tasksData);
         setTasks(tasksData);
         setWorkdaysMap(workdays);
       }

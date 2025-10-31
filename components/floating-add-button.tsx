@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { TaskForm } from "@/components/task-form";
 import { createTaskFromForm } from "@/app/actions/tasks";
 import { Plus, Loader2 } from "lucide-react";
@@ -56,6 +56,9 @@ export function FloatingAddButton({ userId, onSubmit }: FloatingAddButtonProps) 
       <DialogContent className="sm:max-w-lg max-h-[95vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Nouvelle tâche</DialogTitle>
+          <DialogDescription>
+            Créez une nouvelle tâche à ajouter à votre calendrier.
+          </DialogDescription>
         </DialogHeader>
         <div className="max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-1">
           <form

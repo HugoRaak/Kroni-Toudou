@@ -1,11 +1,11 @@
 "use server";
 
-import { getTasksForToday, getTasksForDateRange } from "@/lib/calendar-utils";
+import { getTasksForDay, getTasksForDateRange } from "@/lib/calendar-utils";
 import { supabaseServer } from "@/lib/supabase-server";
 import { Task, Frequency, DayOfWeek } from "@/lib/types";
 
-export async function getTasksForTodayAction(userId: string, date: Date) {
-  return await getTasksForToday(userId, date);
+export async function getTasksForDayAction(userId: string, date: Date) {
+  return await getTasksForDay(userId, date);
 }
 
 export async function getTasksForDateRangeAction(

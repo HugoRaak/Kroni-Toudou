@@ -65,6 +65,9 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
       <DialogContent className="sm:max-w-lg max-h-[95vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Modifier la tâche</DialogTitle>
+          <DialogDescription>
+            Modifiez les détails de votre tâche.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-1">

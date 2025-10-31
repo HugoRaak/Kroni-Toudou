@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CalendarTask } from "@/lib/calendar-utils";
 
 type DayTasksDialogProps = {
@@ -55,6 +55,9 @@ export function DayTasksDialog({
               </div>
             </div>
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Tâches prévues pour le {day} {month} {year} en mode {workMode}
+          </DialogDescription>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto space-y-6 mt-4">
           {isEmpty ? (

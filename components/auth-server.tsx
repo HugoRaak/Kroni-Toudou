@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { signIn, signUp } from '@/app/actions/auth';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -176,6 +176,12 @@ export function AuthDialog() {
           <DialogTitle>
             {mode === "login" ? "Connexion" : "Inscription"}
           </DialogTitle>
+          <DialogDescription>
+            {mode === "login" 
+              ? "Connectez-vous à votre compte pour accéder à votre calendrier."
+              : "Créez un compte pour commencer à organiser vos tâches."
+            }
+          </DialogDescription>
         </DialogHeader>
         
         <AuthForm mode={mode} onSuccess={handleSuccess} onModeChange={resetForm} />

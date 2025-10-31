@@ -48,6 +48,7 @@ export function Navbar() {
               alt="Kroni mascot"
               width={28}
               height={28}
+              style={{ height: "auto", width: "auto" }}
               className="rounded-full"
             />
             <span className="text-base font-semibold tracking-tight group-hover:opacity-90">
