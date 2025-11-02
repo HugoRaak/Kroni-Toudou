@@ -153,7 +153,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange }: TaskFormProps)
               id={`due_on-${prefix}`}
               name="due_on"
               type="date"
-              defaultValue={task?.due_on ? new Date(task.due_on).toISOString().slice(0, 10) : ""}
+              defaultValue={task?.due_on ? (task.due_on.includes('T') ? task.due_on.split('T')[0] : task.due_on) : ""}
               required={!task}
             />
           </div>

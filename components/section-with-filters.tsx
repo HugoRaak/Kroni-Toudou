@@ -59,19 +59,19 @@ export function SectionWithFilters({
     yellow: {
       bar: 'bg-yellow-400/30',
       chip: 'bg-yellow-50',
-      headerBg: 'from-yellow-200/50 to-transparent',
+      headerBg: 'bg-yellow-200/50',
       title: 'text-yellow-900',
     },
     violet: {
       bar: 'bg-violet-500/20',
       chip: 'bg-violet-500/10 text-violet-700',
-      headerBg: 'from-violet-500/10 to-transparent',
+      headerBg: 'bg-violet-500/10',
       title: 'text-violet-800',
     },
     orange: {
       bar: 'bg-orange-600/25',
       chip: 'bg-orange-50 text-orange-800',
-      headerBg: 'from-orange-200/40 to-transparent',
+      headerBg: 'bg-orange-200/40',
       title: 'text-orange-800',
     },
   };
@@ -103,7 +103,7 @@ export function SectionWithFilters({
   return (
     <section className="mb-8 group transition-transform">
       <div className={`relative rounded-md border overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
-        <div className={`absolute inset-0 bg-gradient-to-b ${c.headerBg} pointer-events-none`} />
+        <div className={`absolute inset-0 ${c.headerBg} pointer-events-none`} />
         <div className={`h-1 ${c.bar}`} />
         <div className="p-4 flex items-center justify-between relative">
           <div className="flex items-center gap-2">

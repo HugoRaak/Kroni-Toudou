@@ -10,6 +10,14 @@ type TaskItemProps = {
   showProgressStatus?: boolean;
 };
 
+// Format date string as local date without timezone conversion
+function formatDateLocal(dateStr: string): string {
+  const datePart = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+  const [year, month, day] = datePart.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+}
+
 export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus = false }: TaskItemProps) {
   return (
     <TaskEditDialog
@@ -38,7 +46,7 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
             ) : null}
             {task.due_on ? (
               <span className="px-2 py-1 rounded border bg-muted/50">
-                {new Date(task.due_on).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                {formatDateLocal(task.due_on)}
               </span>
             ) : null}
             {typeof task.postponed_days === "number" ? (
@@ -46,6 +54,9 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
             ) : null}
             {showProgressStatus && task.in_progress && (
               <span className="px-2 py-1 rounded border bg-muted/50">En cours</span>
+            )}
+            {showProgressStatus && !task.in_progress && (
+              <span className="px-2 py-1 rounded border bg-muted/50">Pas commencé</span>
             )}
             <span className={`px-2 py-1 rounded border ${task.is_remote ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-pink-50 text-pink-700 border-pink-200"}`}>
               {task.is_remote ? "Distanciel" : "Présentiel"}
