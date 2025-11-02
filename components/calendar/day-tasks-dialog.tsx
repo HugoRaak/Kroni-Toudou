@@ -40,7 +40,7 @@ export function DayTasksDialog({
               </p>
               <div className="mt-2">
                 {workMode === "Congé" ? (
-                  <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border bg-red-50 text-red-700 border-red-200">
+                  <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-200">
                     Congé
                   </span>
                 ) : workMode === "Distanciel" ? (
@@ -48,7 +48,7 @@ export function DayTasksDialog({
                     Remote
                   </span>
                 ) : (
-                  <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-200">
+                  <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border bg-pink-50 text-pink-700 border-pink-200">
                     Présentiel
                   </span>
                 )}

@@ -55,7 +55,7 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
             {showProgressStatus && task.in_progress && (
               <span className="px-2 py-1 rounded border bg-muted/50">En cours</span>
             )}
-            <span className={`px-2 py-1 rounded border ${task.is_remote ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+            <span className={`px-2 py-1 rounded border ${task.is_remote ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-pink-50 text-pink-700 border-pink-200"}`}>
               {task.is_remote ? "Distanciel" : "Présentiel"}
             </span>
           </div>

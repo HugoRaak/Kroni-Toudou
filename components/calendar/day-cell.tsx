@@ -35,16 +35,16 @@ export function DayCell({
     }
     switch (mode) {
       case 'Congé':
-        return 'bg-red-100 border-red-200';
+        return 'bg-emerald-100 border-emerald-200';
       case 'Distanciel':
         return 'bg-blue-100 border-blue-200';
       default:
-        return 'bg-emerald-100 border-emerald-200';
+        return 'bg-pink-100 border-pink-200';
     }
   })();
 
-  const modeDotClass = mode === 'Congé' ? 'bg-red-500' : mode === 'Distanciel' ? 'bg-blue-500' : 'bg-emerald-500';
-  const modeTextClass = mode === 'Congé' ? 'text-red-700' : mode === 'Distanciel' ? 'text-blue-700' : 'text-emerald-700';
+  const modeDotClass = mode === 'Congé' ? 'bg-emerald-500' : mode === 'Distanciel' ? 'bg-blue-500' : 'bg-pink-300';
+  const modeTextClass = mode === 'Congé' ? 'text-emerald-700' : mode === 'Distanciel' ? 'text-blue-700' : 'text-pink-700';
 
   return (
     <div

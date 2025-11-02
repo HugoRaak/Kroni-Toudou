@@ -158,9 +158,9 @@ export function MonthView({
         })}
       </div>
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Présentiel</div>
+        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-pink-300" /> Présentiel</div>
         <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-blue-500" /> Distanciel</div>
-        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-500" /> Congé</div>
+        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Congé</div>
       </div>
       {selectedDate && (() => {
         const iso = selectedDate.toISOString().split('T')[0];

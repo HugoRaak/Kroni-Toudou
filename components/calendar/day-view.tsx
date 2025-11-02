@@ -95,20 +95,20 @@ export function DayView({
                 onClick={handleClickBadge}
                 className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border cursor-pointer ${
                   selectedMode === 'Congé'
-                    ? 'bg-red-50 text-red-700 border-red-200'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : selectedMode === 'Distanciel'
                     ? 'bg-blue-50 text-blue-700 border-blue-200'
-                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-pink-50 text-pink-700 border-pink-200'
                 }`}
               >
-                {selectedMode === 'Distanciel' ? 'Remote' : selectedMode}
+                {selectedMode === 'Distanciel' ? 'Distanciel' : selectedMode}
               </button>
               {selectedMode !== workMode && (
                 <Button
                   size="sm"
                   onClick={handleSave}
                   disabled={saving}
-                  className="h-6 w-6 p-0 grid place-items-center cursor-pointer absolute right-2 top-1/2 -translate-y-1/2"
+                  className="h-6 w-6 p-0 grid place-items-center cursor-pointer absolute right-0 top-1/2 -translate-y-1/2"
                   title="Enregistrer le mode"
                   aria-label="Enregistrer le mode"
                 >
