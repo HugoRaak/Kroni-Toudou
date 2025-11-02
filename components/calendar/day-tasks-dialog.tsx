@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CalendarTask } from "@/lib/calendar-utils";
 import { TaskItemCompact } from "@/components/task-item-compact";
+import { WorkModeBadge } from "@/components/calendar/workmode-badge";
 
 type DayTasksDialogProps = {
   open: boolean;
@@ -61,19 +62,11 @@ export function DayTasksDialog({
                 {day} {month} {year}
               </p>
               <div className="mt-2">
-                {workMode === "Congé" ? (
-                  <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-200">
-                    Congé
-                  </span>
-                ) : workMode === "Distanciel" ? (
-                  <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border bg-blue-50 text-blue-700 border-blue-200">
-                    Remote
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border bg-pink-50 text-pink-700 border-pink-200">
-                    Présentiel
-                  </span>
-                )}
+                <WorkModeBadge
+                  workMode={workMode}
+                  date={date}
+                  onSaved={onSaved}
+                />
               </div>
             </div>
           </DialogTitle>
