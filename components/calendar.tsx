@@ -11,7 +11,15 @@ import { getWorkdayAction, getWorkdaysForRangeAction } from "@/app/actions/workd
 
 type CalendarView = "day" | "week" | "month";
 
-export function Calendar({ userId }: { userId: string }) {
+export function Calendar({ 
+  userId, 
+  onUpdateTask, 
+  onDeleteTask 
+}: { 
+  userId: string;
+  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onDeleteTask: (id: string) => Promise<boolean>;
+}) {
   const [currentView, setCurrentView] = useState<CalendarView>("day");
   // Independent anchors per view
   const [dayDate, setDayDate] = useState<Date>(new Date());
@@ -115,6 +123,8 @@ export function Calendar({ userId }: { userId: string }) {
             onModeSaved={loadTasks}
             onPrev={navigatePrevious}
             onNext={navigateNext}
+            onUpdateTask={onUpdateTask}
+            onDeleteTask={onDeleteTask}
           />
         )}
         {currentView === "week" && (
@@ -126,6 +136,8 @@ export function Calendar({ userId }: { userId: string }) {
             onPrev={navigatePrevious}
             onNext={navigateNext}
             onSaved={loadTasks}
+            onUpdateTask={onUpdateTask}
+            onDeleteTask={onDeleteTask}
           />
         )}
         {currentView === "month" && (
@@ -137,6 +149,8 @@ export function Calendar({ userId }: { userId: string }) {
             onPrev={navigatePrevious}
             onNext={navigateNext}
             onSaved={loadTasks}
+            onUpdateTask={onUpdateTask}
+            onDeleteTask={onDeleteTask}
           />
         )}
       </div>

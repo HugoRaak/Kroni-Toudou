@@ -15,6 +15,8 @@ export function MonthView({
   onPrev,
   onNext,
   onSaved,
+  onUpdateTask,
+  onDeleteTask,
 }: {
   anchorDate: Date;
   tasks: CalendarTask[];
@@ -23,6 +25,8 @@ export function MonthView({
   onPrev: () => void;
   onNext: () => void;
   onSaved: () => void;
+  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onDeleteTask: (id: string) => Promise<boolean>;
 }) {
   const [editing, setEditing] = useState(false);
   const [localWorkdays, setLocalWorkdays] = useState<Record<string, "Présentiel" | "Distanciel" | "Congé">>({});
@@ -176,6 +180,9 @@ export function MonthView({
             date={selectedDate}
             tasks={dayTasks}
             workMode={mode}
+            onUpdateTask={onUpdateTask}
+            onDeleteTask={onDeleteTask}
+            onSaved={onSaved}
           />
         );
       })()}

@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { setWorkdayForUserAction } from "@/app/actions/workdays";
 import { Task } from "@/lib/types";
+import { TaskItemCompact } from "@/components/task-item-compact";
 
 export type DayTasksData = {
   periodic: Task[];
@@ -23,6 +24,8 @@ export function DayView({
   onPrev,
   onNext,
   onModeSaved,
+  onUpdateTask,
+  onDeleteTask,
 }: {
   date: Date;
   loading: boolean;
@@ -31,6 +34,8 @@ export function DayView({
   onPrev: () => void;
   onNext: () => void;
   onModeSaved?: () => void;
+  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onDeleteTask: (id: string) => Promise<boolean>;
 }) {
   const [selectedMode, setSelectedMode] = useState<"Présentiel" | "Distanciel" | "Congé">(workMode);
   const [saving, setSaving] = useState(false);
@@ -198,12 +203,14 @@ export function DayView({
                 </h3>
                 <div className="space-y-2">
                   {tasks.periodic.map((task) => (
-                    <div key={task.id} className="rounded-lg border border-yellow-400/30 bg-yellow-100/50 p-3">
-                      <div className="font-medium text-foreground">{task.title}</div>
-                      {task.description && (
-                        <div className="text-sm text-muted-foreground">{task.description}</div>
-                      )}
-                    </div>
+                    <TaskItemCompact 
+                      key={task.id} 
+                      task={task} 
+                      className="border-yellow-400/30 bg-yellow-100/50"
+                      onSubmit={onUpdateTask}
+                      onDelete={onDeleteTask}
+                      onSuccess={onModeSaved}
+                    />
                   ))}
                 </div>
               </div>
@@ -222,12 +229,14 @@ export function DayView({
                 </h3>
                 <div className="space-y-2">
                   {tasks.specific.map((task) => (
-                    <div key={task.id} className="rounded-lg border border-violet-500/20 bg-violet-500/10 p-3">
-                      <div className="font-medium text-foreground">{task.title}</div>
-                      {task.description && (
-                        <div className="text-sm text-muted-foreground">{task.description}</div>
-                      )}
-                    </div>
+                    <TaskItemCompact 
+                      key={task.id} 
+                      task={task} 
+                      className="border-violet-500/20 bg-violet-500/10"
+                      onSubmit={onUpdateTask}
+                      onDelete={onDeleteTask}
+                      onSuccess={onModeSaved}
+                    />
                   ))}
                 </div>
               </div>
@@ -249,12 +258,14 @@ export function DayView({
                     </h4>
                     <div className="space-y-2">
                       {tasks.whenPossible.inProgress.map((task) => (
-                        <div key={task.id} className="rounded-lg border border-orange-600/25 bg-orange-50 p-3">
-                          <div className="font-medium text-foreground">{task.title}</div>
-                          {task.description && (
-                            <div className="text-sm text-muted-foreground">{task.description}</div>
-                          )}
-                        </div>
+                        <TaskItemCompact 
+                          key={task.id} 
+                          task={task} 
+                          className="border-orange-600/25 bg-orange-50"
+                          onSubmit={onUpdateTask}
+                          onDelete={onDeleteTask}
+                          onSuccess={onModeSaved}
+                        />
                       ))}
                     </div>
                   </div>
@@ -267,12 +278,14 @@ export function DayView({
                     </h4>
                     <div className="space-y-2">
                       {tasks.whenPossible.notStarted.map((task) => (
-                        <div key={task.id} className="rounded-lg border border-orange-600/25 bg-orange-50 p-3">
-                          <div className="font-medium text-foreground">{task.title}</div>
-                          {task.description && (
-                            <div className="text-sm text-muted-foreground">{task.description}</div>
-                          )}
-                        </div>
+                        <TaskItemCompact 
+                          key={task.id} 
+                          task={task} 
+                          className="border-orange-600/25 bg-orange-50"
+                          onSubmit={onUpdateTask}
+                          onDelete={onDeleteTask}
+                          onSuccess={onModeSaved}
+                        />
                       ))}
                     </div>
                   </div>

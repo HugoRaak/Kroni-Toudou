@@ -2,6 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CalendarTask } from "@/lib/calendar-utils";
+import { TaskItemCompact } from "@/components/task-item-compact";
 
 type DayTasksDialogProps = {
   open: boolean;
@@ -9,7 +10,25 @@ type DayTasksDialogProps = {
   date: Date;
   tasks: CalendarTask[];
   workMode: "Présentiel" | "Distanciel" | "Congé";
+  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onDeleteTask: (id: string) => Promise<boolean>;
+  onSaved?: () => void;
 };
+
+// Convert CalendarTask to Task (partial, missing some fields but enough for editing)
+function calendarTaskToTask(calendarTask: CalendarTask): Partial<import("@/lib/types").Task> & { id: string; title: string; description?: string } {
+  return {
+    id: calendarTask.id,
+    title: calendarTask.title,
+    description: calendarTask.description,
+    frequency: calendarTask.frequency,
+    day: calendarTask.day,
+    due_on: calendarTask.due_on,
+    in_progress: calendarTask.in_progress,
+    is_remote: calendarTask.is_remote,
+    postponed_days: undefined, // Not available in CalendarTask
+  };
+}
 
 export function DayTasksDialog({
   open,
@@ -17,6 +36,9 @@ export function DayTasksDialog({
   date,
   tasks,
   workMode,
+  onUpdateTask,
+  onDeleteTask,
+  onSaved,
 }: DayTasksDialogProps) {
   const day = date.getDate();
   const month = date.toLocaleDateString("fr-FR", { month: "long" });
@@ -84,15 +106,14 @@ export function DayTasksDialog({
                   </h3>
                   <div className="space-y-2">
                     {periodic.map((task) => (
-                      <div
-                        key={task.id}
-                        className="rounded-lg border border-yellow-400/30 bg-yellow-100/50 p-3"
-                      >
-                        <div className="font-medium text-foreground">{task.title}</div>
-                        {task.description && (
-                          <div className="text-sm text-muted-foreground">{task.description}</div>
-                        )}
-                      </div>
+                      <TaskItemCompact 
+                        key={task.id} 
+                        task={calendarTaskToTask(task)} 
+                        className="border-yellow-400/30 bg-yellow-100/50"
+                        onSubmit={onUpdateTask}
+                        onDelete={onDeleteTask}
+                        onSuccess={onSaved}
+                      />
                     ))}
                   </div>
                 </div>
@@ -118,15 +139,14 @@ export function DayTasksDialog({
                   </h3>
                   <div className="space-y-2">
                     {specific.map((task) => (
-                      <div
-                        key={task.id}
-                        className="rounded-lg border border-violet-500/20 bg-violet-500/10 p-3"
-                      >
-                        <div className="font-medium text-foreground">{task.title}</div>
-                        {task.description && (
-                          <div className="text-sm text-muted-foreground">{task.description}</div>
-                        )}
-                      </div>
+                      <TaskItemCompact 
+                        key={task.id} 
+                        task={calendarTaskToTask(task)} 
+                        className="border-violet-500/20 bg-violet-500/10"
+                        onSubmit={onUpdateTask}
+                        onDelete={onDeleteTask}
+                        onSuccess={onSaved}
+                      />
                     ))}
                   </div>
                 </div>
