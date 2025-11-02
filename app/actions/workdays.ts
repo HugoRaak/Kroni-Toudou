@@ -3,7 +3,7 @@
 import { getWorkday, getWorkdaysInRange, upsertWorkday, WorkMode } from "@/lib/db/workdays";
 import { supabaseServer } from "@/lib/supabase-server";
 
-export async function getWorkdayAction(userId: string, date: Date): Promise<WorkMode | null> {
+export async function getWorkdayAction(userId: string, date: Date): Promise<WorkMode> {
   const iso = date.toISOString().split('T')[0];
   return await getWorkday(userId, iso);
 }

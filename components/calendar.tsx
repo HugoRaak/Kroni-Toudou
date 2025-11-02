@@ -45,7 +45,7 @@ export function Calendar({
         ]);
         console.log(dayData);
         setDayTasks(dayData);
-        setDayWorkMode(mode ?? "Présentiel");
+        setDayWorkMode(mode);
       } else {
         const anchor = currentView === "week" ? weekDate : monthDate;
         const startDate = new Date(anchor);
