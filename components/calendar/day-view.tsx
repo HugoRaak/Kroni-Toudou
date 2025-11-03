@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -105,7 +105,7 @@ export function DayView({
 
   // Prepare ordered tasks for today view (including temp tasks)
   useEffect(() => {
-    if (!tasks || !isTodayView) {
+    if (!tasks || !isTodayView || loading) {
       setOrderedTasks([]);
       return;
     }
@@ -139,10 +139,6 @@ export function DayView({
       
       const finalOrdered = [...ordered, ...newTasks];
       setOrderedTasks(finalOrdered);
-      
-      // Update saved order to remove deleted tasks and add new ones
-      const cleanedOrder = finalOrdered.map(t => t.id);
-      saveTodayTaskOrder(cleanedOrder);
     } else {
       // No saved order, use default order
       setOrderedTasks(visibleTasks);
@@ -151,7 +147,7 @@ export function DayView({
         saveTodayTaskOrder(visibleTasks.map(t => t.id));
       }
     }
-  }, [tasks, isTodayView, tempTasks]);
+  }, [tasks, isTodayView, tempTasks, loading]);
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
