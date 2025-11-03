@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DayView, { DayTasksData } from "@/components/calendar/day-view";
-import ViewSwitcher from "@/components/calendar/view-switcher";
-import { CalendarTask } from "@/lib/calendar-utils";
-import WeekView from "@/components/calendar/week-view";
-import MonthView from "@/components/calendar/month-view";
+import DayView, { DayTasksData } from "@/components/calendar/views/day-view";
+import ViewSwitcher from "@/components/calendar/ui/view-switcher";
+import { CalendarTask } from "@/lib/calendar/calendar-utils";
+import WeekView from "@/components/calendar/views/week-view";
+import MonthView from "@/components/calendar/views/month-view";
 import { getTasksForDayAction, getTasksForDateRangeAction } from "@/app/actions/tasks";
 import { getWorkdayAction, getWorkdaysForRangeAction } from "@/app/actions/workdays";
-import { getTodayTasksFromStorage, saveTodayTasksToStorage, isToday } from "@/lib/localStorage-tasks";
-
-type CalendarView = "day" | "week" | "month";
+import { getTodayTasksFromStorage, saveTodayTasksToStorage, isToday } from "@/lib/storage/localStorage-tasks";
+import { navigateCalendarDate, type CalendarView } from "@/lib/calendar/calendar-navigation";
+import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
 
 export function Calendar({ 
   userId, 
@@ -98,15 +98,19 @@ export function Calendar({
         }
       } else {
         const anchor = currentView === "week" ? weekDate : monthDate;
-        const startDate = new Date(anchor);
-        const endDate = new Date(anchor);
+        let startDate: Date;
+        let endDate: Date;
 
         if (currentView === "week") {
-          startDate.setDate(anchor.getDate() - anchor.getDay() + 1); // Lundi
-          endDate.setDate(startDate.getDate() + 6); // Dimanche
+          const range = getWeekDateRange(anchor);
+          startDate = range.start;
+          endDate = range.end;
         } else if (currentView === "month") {
-          startDate.setDate(1); // Premier du mois
-          endDate.setMonth(anchor.getMonth() + 1, 0); // Dernier du mois
+          startDate = new Date(anchor.getFullYear(), anchor.getMonth(), 1); // Premier du mois
+          endDate = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0); // Dernier du mois
+        } else {
+          startDate = new Date(anchor);
+          endDate = new Date(anchor);
         }
 
         const [tasksData, workdays] = await Promise.all([
@@ -172,37 +176,18 @@ export function Calendar({
   };
 
   // Navigation functions
-  const navigatePrevious = () => {
+  const navigate = (direction: 'prev' | 'next') => {
     if (currentView === "day") {
-      const d = new Date(dayDate);
-      d.setDate(d.getDate() - 1);
-      setDayDate(d);
+      setDayDate(navigateCalendarDate(dayDate, direction, 'day'));
     } else if (currentView === "week") {
-      const d = new Date(weekDate);
-      d.setDate(d.getDate() - 7);
-      setWeekDate(d);
+      setWeekDate(navigateCalendarDate(weekDate, direction, 'week'));
     } else if (currentView === "month") {
-      const d = new Date(monthDate);
-      d.setMonth(d.getMonth() - 1);
-      setMonthDate(d);
+      setMonthDate(navigateCalendarDate(monthDate, direction, 'month'));
     }
   };
 
-  const navigateNext = () => {
-    if (currentView === "day") {
-      const d = new Date(dayDate);
-      d.setDate(d.getDate() + 1);
-      setDayDate(d);
-    } else if (currentView === "week") {
-      const d = new Date(weekDate);
-      d.setDate(d.getDate() + 7);
-      setWeekDate(d);
-    } else if (currentView === "month") {
-      const d = new Date(monthDate);
-      d.setMonth(d.getMonth() + 1);
-      setMonthDate(d);
-    }
-  };
+  const navigatePrevious = () => navigate('prev');
+  const navigateNext = () => navigate('next');
 
   return (
     <div className="space-y-4">

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Task } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { TaskForm } from "@/components/task-form";
+import { TaskForm } from "@/components/tasks/task-form";
 import { toast } from "sonner";
 import { Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";

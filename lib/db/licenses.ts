@@ -1,4 +1,4 @@
-import { supabaseServer } from '../supabase-server';
+import { supabaseServer } from '@/lib/supabase/supabase-server';
 
 export async function validateLicense(licenseKey: string): Promise<{ valid: boolean; error?: string }> {
   const supabase = await supabaseServer();

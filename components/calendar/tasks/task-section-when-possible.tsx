@@ -1,6 +1,6 @@
 import { Task } from '@/lib/types';
-import { TaskItemCompact } from '@/components/task-item-compact';
-import { TASK_TYPE_STYLES } from '@/lib/task-constants';
+import { TaskItemCompact } from '@/components/tasks/task-item-compact';
+import { TASK_TYPE_STYLES } from '@/lib/tasks/task-constants';
 
 type TaskSectionWhenPossibleProps = {
   inProgress: Task[];

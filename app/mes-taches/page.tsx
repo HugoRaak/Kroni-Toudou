@@ -1,58 +1,17 @@
 // Ambiguous: grouping rules chosen as frequency > due_on > else
-import { supabaseServerReadOnly } from '@/lib/supabase-server';
+import { supabaseServerReadOnly } from '@/lib/supabase/supabase-server';
 import { redirect } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
 import { getTasks } from '@/lib/db/tasks';
-import { Task } from '@/lib/types';
+import { groupTasksByType } from '@/lib/tasks/task-filtering';
 import Image from 'next/image';
-import { revalidatePath } from 'next/cache';
-import { updateTaskAction, deleteTaskAction } from '@/app/actions/tasks';
-import { FloatingAddButton } from '@/components/floating-add-button';
-import { createTaskFromForm } from '@/app/actions/tasks';
-import { SectionWithFilters } from '@/components/section-with-filters';
-
-
-async function updateTaskFromForm(formData: FormData) {
-  'use server';
-  const { parseTaskFormData, parsedDataToTaskUpdates } = await import('@/lib/task-form-parser');
-  
-  const id = String(formData.get('id'));
-  const parsed = parseTaskFormData(formData);
-  
-  if (!parsed) {
-    return false;
-  }
-
-  const updates = parsedDataToTaskUpdates(parsed);
-  const result = await updateTaskAction(id, updates);
-  
-  revalidatePath('/mes-taches');
-  return !!result;
-}
-
-async function createTaskAction(formData: FormData) {
-  'use server';
-  const supabase = await supabaseServerReadOnly();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    return null;
-  }
-  
-  const result = await createTaskFromForm(user.id, formData);
-  if (result) {
-    revalidatePath('/mes-taches');
-    revalidatePath('/');
-  }
-  return result;
-}
-
-async function deleteTask(id: string) {
-  'use server';
-  const result = await deleteTaskAction(id);
-  revalidatePath('/mes-taches');
-  return result;
-}
+import { 
+  updateTaskFromFormAction, 
+  deleteTaskActionWrapper, 
+  createTaskFromFormAction 
+} from '@/app/actions/tasks';
+import { FloatingAddButton } from '@/components/tasks/floating-add-button';
+import { SectionWithFilters } from '@/components/tasks/section-with-filters';
 
 export default async function MesTachesPage() {
   const supabase = await supabaseServerReadOnly();
@@ -63,24 +22,7 @@ export default async function MesTachesPage() {
   }
 
   const tasks = await getTasks(user.id);
-
-  const periodic = tasks.filter(t => !!t.frequency);
-  const specificDate = tasks
-    .filter(t => !t.frequency && !!t.due_on)
-    .sort((a, b) => {
-      // Trier par date ascendante (du plus ancien au plus récent)
-      if (!a.due_on || !b.due_on) return 0;
-      return a.due_on.localeCompare(b.due_on);
-    });
-  const whenPossible = tasks
-    .filter(t => !t.frequency && !t.due_on)
-    .sort((a, b) => {
-      // Trier : d'abord celles en cours (in_progress: true), puis les autres
-      if (a.in_progress === b.in_progress) return 0;
-      if (a.in_progress) return -1; // a en cours vient avant
-      return 1; // b en cours vient avant
-    });
-
+  const { periodic, specificDate, whenPossible } = groupTasksByType(tasks);
   const isEmpty = tasks.length === 0;
 
   return (
@@ -130,8 +72,8 @@ export default async function MesTachesPage() {
               )}
               tasks={periodic}
               showFrequencyFilter={true}
-              onSubmit={updateTaskFromForm}
-              onDelete={deleteTask}
+              onSubmit={updateTaskFromFormAction}
+              onDelete={deleteTaskActionWrapper}
               emptyMessage="Aucune tâche périodique."
             />
 
@@ -149,8 +91,8 @@ export default async function MesTachesPage() {
               )}
               tasks={specificDate}
               showFrequencyFilter={false}
-              onSubmit={updateTaskFromForm}
-              onDelete={deleteTask}
+              onSubmit={updateTaskFromFormAction}
+              onDelete={deleteTaskActionWrapper}
               emptyMessage="Aucune tâche avec date précise."
             />
 
@@ -165,15 +107,15 @@ export default async function MesTachesPage() {
               )}
               tasks={whenPossible}
               showFrequencyFilter={false}
-              onSubmit={updateTaskFromForm}
-              onDelete={deleteTask}
+              onSubmit={updateTaskFromFormAction}
+              onDelete={deleteTaskActionWrapper}
               showProgressStatus={true}
               emptyMessage="Aucune tâche libre."
             />
           </div>
         )}
       </main>
-      <FloatingAddButton userId={user.id} onSubmit={createTaskAction} />
+      <FloatingAddButton userId={user.id} onSubmit={createTaskFromFormAction} />
     </div>
   );
 }

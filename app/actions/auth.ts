@@ -1,6 +1,6 @@
 "use server";
 
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseServer } from '@/lib/supabase/supabase-server';
 import { redirect } from 'next/navigation';
 import { validateLicense } from '@/lib/db/licenses';
 

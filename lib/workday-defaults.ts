@@ -1,7 +1,7 @@
 // One-line note: calculates default work mode based on day of week and French public holidays from API
 
-import { WorkMode } from "./db/workdays";
-import { formatDateLocal } from "./utils";
+import { WorkMode } from "@/lib/db/workdays";
+import { formatDateLocal } from "@/lib/utils";
 
 // Cache for public holidays by year
 const holidaysCache = new Map<number, Set<string>>();

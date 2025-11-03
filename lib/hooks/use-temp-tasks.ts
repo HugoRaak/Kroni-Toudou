@@ -3,8 +3,8 @@ import {
   getTodayTempTasks,
   getTodayHiddenTempTaskIds,
   TempTask,
-} from '@/lib/localStorage-tasks';
-import { filterTasksByWorkMode } from '@/lib/calendar-utils';
+} from '@/lib/storage/localStorage-tasks';
+import { filterTasksByWorkMode } from '@/lib/calendar/calendar-utils';
 
 export function useTempTasks(
   isTodayView: boolean,

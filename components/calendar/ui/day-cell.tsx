@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarTask } from "@/lib/calendar-utils";
+import { CalendarTask } from "@/lib/calendar/calendar-utils";
 
 type WorkMode = "Présentiel" | "Distanciel" | "Congé";
 

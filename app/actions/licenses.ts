@@ -1,6 +1,6 @@
 "use server";
 
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseServer } from '@/lib/supabase/supabase-server';
 import { associateLicenseToUser } from '@/lib/db/licenses';
 
 // Server Action: Process pending license association

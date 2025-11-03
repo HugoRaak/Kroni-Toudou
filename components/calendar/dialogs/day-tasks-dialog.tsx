@@ -1,10 +1,10 @@
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { CalendarTask, calendarTaskToTaskLike } from "@/lib/calendar-utils";
-import { TaskSectionPeriodic } from "@/components/calendar/task-section-periodic";
-import { TaskSectionSpecific } from "@/components/calendar/task-section-specific";
-import { WorkModeBadge } from "@/components/calendar/workmode-badge";
+import { CalendarTask, calendarTaskToTaskLike } from "@/lib/calendar/calendar-utils";
+import { TaskSectionPeriodic } from "@/components/calendar/tasks/task-section-periodic";
+import { TaskSectionSpecific } from "@/components/calendar/tasks/task-section-specific";
+import { WorkModeBadge } from "@/components/calendar/ui/workmode-badge";
 
 type DayTasksDialogProps = {
   open: boolean;

@@ -1,6 +1,6 @@
-import { supabaseServer, supabaseServerReadOnly } from "../supabase-server";
-import { getDefaultWorkMode } from "../workday-defaults";
-import { formatDateLocal } from "../utils";
+import { supabaseServer, supabaseServerReadOnly } from "@/lib/supabase/supabase-server";
+import { getDefaultWorkMode } from "@/lib/workday-defaults";
+import { formatDateLocal } from "@/lib/utils";
 
 export type WorkMode = 'Présentiel' | 'Distanciel' | 'Congé';
 

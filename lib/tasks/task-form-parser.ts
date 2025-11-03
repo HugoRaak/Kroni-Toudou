@@ -1,5 +1,5 @@
-import type { Task, Frequency, DayOfWeek } from './types';
-import { TASK_TYPES } from './task-constants';
+import type { Task, Frequency, DayOfWeek } from '@/lib/types';
+import { TASK_TYPES } from '@/lib/tasks/task-constants';
 import {
   isValidTaskType,
   isValidFrequency,
@@ -9,7 +9,7 @@ import {
   validateTaskDescription,
   validatePostponedDays,
   validateDueOn,
-} from './task-validation';
+} from '@/lib/tasks/task-validation';
 
 export interface ParsedTaskFormData {
   title: string;

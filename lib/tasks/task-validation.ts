@@ -1,5 +1,5 @@
-import type { Task, Frequency, DayOfWeek } from './types';
-import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_TITLE_MAX_LENGTH, TASK_DESCRIPTION_MAX_LENGTH } from './task-constants';
+import type { Task, Frequency, DayOfWeek } from '@/lib/types';
+import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_TITLE_MAX_LENGTH, TASK_DESCRIPTION_MAX_LENGTH } from '@/lib/tasks/task-constants';
 
 export function isValidTaskType(type: string): type is typeof TASK_TYPES[keyof typeof TASK_TYPES] {
   return Object.values(TASK_TYPES).includes(type as any);

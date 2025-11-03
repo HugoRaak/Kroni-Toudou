@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Task, Frequency } from '@/lib/types';
-import TaskItem from '@/components/task-item';
+import TaskItem from '@/components/tasks/task-item';
 import {
   DropdownMenu,
   DropdownMenuTrigger,

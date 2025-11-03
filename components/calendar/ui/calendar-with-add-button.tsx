@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar } from "@/components/calendar";
-import { FloatingAddButton } from "@/components/floating-add-button";
+import { Calendar } from "@/components/calendar/views/calendar";
+import { FloatingAddButton } from "@/components/tasks/floating-add-button";
 
 interface CalendarWithAddButtonProps {
   userId: string;

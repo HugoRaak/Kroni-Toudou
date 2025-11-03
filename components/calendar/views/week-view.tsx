@@ -1,11 +1,12 @@
 "use client";
 
-import DayCell from "./day-cell";
-import CalendarHeader from "./calendar-header";
-import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar-utils";
-import { DayTasksDialog } from "./day-tasks-dialog";
+import DayCell from "@/components/calendar/ui/day-cell";
+import CalendarHeader from "@/components/calendar/ui/calendar-header";
+import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar/calendar-utils";
+import { DayTasksDialog } from "@/components/calendar/dialogs/day-tasks-dialog";
 import { formatDateLocal } from "@/lib/utils";
 import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
+import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
 
 export function WeekView({
   anchorDate,
@@ -41,10 +42,7 @@ export function WeekView({
     handleCancel,
     handleSave,
   } = useWorkdaysEditor(workdays, onSaved);
-  const startOfWeek = new Date(anchorDate);
-  startOfWeek.setDate(anchorDate.getDate() - anchorDate.getDay() + 1);
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  const { start: startOfWeek, end: endOfWeek } = getWeekDateRange(anchorDate);
 
   const weekDates = (() => {
     const today = new Date();

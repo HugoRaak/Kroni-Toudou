@@ -1,4 +1,4 @@
-import type { Frequency, DayOfWeek, Task } from './types';
+import type { Frequency, DayOfWeek, Task } from '@/lib/types';
 
 // Task type constants
 export const TASK_TYPES = {

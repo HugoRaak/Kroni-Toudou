@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getTodayTaskOrder, saveTodayTaskOrder } from '@/lib/localStorage-tasks';
+import { getTodayTaskOrder, saveTodayTaskOrder } from '@/lib/storage/localStorage-tasks';
 
 export function useDragAndDrop<T extends { id: string }>(
   initialItems: T[],
@@ -46,6 +46,10 @@ export function useDragAndDrop<T extends { id: string }>(
     // Save to localStorage if items have id
     if (newItems.length > 0) {
       saveTodayTaskOrder(newItems.map(item => item.id));
+      // Trigger event to notify that order was saved
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('task-order-updated'));
+      }
     }
     
     resetDragState();
@@ -87,6 +91,10 @@ export function useDragAndDrop<T extends { id: string }>(
     // Save to localStorage
     if (newItems.length > 0) {
       saveTodayTaskOrder(newItems.map(item => item.id));
+      // Trigger event to notify that order was saved
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('task-order-updated'));
+      }
     }
     
     resetDragState();

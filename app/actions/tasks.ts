@@ -1,9 +1,11 @@
 "use server";
 
-import { getTasksForDay, getTasksForDateRange } from "@/lib/calendar-utils";
-import { supabaseServer } from "@/lib/supabase-server";
+import { getTasksForDay, getTasksForDateRange } from "@/lib/calendar/calendar-utils";
+import { supabaseServer, supabaseServerReadOnly } from "@/lib/supabase/supabase-server";
 import { Task, Frequency, DayOfWeek } from "@/lib/types";
-import { parseTaskFormData } from "@/lib/task-form-parser";
+import { parseTaskFormData, parsedDataToTaskUpdates } from "@/lib/tasks/task-form-parser";
+import { revalidatePath } from "next/cache";
+import { verifyTaskOwnership, verifyAuthenticated } from "@/lib/auth/auth-helpers";
 
 export async function getTasksForDayAction(userId: string, date: Date) {
   return await getTasksForDay(userId, date);
@@ -30,6 +32,13 @@ export async function createTaskAction(
   mode?: 'Tous' | 'Présentiel' | 'Distanciel',
 ): Promise<Task | null> {
   const supabase = await supabaseServer();
+  
+  // Verify authenticated user and userId match
+  const user = await verifyAuthenticated(supabase);
+  if (!user || user.id !== userId) {
+    console.warn('Security: userId mismatch or user not authenticated');
+    return null;
+  }
   
   const { data, error } = await supabase
     .from('tasks')
@@ -61,22 +70,8 @@ export async function updateTaskAction(
 ): Promise<Task | null> {
   const supabase = await supabaseServer();
   
-  // Verify authenticated user
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) {
-    console.warn('Security: user not authenticated');
-    return null;
-  }
-
-  // Verify task ownership
-  const { data: existingTask } = await supabase
-    .from('tasks')
-    .select('user_id')
-    .eq('id', id)
-    .single();
-  
-  if (!existingTask || existingTask.user_id !== user.id) {
-    console.warn('Security: task ownership mismatch');
+  const verification = await verifyTaskOwnership(supabase, id);
+  if (!verification) {
     return null;
   }
   
@@ -87,7 +82,7 @@ export async function updateTaskAction(
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('user_id', user.id)
+    .eq('user_id', verification.user.id)
     .select()
     .single();
 
@@ -102,22 +97,8 @@ export async function updateTaskAction(
 export async function deleteTaskAction(id: string): Promise<boolean> {
   const supabase = await supabaseServer();
   
-  // Verify authenticated user
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) {
-    console.warn('Security: user not authenticated');
-    return false;
-  }
-
-  // Verify task ownership
-  const { data: existingTask } = await supabase
-    .from('tasks')
-    .select('user_id')
-    .eq('id', id)
-    .single();
-  
-  if (!existingTask || existingTask.user_id !== user.id) {
-    console.warn('Security: task ownership mismatch');
+  const verification = await verifyTaskOwnership(supabase, id);
+  if (!verification) {
     return false;
   }
   
@@ -125,7 +106,7 @@ export async function deleteTaskAction(id: string): Promise<boolean> {
     .from('tasks')
     .delete()
     .eq('id', id)
-    .eq('user_id', user.id);
+    .eq('user_id', verification.user.id);
 
   if (error) {
     console.error('Error deleting task:', error);
@@ -136,10 +117,10 @@ export async function deleteTaskAction(id: string): Promise<boolean> {
 }
 
 export async function createTaskFromForm(userId: string, formData: FormData): Promise<Task | null> {
-  // Verify authenticated user
   const supabase = await supabaseServer();
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user || user.id !== userId) {
+  const user = await verifyAuthenticated(supabase);
+  
+  if (!user || user.id !== userId) {
     console.warn('Security: userId mismatch');
     return null;
   }
@@ -160,4 +141,51 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
     parsed.in_progress,
     parsed.mode
   );
+}
+
+// Centralized server actions for form handling (with revalidation)
+export async function updateTaskFromFormAction(formData: FormData): Promise<boolean> {
+  'use server';
+  const id = String(formData.get('id') || '');
+  const parsed = parseTaskFormData(formData);
+  
+  if (!parsed) {
+    return false;
+  }
+
+  const updates = parsedDataToTaskUpdates(parsed);
+  const result = await updateTaskAction(id, updates);
+  
+  if (result) {
+    revalidatePath('/home');
+    revalidatePath('/mes-taches');
+  }
+  return !!result;
+}
+
+export async function deleteTaskActionWrapper(id: string): Promise<boolean> {
+  'use server';
+  const result = await deleteTaskAction(id);
+  if (result) {
+    revalidatePath('/home');
+    revalidatePath('/mes-taches');
+  }
+  return result;
+}
+
+export async function createTaskFromFormAction(formData: FormData): Promise<Task | null> {
+  'use server';
+  const supabase = await supabaseServerReadOnly();
+  const user = await verifyAuthenticated(supabase);
+  
+  if (!user) {
+    return null;
+  }
+  
+  const result = await createTaskFromForm(user.id, formData);
+  if (result) {
+    revalidatePath('/home');
+    revalidatePath('/mes-taches');
+  }
+  return result;
 }

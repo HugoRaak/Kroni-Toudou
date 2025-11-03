@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { TaskForm } from "@/components/task-form";
+import { TaskForm } from "@/components/tasks/task-form";
 import { createTaskFromForm } from "@/app/actions/tasks";
-import { createTodayTempTask } from "@/lib/localStorage-tasks";
+import { createTodayTempTask } from "@/lib/storage/localStorage-tasks";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

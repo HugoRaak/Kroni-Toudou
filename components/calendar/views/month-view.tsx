@@ -1,11 +1,12 @@
 "use client";
 
-import DayCell from "./day-cell";
-import CalendarHeader from "./calendar-header";
-import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar-utils";
-import { DayTasksDialog } from "./day-tasks-dialog";
+import DayCell from "@/components/calendar/ui/day-cell";
+import CalendarHeader from "@/components/calendar/ui/calendar-header";
+import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar/calendar-utils";
+import { DayTasksDialog } from "@/components/calendar/dialogs/day-tasks-dialog";
 import { formatDateLocal } from "@/lib/utils";
 import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
+import { getMonthGridDates, getMonthGridDatesArray } from "@/lib/calendar/calendar-date-utils";
 
 export function MonthView({
   anchorDate,
@@ -40,42 +41,9 @@ export function MonthView({
     handleStartEdit,
     handleCancel,
     handleSave,
-  } = useWorkdaysEditor(workdays, onSaved, () => {
-    // Get dates to save for month view (42 days grid)
-    const firstDay = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay() + 1);
-    const dates: Date[] = [];
-    for (let i = 0; i < 42; i++) {
-      const d = new Date(startDate);
-      d.setDate(startDate.getDate() + i);
-      dates.push(d);
-    }
-    return dates;
-  });
-  const year = anchorDate.getFullYear();
-  const month = anchorDate.getMonth();
-
-  const firstDay = new Date(year, month, 1);
-  const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDay.getDay() + 1);
-
-  const monthDates = (() => {
-    const dates: { date: number; month: number; year: number; isCurrentMonth: boolean; isToday: boolean }[] = [];
-    const dateIterator = new Date(startDate);
-    const today = new Date();
-    for (let i = 0; i < 42; i++) {
-      dates.push({
-        date: dateIterator.getDate(),
-        month: dateIterator.getMonth(),
-        year: dateIterator.getFullYear(),
-        isCurrentMonth: dateIterator.getMonth() === month,
-        isToday: dateIterator.toDateString() === today.toDateString(),
-      });
-      dateIterator.setDate(dateIterator.getDate() + 1);
-    }
-    return dates;
-  })();
+  } = useWorkdaysEditor(workdays, onSaved, () => getMonthGridDatesArray(anchorDate));
+  
+  const monthDates = getMonthGridDates(anchorDate);
 
   const monthName = anchorDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 

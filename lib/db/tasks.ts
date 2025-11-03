@@ -1,5 +1,5 @@
-import { supabaseServerReadOnly } from '../supabase-server';
-import { Task } from '../types';
+import { supabaseServerReadOnly } from '@/lib/supabase/supabase-server';
+import { Task } from '@/lib/types';
 
 // Fonctions de lecture pour Server Components
 export async function getTasks(userId: string): Promise<Task[]> {

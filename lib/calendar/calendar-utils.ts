@@ -1,7 +1,7 @@
-import { Task, Frequency, DayOfWeek } from './types';
-import { getTasks } from './db/tasks';
-import { getWorkday } from './db/workdays';
-import { formatDateLocal } from './utils';
+import { Task, Frequency, DayOfWeek } from '@/lib/types';
+import { getTasks } from '@/lib/db/tasks';
+import { getWorkday } from '@/lib/db/workdays';
+import { formatDateLocal } from '@/lib/utils';
 
 export interface CalendarTask {
   id: string;
@@ -204,7 +204,7 @@ export function filterTasksByWorkMode<T extends { mode?: 'Tous' | 'Présentiel' 
 }
 
 // Convert CalendarTask to Task-like object (for editing)
-export function calendarTaskToTaskLike(calendarTask: CalendarTask): Partial<import('./types').Task> & { id: string; title: string; description?: string } {
+export function calendarTaskToTaskLike(calendarTask: CalendarTask): Partial<import('@/lib/types').Task> & { id: string; title: string; description?: string } {
   return {
     id: calendarTask.id,
     title: calendarTask.title,

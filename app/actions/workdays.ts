@@ -1,7 +1,7 @@
 "use server";
 
 import { getWorkday, getWorkdaysInRange, upsertWorkday, WorkMode } from "@/lib/db/workdays";
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer } from "@/lib/supabase/supabase-server";
 import { formatDateLocal } from "@/lib/utils";
 
 export async function getWorkdayAction(userId: string, date: Date): Promise<WorkMode> {

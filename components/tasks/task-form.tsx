@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Task, Frequency, DayOfWeek } from "@/lib/types";
-import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_MODES, type TaskType } from "@/lib/task-constants";
+import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_MODES, type TaskType } from "@/lib/tasks/task-constants";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
