@@ -10,14 +10,17 @@ import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import type { CalendarView } from "@/lib/calendar/calendar-navigation";
 
 interface FloatingAddButtonProps {
   userId: string;
   onSubmit?: (formData: FormData) => Promise<any>;
   isViewingToday?: boolean;
+  currentView?: CalendarView;
+  dayDate?: Date;
 }
 
-export function FloatingAddButton({ userId, onSubmit, isViewingToday = false }: FloatingAddButtonProps) {
+export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, currentView = "day", dayDate }: FloatingAddButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isTempTask, setIsTempTask] = useState(false);
@@ -93,8 +96,11 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false }: 
             className="space-y-4"
           >
             <TaskForm 
+              key={isOpen ? `task-form-${currentView}-${dayDate?.getTime() || ''}` : 'task-form-closed'}
               isViewingToday={isViewingToday}
               onTempTaskChange={setIsTempTask}
+              currentView={currentView}
+              dayDate={dayDate}
             />
             
             <div className="flex flex-col gap-3 pt-4">

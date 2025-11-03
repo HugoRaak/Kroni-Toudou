@@ -21,7 +21,7 @@ export function Calendar({
   userId: string;
   onUpdateTask: (formData: FormData) => Promise<boolean>;
   onDeleteTask: (id: string) => Promise<boolean>;
-  onViewChange?: (isViewingToday: boolean) => void;
+  onViewChange?: (isViewingToday: boolean, currentView: CalendarView, dayDate?: Date) => void;
 }) {
   const [currentView, setCurrentView] = useState<CalendarView>("day");
   // Independent anchors per view
@@ -52,7 +52,7 @@ export function Calendar({
   useEffect(() => {
     if (onViewChange) {
       const viewingToday = currentView === "day" && isToday(dayDate);
-      onViewChange(viewingToday);
+      onViewChange(viewingToday, currentView, currentView === "day" ? dayDate : undefined);
     }
   }, [currentView, dayDate, onViewChange]);
 

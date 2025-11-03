@@ -5,6 +5,7 @@ import { Task, Frequency, DayOfWeek } from "@/lib/types";
 import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_MODES, type TaskType } from "@/lib/tasks/task-constants";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import type { CalendarView } from "@/lib/calendar/calendar-navigation";
 
 type TaskFormProps = {
   task?: Task | (Partial<Task> & { id: string; title: string; description?: string });
@@ -12,24 +13,53 @@ type TaskFormProps = {
   onTaskTypeChange?: (taskType: TaskType) => void;
   isViewingToday?: boolean;
   onTempTaskChange?: (isTemp: boolean) => void;
+  currentView?: CalendarView;
+  dayDate?: Date;
 };
 
-export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday = false, onTempTaskChange }: TaskFormProps) {
+export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday = false, onTempTaskChange, currentView = "day", dayDate }: TaskFormProps) {
   // Check if this is a temp task (temp tasks have IDs starting with "temp-")
   const isEditingTempTask = task?.id?.startsWith('temp-') || false;
 
-  // Déterminer le type de tâche initial
+  // Déterminer le type de tâche initial selon la vue
   const getInitialTaskType = (): typeof TASK_TYPES[keyof typeof TASK_TYPES] => {
     if (task && !isEditingTempTask) {
       if ((task as Task).frequency) return TASK_TYPES.PERIODIC;
       if ((task as Task).due_on) return TASK_TYPES.SPECIFIC;
       return TASK_TYPES.WHEN_POSSIBLE;
     }
+    // Si on crée une nouvelle tâche et qu'on est en vue jour != aujourd'hui, semaine ou mois, pré-remplir avec type spécifique
+    if (!task && !isViewingToday) {
+      if (currentView === "day" || currentView === "week" || currentView === "month") {
+        return TASK_TYPES.SPECIFIC;
+      }
+    }
     return TASK_TYPES.PERIODIC;
+  };
+
+  // Format date for input field (YYYY-MM-DD)
+  const formatDateForInput = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Déterminer la date initiale pour les tâches à date précise
+  const getInitialDueDate = (): string => {
+    if (task?.due_on) {
+      return task.due_on.includes('T') ? task.due_on.split('T')[0] : task.due_on;
+    }
+    // Si on crée une nouvelle tâche et qu'on est en vue jour != aujourd'hui, pré-remplir avec la date du jour de la vue
+    if (!task && currentView === "day" && dayDate && !isViewingToday) {
+      return formatDateForInput(dayDate);
+    }
+    return "";
   };
 
   const [taskType, setTaskType] = useState<typeof TASK_TYPES[keyof typeof TASK_TYPES]>(getInitialTaskType());
   const [frequency, setFrequency] = useState<Frequency | "">((task as Task)?.frequency || "");
+  const [dueDate, setDueDate] = useState<string>(getInitialDueDate());
   // If isViewingToday is true and not editing an existing task, default to temp task
   const [isTempTask, setIsTempTask] = useState(isEditingTempTask || (!task && isViewingToday));
 
@@ -45,10 +75,30 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
     }
   }, [isTempTask, onTempTaskChange]);
 
+  // Synchroniser la date avec les props pour les nouvelles tâches
+  useEffect(() => {
+    if (!task && taskType === TASK_TYPES.SPECIFIC && currentView === "day" && dayDate && !isViewingToday) {
+      const year = dayDate.getFullYear();
+      const month = String(dayDate.getMonth() + 1).padStart(2, '0');
+      const day = String(dayDate.getDate()).padStart(2, '0');
+      setDueDate(`${year}-${month}-${day}`);
+    }
+  }, [task, taskType, currentView, dayDate, isViewingToday]);
+
   const handleTaskTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newType = e.target.value as typeof TASK_TYPES[keyof typeof TASK_TYPES];
     if (Object.values(TASK_TYPES).includes(newType)) {
       setTaskType(newType);
+      // Si on passe à SPECIFIC et qu'on a une date disponible (vue jour != aujourd'hui), l'utiliser
+      if (newType === TASK_TYPES.SPECIFIC && !task && currentView === "day" && dayDate && !isViewingToday) {
+        const year = dayDate.getFullYear();
+        const month = String(dayDate.getMonth() + 1).padStart(2, '0');
+        const day = String(dayDate.getDate()).padStart(2, '0');
+        setDueDate(`${year}-${month}-${day}`);
+      } else if (newType !== TASK_TYPES.SPECIFIC) {
+        // Si on change de type, réinitialiser la date
+        setDueDate("");
+      }
     }
   };
 
@@ -102,7 +152,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
             name="taskType"
             value={taskType}
             onChange={handleTaskTypeChange}
-            className="w-full h-9 px-3 border border-input bg-background rounded-md text-sm"
+            className="w-full h-9 px-3 border border-input bg-background rounded-md text-sm cursor-pointer"
             required={!task}
             disabled={isEditingTempTask}
           >
@@ -139,7 +189,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
               name="frequency"
               value={frequency}
               onChange={handleFrequencyChange}
-              className="w-full h-9 px-3 border border-input bg-background rounded-md text-sm"
+              className="w-full h-9 px-3 border border-input bg-background rounded-md text-sm cursor-pointer"
               required={!task}
             >
               <option value="">Choisir une fréquence</option>
@@ -160,7 +210,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
                 id={`day-${prefix}`}
                 name="day"
                 defaultValue={task?.day || ""}
-                className="w-full h-9 px-3 border border-input bg-background rounded-md text-sm"
+                className="w-full h-9 px-3 border border-input bg-background rounded-md text-sm cursor-pointer"
                 required={!task}
               >
                 <option value="">Choisir un jour</option>
@@ -186,7 +236,8 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
               id={`due_on-${prefix}`}
               name="due_on"
               type="date"
-              defaultValue={task?.due_on ? (task.due_on.includes('T') ? task.due_on.split('T')[0] : task.due_on) : ""}
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               required={!task}
             />
           </div>
@@ -215,7 +266,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
               type="checkbox"
               name="in_progress"
               defaultChecked={!!task?.in_progress}
-              className="rounded"
+              className="rounded cursor-pointer"
             />
             <span className="text-sm font-medium text-foreground">En cours</span>
           </label>
@@ -232,7 +283,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
             id={`${prefix}-mode`}
             name="mode"
             defaultValue={task?.mode ?? 'Tous'}
-            className="border rounded px-2 py-1 bg-background"
+            className="border rounded px-2 py-1 bg-background cursor-pointer"
           >
             {TASK_MODES.map((mode) => (
               <option key={mode} value={mode}>
@@ -251,7 +302,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
               type="checkbox"
               checked={isTempTask}
               onChange={(e) => setIsTempTask(e.target.checked)}
-              className="rounded"
+              className="rounded cursor-pointer"
             />
             <span className="text-sm font-medium text-foreground">
               Uniquement pour aujourd'hui (tâche temporaire)

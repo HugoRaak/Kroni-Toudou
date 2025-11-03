@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Calendar } from "@/components/calendar/views/calendar";
 import { FloatingAddButton } from "@/components/tasks/floating-add-button";
+import type { CalendarView } from "@/lib/calendar/calendar-navigation";
 
 interface CalendarWithAddButtonProps {
   userId: string;
@@ -18,6 +19,14 @@ export function CalendarWithAddButton({
   onSubmit,
 }: CalendarWithAddButtonProps) {
   const [isViewingToday, setIsViewingToday] = useState(false);
+  const [currentView, setCurrentView] = useState<CalendarView>("day");
+  const [dayDate, setDayDate] = useState<Date | undefined>(undefined);
+
+  const handleViewChange = (viewingToday: boolean, view: CalendarView, date?: Date) => {
+    setIsViewingToday(viewingToday);
+    setCurrentView(view);
+    setDayDate(date);
+  };
 
   return (
     <>
@@ -25,12 +34,14 @@ export function CalendarWithAddButton({
         userId={userId}
         onUpdateTask={onUpdateTask}
         onDeleteTask={onDeleteTask}
-        onViewChange={setIsViewingToday}
+        onViewChange={handleViewChange}
       />
       <FloatingAddButton
         userId={userId}
         onSubmit={onSubmit}
         isViewingToday={isViewingToday}
+        currentView={currentView}
+        dayDate={dayDate}
       />
     </>
   );
