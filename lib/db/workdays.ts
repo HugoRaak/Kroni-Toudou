@@ -1,5 +1,6 @@
 import { supabaseServer, supabaseServerReadOnly } from "../supabase-server";
 import { getDefaultWorkMode } from "../workday-defaults";
+import { formatDateLocal } from "../utils";
 
 export type WorkMode = 'Présentiel' | 'Distanciel' | 'Congé';
 
@@ -53,7 +54,7 @@ export async function getWorkdaysInRange(
   const current = new Date(start);
   
   while (current <= end) {
-    const dateStr = current.toISOString().split('T')[0];
+    const dateStr = formatDateLocal(current);
     if (!dbWorkdays.has(dateStr)) {
       map[dateStr] = await getDefaultWorkMode(current);
     }

@@ -28,7 +28,7 @@ export function DayCell({
   onClick?: () => void;
   taskLimit?: number;
   minContentHeight?: number;
-}) {
+  }) {
   const baseContainerClasses = (() => {
     if (loading || !editing) {
       return isToday ? "border-primary bg-primary/10" : (isCurrentMonth ? "border-border bg-card" : "border-transparent bg-muted/30");

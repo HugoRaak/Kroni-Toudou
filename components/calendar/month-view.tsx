@@ -6,6 +6,7 @@ import CalendarHeader from "./calendar-header";
 import { CalendarTask, getTasksForDate } from "@/lib/calendar-utils";
 import { setWorkdayForUserAction } from "@/app/actions/workdays";
 import { DayTasksDialog } from "./day-tasks-dialog";
+import { formatDateLocal } from "@/lib/utils";
 
 export function MonthView({
   anchorDate,
@@ -46,7 +47,7 @@ export function MonthView({
 
   const handleDayClick = (dateObj: Date) => {
     if (editing) {
-      const iso = dateObj.toISOString().split('T')[0];
+      const iso = formatDateLocal(dateObj);
       const current = (localWorkdays[iso] ?? 'Présentiel');
       const next = cycleMode(current);
       setLocalWorkdays((prev: Record<string, "Présentiel" | "Distanciel" | "Congé">) => ({ ...prev, [iso]: next }));
@@ -76,7 +77,7 @@ export function MonthView({
       for (let i = 0; i < 42; i++) {
         const d = new Date(startDate);
         d.setDate(startDate.getDate() + i);
-        const iso = d.toISOString().split('T')[0];
+        const iso = formatDateLocal(d);
         const from = workdays[iso] ?? 'Présentiel';
         const to = localWorkdays[iso] ?? 'Présentiel';
         if (from !== to) {
@@ -139,7 +140,7 @@ export function MonthView({
         {monthDates.map((date, index) => {
           const dayDateObj = new Date(date.year, date.month, date.date);
           const dayTasksAll = getTasksForDate(tasks, dayDateObj);
-          const iso = dayDateObj.toISOString().split('T')[0];
+          const iso = formatDateLocal(dayDateObj);
           const mode = (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel';
           const dayTasks = mode === 'Congé'
             ? []
@@ -167,7 +168,7 @@ export function MonthView({
         <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Congé</div>
       </div>
       {selectedDate && (() => {
-        const iso = selectedDate.toISOString().split('T')[0];
+        const iso = formatDateLocal(selectedDate);
         const mode = (workdays[iso] ?? 'Présentiel');
         const dayTasksAll = getTasksForDate(tasks, selectedDate);
         const dayTasks = mode === 'Congé'

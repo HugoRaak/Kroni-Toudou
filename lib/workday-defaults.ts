@@ -1,6 +1,7 @@
 // One-line note: calculates default work mode based on day of week and French public holidays from API
 
 import { WorkMode } from "./db/workdays";
+import { formatDateLocal } from "./utils";
 
 // Cache for public holidays by year
 const holidaysCache = new Map<number, Set<string>>();
@@ -48,7 +49,7 @@ async function getFrenchPublicHolidays(year: number): Promise<Set<string>> {
  */
 async function isFrenchPublicHoliday(date: Date): Promise<boolean> {
   const year = date.getFullYear();
-  const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+  const dateStr = formatDateLocal(date); // YYYY-MM-DD format
   const holidays = await getFrenchPublicHolidays(year);
   return holidays.has(dateStr);
 }

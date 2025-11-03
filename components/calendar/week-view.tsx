@@ -6,6 +6,7 @@ import CalendarHeader from "./calendar-header";
 import { CalendarTask, getTasksForDate } from "@/lib/calendar-utils";
 import { setWorkdayForUserAction } from "@/app/actions/workdays";
 import { DayTasksDialog } from "./day-tasks-dialog";
+import { formatDateLocal } from "@/lib/utils";
 
 export function WeekView({
   anchorDate,
@@ -46,7 +47,7 @@ export function WeekView({
 
   const handleDayClick = (dateObj: Date) => {
     if (editing) {
-      const iso = dateObj.toISOString().split('T')[0];
+      const iso = formatDateLocal(dateObj);
       const current = (localWorkdays[iso] ?? 'Présentiel');
       const next = cycleMode(current);
       setLocalWorkdays((prev: Record<string, "Présentiel" | "Distanciel" | "Congé">) => ({ ...prev, [iso]: next }));
@@ -121,7 +122,7 @@ export function WeekView({
           const dayDate = new Date(startOfWeek);
           dayDate.setDate(startOfWeek.getDate() + index);
           const dayTasksAll = getTasksForDate(tasks, dayDate);
-          const iso = dayDate.toISOString().split('T')[0];
+          const iso = formatDateLocal(dayDate);
           const mode = (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel';
           const dayTasks = mode === 'Congé'
             ? []
@@ -153,7 +154,7 @@ export function WeekView({
         </div>
       )}
       {selectedDate && (() => {
-        const iso = selectedDate.toISOString().split('T')[0];
+        const iso = formatDateLocal(selectedDate);
         const mode = (workdays[iso] ?? 'Présentiel');
         const dayTasksAll = getTasksForDate(tasks, selectedDate);
         const dayTasks = mode === 'Congé'

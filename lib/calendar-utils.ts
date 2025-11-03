@@ -1,6 +1,7 @@
 import { Task, Frequency, DayOfWeek } from './types';
 import { getTasks } from './db/tasks';
 import { getWorkday } from './db/workdays';
+import { formatDateLocal } from './utils';
 
 export interface CalendarTask {
   id: string;
@@ -58,7 +59,7 @@ export function getPeriodicTasksForDate(tasks: Task[], date: Date): Task[] {
 
 // Get specific date tasks for a specific date
 export function getSpecificTasksForDate(tasks: Task[], date: Date): Task[] {
-  const dateString = date.toISOString().split('T')[0];
+  const dateString = formatDateLocal(date);
   return tasks.filter(task => task.due_on === dateString);
 }
 
@@ -86,7 +87,7 @@ export async function getTasksForDay(userId: string, date?: Date): Promise<{
   const { periodic, specific, whenPossible } = filterTasksByType(allTasks);
   
   const today = date ? date : new Date();
-  const iso = today.toISOString().split('T')[0];
+  const iso = formatDateLocal(today);
   const workMode = (await getWorkday(userId, iso)) ?? 'Présentiel';
 
   const filterByMode = (tasks: Task[]): Task[] => {
@@ -167,7 +168,7 @@ export function getTasksForDate(tasks: CalendarTask[], date: Date): CalendarTask
   
   return tasks.filter(task => {
     if (task.type === 'specific') {
-      return task.due_on === date.toISOString().split('T')[0];
+      return task.due_on === formatDateLocal(date);
     }
     
     if (task.type === 'periodic' && task.frequency && task.day) {
