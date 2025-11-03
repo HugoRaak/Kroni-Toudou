@@ -8,6 +8,7 @@ import WeekView from "@/components/calendar/week-view";
 import MonthView from "@/components/calendar/month-view";
 import { getTasksForDayAction, getTasksForDateRangeAction } from "@/app/actions/tasks";
 import { getWorkdayAction, getWorkdaysForRangeAction } from "@/app/actions/workdays";
+import { getTodayTasksFromStorage, saveTodayTasksToStorage, isToday } from "@/lib/localStorage-tasks";
 
 type CalendarView = "day" | "week" | "month";
 
@@ -35,17 +36,46 @@ export function Calendar({
     loadTasks();
   }, [currentView, dayDate, weekDate, monthDate]);
 
-  const loadTasks = async () => {
+  const loadTasks = async (forceReload = false) => {
     setLoading(true);
     try {
       if (currentView === "day") {
-        const [dayData, mode] = await Promise.all([
-          getTasksForDayAction(userId, dayDate),
-          getWorkdayAction(userId, dayDate),
-        ]);
-        console.log(dayData);
-        setDayTasks(dayData);
-        setDayWorkMode(mode);
+        // Check if viewing today and load from localStorage first (unless forcing reload)
+        if (isToday(dayDate) && !forceReload) {
+          const storedTasks = getTodayTasksFromStorage();
+          
+          if (storedTasks) {
+            // Load from localStorage
+            const mode = await getWorkdayAction(userId, dayDate);
+            setDayTasks(storedTasks);
+            setDayWorkMode(mode);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // Load from DB (for today, when no localStorage or forceReload; for other days, always)
+        if (isToday(dayDate)) {
+          console.log("Loading today's tasks from DB and saving to localStorage");
+          // Today: load from DB and save to localStorage
+          const [dayData, mode] = await Promise.all([
+            getTasksForDayAction(userId, dayDate),
+            getWorkdayAction(userId, dayDate),
+          ]);
+          console.log(dayData);
+          saveTodayTasksToStorage(dayData);
+          setDayTasks(dayData);
+          setDayWorkMode(mode);
+        } else {
+          // Not today, load normally from DB
+          const [dayData, mode] = await Promise.all([
+            getTasksForDayAction(userId, dayDate),
+            getWorkdayAction(userId, dayDate),
+          ]);
+          console.log(dayData);
+          setDayTasks(dayData);
+          setDayWorkMode(mode);
+        }
       } else {
         const anchor = currentView === "week" ? weekDate : monthDate;
         const startDate = new Date(anchor);
@@ -74,7 +104,52 @@ export function Calendar({
     }
   };
 
-  // No setter: work mode is informational only
+  // Wrapper for onModeSaved to reload from DB when workMode changes (filters tasks differently)
+  const handleModeSaved = async () => {
+    // When workMode changes, always reload from DB to apply correct filters
+    await loadTasks(true);
+  };
+
+  // Wrapper functions to update localStorage when modifying today's tasks
+  const handleUpdateTask = async (formData: FormData): Promise<boolean> => {
+    const result = await onUpdateTask(formData);
+    
+    // If viewing today in day view, reload from DB and update localStorage
+    if (result && currentView === "day" && isToday(dayDate)) {
+      const [dayData, mode] = await Promise.all([
+        getTasksForDayAction(userId, dayDate),
+        getWorkdayAction(userId, dayDate),
+      ]);
+      saveTodayTasksToStorage(dayData);
+      setDayTasks(dayData);
+      setDayWorkMode(mode);
+    } else if (result && currentView === "day") {
+      // Not today, reload normally
+      await loadTasks();
+    }
+    
+    return result;
+  };
+
+  const handleDeleteTask = async (id: string): Promise<boolean> => {
+    const result = await onDeleteTask(id);
+    
+    // If viewing today in day view, reload from DB and update localStorage
+    if (result && currentView === "day" && isToday(dayDate)) {
+      const [dayData, mode] = await Promise.all([
+        getTasksForDayAction(userId, dayDate),
+        getWorkdayAction(userId, dayDate),
+      ]);
+      saveTodayTasksToStorage(dayData);
+      setDayTasks(dayData);
+      setDayWorkMode(mode);
+    } else if (result && currentView === "day") {
+      // Not today, reload normally
+      await loadTasks();
+    }
+    
+    return result;
+  };
 
   // Navigation functions
   const navigatePrevious = () => {
@@ -120,11 +195,11 @@ export function Calendar({
             loading={loading}
             tasks={dayTasks}
             workMode={dayWorkMode}
-            onModeSaved={loadTasks}
+            onModeSaved={handleModeSaved}
             onPrev={navigatePrevious}
             onNext={navigateNext}
-            onUpdateTask={onUpdateTask}
-            onDeleteTask={onDeleteTask}
+            onUpdateTask={handleUpdateTask}
+            onDeleteTask={handleDeleteTask}
           />
         )}
         {currentView === "week" && (
