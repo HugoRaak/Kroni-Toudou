@@ -27,40 +27,18 @@ async function createTaskAction(formData: FormData) {
 async function updateTaskFromForm(formData: FormData) {
   'use server';
   const { updateTaskAction } = await import('@/app/actions/tasks');
+  const { parseTaskFormData, parsedDataToTaskUpdates } = await import('@/lib/task-form-parser');
   
   const id = String(formData.get('id'));
-  const title = String(formData.get('title') || '');
-  const description = String(formData.get('description') || '');
-  const taskType = String(formData.get('taskType') || '');
-  const frequencyRaw = String(formData.get('frequency') || '');
-  const dayRaw = String(formData.get('day') || '');
-  const due_onRaw = String(formData.get('due_on') || '');
-  const postponed_daysRaw = String(formData.get('postponed_days') || '');
-  const modeRaw = String(formData.get('mode') || '');
-  const mode: Task['mode'] = (modeRaw === 'Présentiel' || modeRaw === 'Distanciel') ? modeRaw : 'Tous';
-
-  let updates: Partial<Task> = {
-    title,
-    description,
-    mode,
-    frequency: undefined,
-    day: undefined,
-    due_on: undefined,
-    postponed_days: undefined,
-    in_progress: undefined,
-  };
-
-  if (taskType === 'periodic') {
-    updates.frequency = frequencyRaw ? (frequencyRaw as Task['frequency']) : undefined;
-    updates.day = dayRaw ? (dayRaw as Task['day']) : undefined;
-  } else if (taskType === 'specific') {
-    updates.due_on = due_onRaw || undefined;
-    updates.postponed_days = postponed_daysRaw ? Number(postponed_daysRaw) : undefined;
-  } else if (taskType === 'when-possible') {
-    updates.in_progress = formData.get('in_progress') != null;
+  const parsed = parseTaskFormData(formData);
+  
+  if (!parsed) {
+    return false;
   }
 
+  const updates = parsedDataToTaskUpdates(parsed);
   const result = await updateTaskAction(id, updates);
+  
   if (result) {
     revalidatePath('/');
     revalidatePath('/mes-taches');

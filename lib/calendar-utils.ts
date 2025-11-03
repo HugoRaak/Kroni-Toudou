@@ -140,10 +140,13 @@ export async function getTasksForDateRange(
   });
   
   // Add specific date tasks
+  // Compare date strings (YYYY-MM-DD format) to avoid timezone issues
+  const startDateStr = formatDateLocal(startDate);
+  const endDateStr = formatDateLocal(endDate);
   const specificForRange = specific.filter(task => {
     if (!task.due_on) return false;
-    const taskDate = new Date(task.due_on);
-    return taskDate >= startDate && taskDate <= endDate;
+    // task.due_on is already in YYYY-MM-DD format
+    return task.due_on >= startDateStr && task.due_on <= endDateStr;
   });
   
   // Convert to CalendarTask format
@@ -186,4 +189,31 @@ export function getTasksForDate(tasks: CalendarTask[], date: Date): CalendarTask
     
     return false;
   });
+}
+
+// Filter tasks by work mode (shared logic)
+export function filterTasksByWorkMode<T extends { mode?: 'Tous' | 'Présentiel' | 'Distanciel' }>(
+  tasks: T[],
+  workMode: 'Présentiel' | 'Distanciel' | 'Congé'
+): T[] {
+  if (workMode === 'Congé') return [];
+  return tasks.filter(t => {
+    const taskMode = t.mode ?? 'Tous';
+    return taskMode === 'Tous' || taskMode === workMode;
+  });
+}
+
+// Convert CalendarTask to Task-like object (for editing)
+export function calendarTaskToTaskLike(calendarTask: CalendarTask): Partial<import('./types').Task> & { id: string; title: string; description?: string } {
+  return {
+    id: calendarTask.id,
+    title: calendarTask.title,
+    description: calendarTask.description,
+    frequency: calendarTask.frequency,
+    day: calendarTask.day,
+    due_on: calendarTask.due_on,
+    in_progress: calendarTask.in_progress,
+    mode: calendarTask.mode,
+    postponed_days: undefined,
+  };
 }

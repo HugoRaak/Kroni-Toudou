@@ -3,6 +3,7 @@
 import { getTasksForDay, getTasksForDateRange } from "@/lib/calendar-utils";
 import { supabaseServer } from "@/lib/supabase-server";
 import { Task, Frequency, DayOfWeek } from "@/lib/types";
+import { parseTaskFormData } from "@/lib/task-form-parser";
 
 export async function getTasksForDayAction(userId: string, date: Date) {
   return await getTasksForDay(userId, date);
@@ -143,97 +144,20 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
     return null;
   }
 
-  const title = String(formData.get('title') || '').trim();
-  const description = String(formData.get('description') || '');
-  const taskType = String(formData.get('taskType') || '');
-  const frequencyRaw = String(formData.get('frequency') || '');
-  const dayRaw = String(formData.get('day') || '');
-  const due_onRaw = String(formData.get('due_on') || '');
-  const postponed_daysRaw = String(formData.get('postponed_days') || '');
-  const modeRaw = String(formData.get('mode') || '');
-  const mode: 'Tous' | 'Présentiel' | 'Distanciel' = (modeRaw === 'Présentiel' || modeRaw === 'Distanciel') ? modeRaw : 'Tous';
-
-  // Basic validation: title length
-  if (!title || title.length > 100) {
-    console.warn('Validation failed: title');
+  const parsed = parseTaskFormData(formData);
+  if (!parsed) {
     return null;
-  }
-  if (description.length > 3000) {
-    console.warn('Validation failed: description');
-    return null;
-  }
-  // taskType whitelist
-  const validTaskTypes = new Set(['periodic', 'specific', 'when-possible']);
-  if (!validTaskTypes.has(taskType)) {
-    console.warn('Validation failed: taskType');
-    return null;
-  }
-
-  // Préparer les données selon le type de tâche
-  let taskData = {
-    userId,
-    title,
-    description,
-    frequency: undefined as Frequency | undefined,
-    day: undefined as DayOfWeek | undefined,
-    due_on: undefined as string | undefined,
-    postponed_days: undefined as number | undefined,
-    in_progress: undefined as boolean | undefined,
-    mode,
-  };
-
-  // Adapter les données selon le type
-  if (taskType === 'periodic') {
-    const validFrequencies: Frequency[] = ['quotidien','hebdomadaire','mensuel','annuel'] as any;
-    if (frequencyRaw) {
-      if (!validFrequencies.includes(frequencyRaw as Frequency)) {
-        console.warn('Validation failed: frequency');
-        return null;
-      }
-      taskData.frequency = frequencyRaw as Frequency;
-    }
-    if (dayRaw) {
-      const validDays: DayOfWeek[] = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'] as any;
-      if (!validDays.includes(dayRaw as DayOfWeek)) {
-        console.warn('Validation failed: day');
-        return null;
-      }
-      taskData.day = dayRaw as DayOfWeek;
-    }
-  } else if (taskType === 'specific') {
-    if (due_onRaw) {
-      const ts = Date.parse(due_onRaw);
-      if (Number.isNaN(ts)) {
-        console.warn('Validation failed: due_on');
-        return null;
-      }
-      taskData.due_on = due_onRaw;
-    }
-    if (postponed_daysRaw) {
-      const parsed = Number(postponed_daysRaw);
-      if (!Number.isInteger(parsed) || parsed <= 0) {
-        console.warn('Validation failed: postponed_days');
-        return null;
-      }
-      taskData.postponed_days = parsed;
-    }
-  } else if (taskType === 'when-possible') {
-    taskData.in_progress = formData.get('in_progress') != null;
-    if (typeof taskData.in_progress !== 'boolean') {
-      console.warn('Validation failed: in_progress');
-      return null;
-    }
   }
 
   return await createTaskAction(
-    taskData.userId,
-    taskData.title,
-    taskData.description,
-    taskData.frequency,
-    taskData.day,
-    taskData.due_on,
-    taskData.postponed_days,
-    taskData.in_progress,
-    taskData.mode
+    userId,
+    parsed.title,
+    parsed.description,
+    parsed.frequency,
+    parsed.day,
+    parsed.due_on,
+    parsed.postponed_days,
+    parsed.in_progress,
+    parsed.mode
   );
 }

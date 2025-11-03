@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Task, Frequency, DayOfWeek } from "@/lib/types";
+import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_MODES, type TaskType } from "@/lib/task-constants";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 type TaskFormProps = {
   task?: Task | (Partial<Task> & { id: string; title: string; description?: string });
   formId?: string;
-  onTaskTypeChange?: (taskType: "periodic" | "specific" | "when-possible") => void;
+  onTaskTypeChange?: (taskType: TaskType) => void;
   isViewingToday?: boolean;
   onTempTaskChange?: (isTemp: boolean) => void;
 };
@@ -18,16 +19,16 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
   const isEditingTempTask = task?.id?.startsWith('temp-') || false;
 
   // Déterminer le type de tâche initial
-  const getInitialTaskType = (): "periodic" | "specific" | "when-possible" => {
+  const getInitialTaskType = (): typeof TASK_TYPES[keyof typeof TASK_TYPES] => {
     if (task && !isEditingTempTask) {
-      if ((task as Task).frequency) return "periodic";
-      if ((task as Task).due_on) return "specific";
-      return "when-possible";
+      if ((task as Task).frequency) return TASK_TYPES.PERIODIC;
+      if ((task as Task).due_on) return TASK_TYPES.SPECIFIC;
+      return TASK_TYPES.WHEN_POSSIBLE;
     }
-    return "periodic";
+    return TASK_TYPES.PERIODIC;
   };
 
-  const [taskType, setTaskType] = useState<"periodic" | "specific" | "when-possible">(getInitialTaskType());
+  const [taskType, setTaskType] = useState<typeof TASK_TYPES[keyof typeof TASK_TYPES]>(getInitialTaskType());
   const [frequency, setFrequency] = useState<Frequency | "">((task as Task)?.frequency || "");
   // If isViewingToday is true and not editing an existing task, default to temp task
   const [isTempTask, setIsTempTask] = useState(isEditingTempTask || (!task && isViewingToday));
@@ -45,8 +46,10 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
   }, [isTempTask, onTempTaskChange]);
 
   const handleTaskTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newType = e.target.value as "periodic" | "specific" | "when-possible";
-    setTaskType(newType);
+    const newType = e.target.value as typeof TASK_TYPES[keyof typeof TASK_TYPES];
+    if (Object.values(TASK_TYPES).includes(newType)) {
+      setTaskType(newType);
+    }
   };
 
   const handleFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -104,9 +107,9 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
             disabled={isEditingTempTask}
           >
             <option value="">Choisir un type</option>
-            <option value="periodic">Périodique</option>
-            <option value="specific">À faire à date précise</option>
-            <option value="when-possible">Quand je peux</option>
+            <option value={TASK_TYPES.PERIODIC}>Périodique</option>
+            <option value={TASK_TYPES.SPECIFIC}>À faire à date précise</option>
+            <option value={TASK_TYPES.WHEN_POSSIBLE}>Quand je peux</option>
           </select>
         </div>
       )}
@@ -125,7 +128,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
       )}
 
       {/* Champs pour tâches périodiques */}
-      {!isTempTask && taskType === "periodic" && (
+      {!isTempTask && taskType === TASK_TYPES.PERIODIC && (
         <>
           <div>
             <label htmlFor={`frequency-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
@@ -140,10 +143,11 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
               required={!task}
             >
               <option value="">Choisir une fréquence</option>
-              <option value="quotidien">Quotidien</option>
-              <option value="hebdomadaire">Hebdomadaire</option>
-              <option value="mensuel">Mensuel</option>
-              <option value="annuel">Annuel</option>
+              {FREQUENCIES.map((freq) => (
+                <option key={freq} value={freq}>
+                  {freq.charAt(0).toUpperCase() + freq.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -160,13 +164,11 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
                 required={!task}
               >
                 <option value="">Choisir un jour</option>
-                <option value="Lundi">Lundi</option>
-                <option value="Mardi">Mardi</option>
-                <option value="Mercredi">Mercredi</option>
-                <option value="Jeudi">Jeudi</option>
-                <option value="Vendredi">Vendredi</option>
-                <option value="Samedi">Samedi</option>
-                <option value="Dimanche">Dimanche</option>
+                {DAYS_OF_WEEK.map((day) => (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                ))}
               </select>
             </div>
           )}
@@ -174,7 +176,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
       )}
 
       {/* Champs pour tâches à date précise */}
-      {!isTempTask && taskType === "specific" && (
+      {!isTempTask && taskType === TASK_TYPES.SPECIFIC && (
         <>
           <div>
             <label htmlFor={`due_on-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
@@ -206,7 +208,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
       )}
 
       {/* Champs pour tâches "Quand je peux" */}
-      {!isTempTask && taskType === "when-possible" && (
+      {!isTempTask && taskType === TASK_TYPES.WHEN_POSSIBLE && (
         <div className="flex items-center space-x-2">
           <label className="flex items-center space-x-2">
             <input
@@ -229,12 +231,14 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
           <select
             id={`${prefix}-mode`}
             name="mode"
-            defaultValue={(task as any)?.mode ?? 'Tous'}
+            defaultValue={task?.mode ?? 'Tous'}
             className="border rounded px-2 py-1 bg-background"
           >
-            <option value="Tous">Tous</option>
-            <option value="Présentiel">Présentiel</option>
-            <option value="Distanciel">Distanciel</option>
+            {TASK_MODES.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
           </select>
         </div>
       )}

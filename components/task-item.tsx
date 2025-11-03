@@ -11,7 +11,7 @@ type TaskItemProps = {
 };
 
 // Format date string as local date without timezone conversion
-function formatDateLocal(dateStr: string): string {
+function formatDateDisplay(dateStr: string): string {
   const datePart = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
   const [year, month, day] = datePart.split('-').map(Number);
   const date = new Date(year, month - 1, day);
@@ -46,7 +46,7 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
             ) : null}
             {task.due_on ? (
               <span className="px-2 py-1 rounded border bg-muted/50">
-                {formatDateLocal(task.due_on)}
+                {formatDateDisplay(task.due_on)}
               </span>
             ) : null}
             {typeof task.postponed_days === "number" ? (
