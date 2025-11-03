@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Task } from "@/lib/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TaskForm } from "@/components/task-form";
 import { toast } from "sonner";
@@ -136,6 +136,7 @@ export function TaskEditDialog({
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <div className="flex flex-col items-center gap-4 mb-4">
+                <DialogTitle className="text-center">Supprimer la tâche ?</DialogTitle>
                 <Image 
                   src="/kroni-sad.png" 
                   alt="Kroni triste" 
@@ -143,14 +144,13 @@ export function TaskEditDialog({
                   height={80} 
                   className="rounded-md"
                 />
-                <DialogTitle className="text-center">Supprimer la tâche ?</DialogTitle>
                 <DialogDescription className="text-center">
                   Êtes-vous sûr de vouloir supprimer la tâche <strong>"{task.title}"</strong> ?<br />
                   Cette action est irréversible.
                 </DialogDescription>
               </div>
             </DialogHeader>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <DialogFooter className="flex-col sm:flex-row sm:justify-end gap-2">
               <DialogClose asChild>
                 <Button 
                   type="button" 
@@ -180,7 +180,7 @@ export function TaskEditDialog({
                   </>
                 )}
               </Button>
-            </div>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}

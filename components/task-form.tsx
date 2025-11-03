@@ -6,30 +6,43 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 type TaskFormProps = {
-  task?: Task;
+  task?: Task | (Partial<Task> & { id: string; title: string; description?: string });
   formId?: string;
   onTaskTypeChange?: (taskType: "periodic" | "specific" | "when-possible") => void;
+  allowTempTask?: boolean;
+  onTempTaskChange?: (isTemp: boolean) => void;
 };
 
-export function TaskForm({ task, formId = "", onTaskTypeChange }: TaskFormProps) {
+export function TaskForm({ task, formId = "", onTaskTypeChange, allowTempTask = false, onTempTaskChange }: TaskFormProps) {
+  // Check if this is a temp task (temp tasks have IDs starting with "temp-")
+  const isEditingTempTask = task?.id?.startsWith('temp-') || false;
+
   // Déterminer le type de tâche initial
   const getInitialTaskType = (): "periodic" | "specific" | "when-possible" => {
-    if (task) {
-      if (task.frequency) return "periodic";
-      if (task.due_on) return "specific";
+    if (task && !isEditingTempTask) {
+      if ((task as Task).frequency) return "periodic";
+      if ((task as Task).due_on) return "specific";
       return "when-possible";
     }
     return "periodic";
   };
 
   const [taskType, setTaskType] = useState<"periodic" | "specific" | "when-possible">(getInitialTaskType());
-  const [frequency, setFrequency] = useState<Frequency | "">(task?.frequency || "");
+  const [frequency, setFrequency] = useState<Frequency | "">((task as Task)?.frequency || "");
+  // If allowTempTask is true and not editing an existing task, default to temp task
+  const [isTempTask, setIsTempTask] = useState(isEditingTempTask || (allowTempTask && !task));
 
   useEffect(() => {
     if (onTaskTypeChange) {
       onTaskTypeChange(taskType);
     }
   }, [taskType, onTaskTypeChange]);
+
+  useEffect(() => {
+    if (onTempTaskChange) {
+      onTempTaskChange(isTempTask);
+    }
+  }, [isTempTask, onTempTaskChange]);
 
   const handleTaskTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newType = e.target.value as "periodic" | "specific" | "when-possible";
@@ -74,27 +87,43 @@ export function TaskForm({ task, formId = "", onTaskTypeChange }: TaskFormProps)
         />
       </div>
 
-      <div>
-        <label htmlFor={`taskType-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
-          Type de la tâche *
-        </label>
-        <select
-          id={`taskType-${prefix}`}
-          name="taskType"
-          value={taskType}
-          onChange={handleTaskTypeChange}
-          className="w-full h-9 px-3 border border-input bg-background rounded-md text-sm"
-          required={!task}
-        >
-          <option value="">Choisir un type</option>
-          <option value="periodic">Périodique</option>
-          <option value="specific">À faire à date précise</option>
-          <option value="when-possible">Quand je peux</option>
-        </select>
-      </div>
+      {!isTempTask && (
+        <div>
+          <label htmlFor={`taskType-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
+            Type de la tâche *
+          </label>
+          <select
+            id={`taskType-${prefix}`}
+            name="taskType"
+            value={taskType}
+            onChange={handleTaskTypeChange}
+            className="w-full h-9 px-3 border border-input bg-background rounded-md text-sm"
+            required={!task}
+            disabled={isEditingTempTask}
+          >
+            <option value="">Choisir un type</option>
+            <option value="periodic">Périodique</option>
+            <option value="specific">À faire à date précise</option>
+            <option value="when-possible">Quand je peux</option>
+          </select>
+        </div>
+      )}
+
+      {isEditingTempTask && (
+        <>
+          <div className="flex items-center space-x-2 border-t pt-4">
+            <span className="text-sm font-medium text-blue-600">
+              Tâche temporaire (uniquement pour aujourd'hui)
+            </span>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Note : Pour les tâches temporaires, seuls le titre et la description peuvent être modifiés.
+          </div>
+        </>
+      )}
 
       {/* Champs pour tâches périodiques */}
-      {taskType === "periodic" && (
+      {!isTempTask && taskType === "periodic" && (
         <>
           <div>
             <label htmlFor={`frequency-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
@@ -143,7 +172,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange }: TaskFormProps)
       )}
 
       {/* Champs pour tâches à date précise */}
-      {taskType === "specific" && (
+      {!isTempTask && taskType === "specific" && (
         <>
           <div>
             <label htmlFor={`due_on-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
@@ -175,7 +204,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange }: TaskFormProps)
       )}
 
       {/* Champs pour tâches "Quand je peux" */}
-      {taskType === "when-possible" && (
+      {!isTempTask && taskType === "when-possible" && (
         <div className="flex items-center space-x-2">
           <label className="flex items-center space-x-2">
             <input
@@ -189,18 +218,40 @@ export function TaskForm({ task, formId = "", onTaskTypeChange }: TaskFormProps)
         </div>
       )}
 
-      {/* Champ distanciel pour tous les types */}
-      <div className="flex items-center space-x-2">
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            name="is_remote"
-            defaultChecked={!!task?.is_remote}
-            className="rounded"
-          />
-          <span className="text-sm font-medium text-foreground">Distanciel</span>
-        </label>
-      </div>
+      {/* Champ distanciel pour tous les types (sauf tâches temporaires) */}
+      {!isTempTask && (
+        <div className="flex items-center space-x-2">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              name="is_remote"
+              defaultChecked={!!task?.is_remote}
+              className="rounded"
+            />
+            <span className="text-sm font-medium text-foreground">Distanciel</span>
+          </label>
+        </div>
+      )}
+
+      {/* Option pour tâche temporaire (uniquement pour aujourd'hui) */}
+      {allowTempTask && !task && (
+        <div className="flex items-center space-x-2 border-t pt-4 pb-4">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={isTempTask}
+              onChange={(e) => setIsTempTask(e.target.checked)}
+              className="rounded"
+            />
+            <span className="text-sm font-medium text-foreground">
+              Uniquement pour aujourd'hui (tâche temporaire)
+            </span>
+          </label>
+        </div>
+      )}
+      {isTempTask && (
+        <input type="hidden" name="is_temp_task" value="true" />
+      )}
     </div>
   );
 }

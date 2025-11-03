@@ -8,7 +8,7 @@ import { Task } from "@/lib/types";
 import { TaskItemCompact } from "@/components/task-item-compact";
 import { WorkModeBadge } from "@/components/calendar/workmode-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { isToday, getTodayTaskOrder, saveTodayTaskOrder, getTodayHiddenTaskIds, hideTodayTask } from "@/lib/localStorage-tasks";
+import { isToday, getTodayTaskOrder, saveTodayTaskOrder, getTodayHiddenTaskIds, hideTodayTask, getTodayTempTasks, updateTodayTempTask, deleteTodayTempTask, hideTodayTempTask, getTodayHiddenTempTaskIds, TempTask } from "@/lib/localStorage-tasks";
 
 export type DayTasksData = {
   periodic: Task[];
@@ -19,7 +19,7 @@ export type DayTasksData = {
   };
 } | null;
 
-type TaskWithType = Task & { taskType: 'periodic' | 'specific' };
+type TaskWithType = (Task & { taskType: 'periodic' | 'specific' | 'temp' }) | (TempTask & { taskType: 'temp' });
 
 export function DayView({
   date,
@@ -48,28 +48,77 @@ export function DayView({
   const dayName = date.toLocaleDateString("fr-FR", { weekday: "long" });
   const isTodayView = isToday(date);
   const [orderedTasks, setOrderedTasks] = useState<TaskWithType[]>([]);
+  const [tempTasks, setTempTasks] = useState<TempTask[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [taskToHide, setTaskToHide] = useState<TaskWithType | null>(null);
 
-  // Prepare ordered tasks for today view
+  // Load temp tasks for today (filtered by work mode)
+  const loadTempTasks = () => {
+    if (isTodayView) {
+      const allTempTasks = getTodayTempTasks();
+      // Filter by work mode (same logic as regular tasks)
+      if (workMode === 'Congé') {
+        setTempTasks([]);
+      } else {
+        const remote = workMode === 'Distanciel';
+        const filtered = allTempTasks.filter(t => remote ? t.is_remote === true : t.is_remote === false);
+        setTempTasks(filtered);
+      }
+    } else {
+      setTempTasks([]);
+    }
+  };
+
+  useEffect(() => {
+    loadTempTasks();
+  }, [isTodayView, tasks, workMode]);
+
+  // Listen for temp task updates
+  useEffect(() => {
+    const handleTempTaskUpdate = () => {
+      if (isTodayView) {
+        const allTempTasks = getTodayTempTasks();
+        if (workMode === 'Congé') {
+          setTempTasks([]);
+        } else {
+          const remote = workMode === 'Distanciel';
+          const filtered = allTempTasks.filter(t => remote ? t.is_remote === true : t.is_remote === false);
+          setTempTasks(filtered);
+        }
+      } else {
+        setTempTasks([]);
+      }
+    };
+    
+    window.addEventListener('temp-task-updated', handleTempTaskUpdate);
+    return () => {
+      window.removeEventListener('temp-task-updated', handleTempTaskUpdate);
+    };
+  }, [isTodayView, workMode]);
+
+  // Prepare ordered tasks for today view (including temp tasks)
   useEffect(() => {
     if (!tasks || !isTodayView) {
       setOrderedTasks([]);
       return;
     }
 
-    // Merge periodic and specific tasks with their types
+    // Merge periodic, specific, and temp tasks with their types
     const allTasks: TaskWithType[] = [
       ...tasks.periodic.map(t => ({ ...t, taskType: 'periodic' as const })),
       ...tasks.specific.map(t => ({ ...t, taskType: 'specific' as const })),
+      ...tempTasks.map(t => ({ ...t, taskType: 'temp' as const })),
     ];
 
-    // Filter out hidden tasks
+    // Filter out hidden tasks (for regular tasks)
     const hiddenIds = getTodayHiddenTaskIds();
-    const visibleTasks = allTasks.filter(t => !hiddenIds.includes(t.id));
+    // Also check for hidden temp tasks
+    const hiddenTempTaskIds = getTodayHiddenTempTaskIds();
+    const allHiddenIds = [...hiddenIds, ...hiddenTempTaskIds];
+    const visibleTasks = allTasks.filter(t => !allHiddenIds.includes(t.id));
 
     // Get saved order from localStorage
     const savedOrder = getTodayTaskOrder();
@@ -98,7 +147,7 @@ export function DayView({
         saveTodayTaskOrder(visibleTasks.map(t => t.id));
       }
     }
-  }, [tasks, isTodayView]);
+  }, [tasks, isTodayView, tempTasks]);
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -223,6 +272,75 @@ export function DayView({
     setDropPosition(null);
   };
 
+
+  const getTaskClassName = (taskType: 'periodic' | 'specific' | 'temp'): string => {
+    if (taskType === 'periodic') {
+      return 'border-yellow-400/30 bg-yellow-100/50';
+    }
+    if (taskType === 'specific') {
+      return 'border-violet-500/20 bg-violet-500/10';
+    }
+    return 'border-blue-400/30 bg-blue-100/50';
+  };
+
+  // Convert task to Task-like object for TaskItemCompact
+  const taskToTaskLike = (task: TaskWithType): Partial<Task> & { id: string; title: string; description: string } => {
+    if (task.taskType === 'temp') {
+      const tempTask = task as TempTask & { taskType: 'temp' };
+      return {
+        id: tempTask.id,
+        title: tempTask.title,
+        description: tempTask.description,
+        is_remote: tempTask.is_remote,
+        in_progress: tempTask.in_progress,
+        created_at: tempTask.created_at,
+        updated_at: tempTask.created_at,
+      };
+    }
+    return task as Task & { taskType: 'periodic' | 'specific' };
+  };
+
+  // Handler for updating tasks (regular or temp)
+  const handleUpdateTaskUnified = async (formData: FormData): Promise<boolean> => {
+    const id = String(formData.get('id') || '');
+    const isTempTask = id.startsWith('temp-');
+    
+    if (isTempTask) {
+      // Update temp task in localStorage
+      const title = String(formData.get('title') || '');
+      const description = String(formData.get('description') || '');
+      
+      const updated = updateTodayTempTask(id, { title, description });
+      if (updated) {
+        loadTempTasks();
+        window.dispatchEvent(new Event('temp-task-updated'));
+        return true;
+      }
+      return false;
+    } else {
+      // Update regular task (goes to DB)
+      return await onUpdateTask(formData);
+    }
+  };
+
+  // Handler for deleting tasks (regular or temp)
+  const handleDeleteTaskUnified = async (id: string): Promise<boolean> => {
+    const isTempTask = id.startsWith('temp-');
+    
+    if (isTempTask) {
+      const result = deleteTodayTempTask(id);
+      if (result) {
+        loadTempTasks();
+        window.dispatchEvent(new Event('temp-task-updated'));
+        return true;
+      }
+      return false;
+    } else {
+      return await onDeleteTask(id);
+    }
+  };
+
+  // Handler for hiding/finishing tasks (regular or temp)
   const handleHideTaskClick = (task: TaskWithType) => {
     setTaskToHide(task);
     setHideConfirmOpen(true);
@@ -230,19 +348,19 @@ export function DayView({
 
   const handleConfirmHide = () => {
     if (taskToHide) {
-      hideTodayTask(taskToHide.id);
+      if (taskToHide.id.startsWith('temp-')) {
+        // Hide temp task
+        hideTodayTempTask(taskToHide.id);
+        loadTempTasks();
+      } else {
+        // Hide regular task
+        hideTodayTask(taskToHide.id);
+      }
       // Update local state to remove hidden task
       setOrderedTasks(prev => prev.filter(t => t.id !== taskToHide.id));
       setHideConfirmOpen(false);
       setTaskToHide(null);
     }
-  };
-
-  const getTaskClassName = (taskType: 'periodic' | 'specific'): string => {
-    if (taskType === 'periodic') {
-      return 'border-yellow-400/30 bg-yellow-100/50';
-    }
-    return 'border-violet-500/20 bg-violet-500/10';
   };
 
   return (
@@ -341,7 +459,7 @@ export function DayView({
         ) : !tasks ? (
           <p className="text-center text-muted-foreground">{workMode === 'Congé' ? 'Là c\'est repos !' : 'Aucune tâche pour ce jour'}</p>
         ) : isTodayView ? (
-          // Today view: merged list with drag & drop
+          // Today view: merged list with drag & drop (including temp tasks)
           <div className="space-y-6">
             {orderedTasks.length > 0 && (
               <div className="space-y-2">
@@ -377,15 +495,18 @@ export function DayView({
                     >
                       <div className="relative">
                         <TaskItemCompact 
-                          task={task} 
+                          task={taskToTaskLike(task)} 
                           className={`transition-all ${
                             draggedIndex === index 
                               ? 'shadow-2xl scale-105 ring-4 ring-blue-500/40 ring-offset-2 bg-background border-2 border-blue-500/60' 
                               : ''
                           } ${getTaskClassName(task.taskType)}`}
-                          onSubmit={onUpdateTask}
-                          onDelete={onDeleteTask}
-                          onSuccess={onModeSaved}
+                          onSubmit={handleUpdateTaskUnified}
+                          onDelete={handleDeleteTaskUnified}
+                          onSuccess={() => {
+                            loadTempTasks();
+                            onModeSaved?.();
+                          }}
                         />
                         {/* Hide button - always visible */}
                         <button
