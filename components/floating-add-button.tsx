@@ -14,9 +14,10 @@ import Image from "next/image";
 interface FloatingAddButtonProps {
   userId: string;
   onSubmit?: (formData: FormData) => Promise<any>;
+  isViewingToday?: boolean;
 }
 
-export function FloatingAddButton({ userId, onSubmit }: FloatingAddButtonProps) {
+export function FloatingAddButton({ userId, onSubmit, isViewingToday = false }: FloatingAddButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isTempTask, setIsTempTask] = useState(false);
@@ -88,7 +89,7 @@ export function FloatingAddButton({ userId, onSubmit }: FloatingAddButtonProps) 
             className="space-y-4"
           >
             <TaskForm 
-              allowTempTask={true}
+              isViewingToday={isViewingToday}
               onTempTaskChange={setIsTempTask}
             />
             

@@ -9,11 +9,11 @@ type TaskFormProps = {
   task?: Task | (Partial<Task> & { id: string; title: string; description?: string });
   formId?: string;
   onTaskTypeChange?: (taskType: "periodic" | "specific" | "when-possible") => void;
-  allowTempTask?: boolean;
+  isViewingToday?: boolean;
   onTempTaskChange?: (isTemp: boolean) => void;
 };
 
-export function TaskForm({ task, formId = "", onTaskTypeChange, allowTempTask = false, onTempTaskChange }: TaskFormProps) {
+export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday = false, onTempTaskChange }: TaskFormProps) {
   // Check if this is a temp task (temp tasks have IDs starting with "temp-")
   const isEditingTempTask = task?.id?.startsWith('temp-') || false;
 
@@ -29,8 +29,8 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, allowTempTask = 
 
   const [taskType, setTaskType] = useState<"periodic" | "specific" | "when-possible">(getInitialTaskType());
   const [frequency, setFrequency] = useState<Frequency | "">((task as Task)?.frequency || "");
-  // If allowTempTask is true and not editing an existing task, default to temp task
-  const [isTempTask, setIsTempTask] = useState(isEditingTempTask || (allowTempTask && !task));
+  // If isViewingToday is true and not editing an existing task, default to temp task
+  const [isTempTask, setIsTempTask] = useState(isEditingTempTask || (!task && isViewingToday));
 
   useEffect(() => {
     if (onTaskTypeChange) {
@@ -234,12 +234,12 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, allowTempTask = 
       )}
 
       {/* Option pour tâche temporaire (uniquement pour aujourd'hui) */}
-      {allowTempTask && !task && (
+      {!task && (
         <div className="flex items-center space-x-2 border-t pt-4 pb-4">
           <label className="flex items-center space-x-2">
             <input
               type="checkbox"
-              checked={isTempTask}
+              checked={isViewingToday}
               onChange={(e) => setIsTempTask(e.target.checked)}
               className="rounded"
             />

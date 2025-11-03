@@ -15,11 +15,13 @@ type CalendarView = "day" | "week" | "month";
 export function Calendar({ 
   userId, 
   onUpdateTask, 
-  onDeleteTask 
+  onDeleteTask,
+  onViewChange
 }: { 
   userId: string;
   onUpdateTask: (formData: FormData) => Promise<boolean>;
   onDeleteTask: (id: string) => Promise<boolean>;
+  onViewChange?: (isViewingToday: boolean) => void;
 }) {
   const [currentView, setCurrentView] = useState<CalendarView>("day");
   // Independent anchors per view
@@ -35,6 +37,14 @@ export function Calendar({
   useEffect(() => {
     loadTasks();
   }, [currentView, dayDate, weekDate, monthDate]);
+
+  // Notify parent when viewing today changes
+  useEffect(() => {
+    if (onViewChange) {
+      const viewingToday = currentView === "day" && isToday(dayDate);
+      onViewChange(viewingToday);
+    }
+  }, [currentView, dayDate, onViewChange]);
 
   const loadTasks = async (forceReload = false) => {
     setLoading(true);
