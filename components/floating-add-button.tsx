@@ -59,6 +59,9 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false }: 
         // For temp tasks, trigger a custom event to refresh the day view
         if (isTemp) {
           window.dispatchEvent(new Event('temp-task-updated'));
+        } else {
+          // Notify calendar to reload tasks from DB
+          window.dispatchEvent(new Event('task-created'));
         }
         router.refresh();
       } else {

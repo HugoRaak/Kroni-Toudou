@@ -38,6 +38,16 @@ export function Calendar({
     loadTasks();
   }, [currentView, dayDate, weekDate, monthDate]);
 
+  // Refresh tasks when a task is created via the floating button
+  useEffect(() => {
+    const handler = () => {
+      // Force reload to bypass localStorage cache for today
+      loadTasks(true);
+    };
+    window.addEventListener('task-created', handler);
+    return () => window.removeEventListener('task-created', handler);
+  }, [dayDate, weekDate, monthDate, currentView]);
+
   // Notify parent when viewing today changes
   useEffect(() => {
     if (onViewChange) {
