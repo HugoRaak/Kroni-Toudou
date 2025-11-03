@@ -2,6 +2,7 @@
 
 import { supabaseServer } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
+import { validateLicense, processPendingLicense } from '@/lib/db/licenses';
 
 function translateError(errorMessage: string): string {
   const errorLower = errorMessage.toLowerCase();
@@ -49,7 +50,13 @@ export async function signIn(email: string, password: string) {
   return { success: true, user: data.user };
 }
 
-export async function signUp(email: string, password: string, username: string) {
+export async function signUp(email: string, password: string, username: string, licenseKey: string) {
+  // Validate license before creating account
+  const licenseValidation = await validateLicense(licenseKey);
+  if (!licenseValidation.valid) {
+    return { error: licenseValidation.error || 'Licence invalide' };
+  }
+
   const supabase = await supabaseServer();
   
   const { data, error } = await supabase.auth.signUp({
@@ -58,6 +65,7 @@ export async function signUp(email: string, password: string, username: string) 
     options: {
       data: {
         username: username,
+        pending_license_key: licenseKey, // Store license key in user metadata until email is confirmed
       },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/home`
     }
@@ -66,6 +74,8 @@ export async function signUp(email: string, password: string, username: string) 
   if (error) {
     return { error: translateError(error.message) };
   }
+
+  // License will be associated when email is confirmed (handled in home page)
 
   // Si l'utilisateur doit confirmer son email
   if (data.user && !data.session) {

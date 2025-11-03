@@ -34,6 +34,7 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [licenseKey, setLicenseKey] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,6 +49,7 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
     setPassword("");
     setConfirmPassword("");
     setUsername("");
+    setLicenseKey("");
     setError("");
     setSuccessMessage("");
     setEmailSent(false);
@@ -109,7 +111,7 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
     try {
       const result = mode === "login" 
         ? await signIn(email, password)
-        : await signUp(email, password, username);
+        : await signUp(email, password, username, licenseKey);
 
       if ('error' in result) {
         setError(result.error || "Une erreur est survenue");
@@ -130,21 +132,40 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {mode === "signup" && (
-        <div>
-          <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">
-            Nom d'utilisateur
-          </label>
-          <Input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Votre nom d'utilisateur"
-            autoComplete="username"
-            required
-            disabled={emailSent}
-          />
-        </div>
+        <>
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">
+              Nom d'utilisateur
+            </label>
+            <Input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Votre nom d'utilisateur"
+              autoComplete="username"
+              required
+              disabled={emailSent}
+            />
+          </div>
+          <div>
+            <label htmlFor="licenseKey" className="block text-sm font-medium text-foreground mb-1">
+              Clé de licence
+            </label>
+            <Input
+              id="licenseKey"
+              type="text"
+              value={licenseKey}
+              onChange={(e) => setLicenseKey(e.target.value)}
+              placeholder="Entrez votre clé de licence"
+              required
+              disabled={emailSent}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Une clé de licence valide est requise pour créer un compte
+            </p>
+          </div>
+        </>
       )}
       
       <div>
@@ -329,8 +350,8 @@ export function AuthDialog() {
           Se connecter
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle>
             {mode === "login" ? "Connexion" : "Inscription"}
           </DialogTitle>
@@ -342,19 +363,21 @@ export function AuthDialog() {
           </DialogDescription>
         </DialogHeader>
         
-        <AuthForm mode={mode} onSuccess={handleSuccess} onModeChange={resetForm} />
-        
-        <div className="text-center">
-          <Button
-            variant="link"
-            onClick={() => handleModeChange(mode === "login" ? "signup" : "login")}
-            className="text-sm cursor-pointer"
-          >
-            {mode === "login" 
-              ? "Pas de compte ? S'inscrire" 
-              : "Déjà un compte ? Se connecter"
-            }
-          </Button>
+        <div className="overflow-y-auto flex-1 px-6 pb-6">
+          <AuthForm mode={mode} onSuccess={handleSuccess} onModeChange={resetForm} />
+          
+          <div className="text-center mt-4">
+            <Button
+              variant="link"
+              onClick={() => handleModeChange(mode === "login" ? "signup" : "login")}
+              className="text-sm cursor-pointer"
+            >
+              {mode === "login" 
+                ? "Pas de compte ? S'inscrire" 
+                : "Déjà un compte ? Se connecter"
+              }
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

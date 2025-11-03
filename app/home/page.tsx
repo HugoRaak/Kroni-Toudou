@@ -6,6 +6,7 @@ import { FloatingAddButton } from '@/components/floating-add-button';
 import { createTaskFromForm } from '@/app/actions/tasks';
 import { revalidatePath } from 'next/cache';
 import type { Task } from '@/lib/types';
+import { LicenseProcessor } from '@/components/license-processor';
 
 async function createTaskAction(formData: FormData) {
   'use server';
@@ -88,6 +89,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background">
+      <LicenseProcessor />
       <Navbar />
       <main className="container mx-auto px-4 pt-4 pb-8">
         <Calendar userId={user.id} onUpdateTask={updateTaskFromForm} onDeleteTask={deleteTask} />
