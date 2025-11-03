@@ -1,6 +1,25 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { User } from '@supabase/supabase-js';
 
+/**
+ * Validates password format: 10 chars min, letters, numbers, special chars
+ */
+export function validatePassword(password: string): { valid: boolean; message: string } {
+  if (password.length < 10) {
+    return { valid: false, message: "Le mot de passe doit contenir au moins 10 caractères" };
+  }
+  if (!/[a-zA-Z]/.test(password)) {
+    return { valid: false, message: "Le mot de passe doit contenir des lettres" };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: "Le mot de passe doit contenir des chiffres" };
+  }
+  if (!/[^a-zA-Z0-9]/.test(password)) {
+    return { valid: false, message: "Le mot de passe doit contenir des caractères spéciaux" };
+  }
+  return { valid: true, message: "" };
+}
+
 export interface TaskOwnershipVerification {
   user: User;
   taskUserId: string;

@@ -4,32 +4,14 @@ import { useState, useEffect } from "react";
 import { signIn, signUp } from '@/app/actions/auth';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { validatePassword } from '@/lib/auth/auth-helpers';
 
 interface AuthFormProps {
   mode: "login" | "signup";
   onSuccess: () => void;
-  onModeChange?: () => void;
 }
 
-// Password validation: 10 chars min, letters, numbers, special chars
-function validatePassword(password: string): { valid: boolean; message: string } {
-  if (password.length < 10) {
-    return { valid: false, message: "Le mot de passe doit contenir au moins 10 caractères" };
-  }
-  if (!/[a-zA-Z]/.test(password)) {
-    return { valid: false, message: "Le mot de passe doit contenir des lettres" };
-  }
-  if (!/[0-9]/.test(password)) {
-    return { valid: false, message: "Le mot de passe doit contenir des chiffres" };
-  }
-  if (!/[^a-zA-Z0-9]/.test(password)) {
-    return { valid: false, message: "Le mot de passe doit contenir des caractères spéciaux" };
-  }
-  return { valid: true, message: "" };
-}
-
-export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
+export function AuthForm({ mode, onSuccess }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -326,73 +308,3 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
   );
 }
 
-export function AuthDialog() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const handleSuccess = () => {
-    setIsOpen(false);
-    window.location.href = '/home';
-  };
-
-  const handleModeChange = (newMode: "login" | "signup") => {
-    setMode(newMode);
-  };
-
-  const resetForm = () => {
-    // Cette fonction sera appelée par le composant AuthForm
-  };
-
-  if (!mounted) {
-    return (
-      <Button variant="outline" size="sm" className="cursor-pointer" disabled>
-        Se connecter
-      </Button>
-    );
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="cursor-pointer">
-          Se connecter
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
-          <DialogTitle>
-            {mode === "login" ? "Connexion" : "Inscription"}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "login" 
-              ? "Connectez-vous à votre compte pour accéder à votre calendrier."
-              : "Créez un compte pour commencer à organiser vos tâches."
-            }
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="overflow-y-auto flex-1 px-6 pb-6">
-          <AuthForm mode={mode} onSuccess={handleSuccess} onModeChange={resetForm} />
-          
-          <div className="text-center mt-4">
-            <Button
-              variant="link"
-              onClick={() => handleModeChange(mode === "login" ? "signup" : "login")}
-              className="text-sm cursor-pointer"
-            >
-              {mode === "login" 
-                ? "Pas de compte ? S'inscrire" 
-                : "Déjà un compte ? Se connecter"
-              }
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}

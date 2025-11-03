@@ -1,5 +1,5 @@
 import { Navbar } from "@/components/navbar";
-import { AuthDialog } from "@/components/auth/auth-server";
+import { AuthDialog } from "@/components/auth/auth-dialog";
 import Image from "next/image";
 
 export default async function LoginPage({

@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { AuthDialog } from "@/components/auth/auth-server";
+import { AuthDialog } from "@/components/auth/auth-dialog";
 
 export function Navbar() {
   const [user, setUser] = useState<any>(null);
