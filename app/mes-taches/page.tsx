@@ -22,13 +22,14 @@ async function updateTaskFromForm(formData: FormData) {
   const dayRaw = String(formData.get('day') || '');
   const due_onRaw = String(formData.get('due_on') || '');
   const postponed_daysRaw = String(formData.get('postponed_days') || '');
-  const is_remote = formData.get('is_remote') != null;
+  const modeRaw = String(formData.get('mode') || '');
+  const mode: Task['mode'] = (modeRaw === 'Présentiel' || modeRaw === 'Distanciel') ? modeRaw : 'Tous';
 
   // Préparer les données selon le type de tâche
   let updates: Partial<Task> = {
     title,
     description,
-    is_remote,
+    mode,
     frequency: undefined,
     day: undefined,
     due_on: undefined,

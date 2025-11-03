@@ -35,11 +35,12 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false }: 
         // Create temporary task in localStorage
         const title = String(formData.get('title') || '');
         const description = String(formData.get('description') || '');
-        const is_remote = formData.get('is_remote') != null;
+        const modeRaw = String(formData.get('mode') || '');
+        const mode: 'Tous' | 'Présentiel' | 'Distanciel' = (modeRaw === 'Présentiel' || modeRaw === 'Distanciel') ? modeRaw : 'Tous';
         const in_progress = formData.get('in_progress') != null;
         
         try {
-          createTodayTempTask(title, description, is_remote, in_progress);
+          createTodayTempTask(title, description, mode, in_progress);
           result = true;
         } catch (error) {
           console.error('Error creating temp task:', error);

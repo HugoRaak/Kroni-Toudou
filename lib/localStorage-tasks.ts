@@ -1,10 +1,11 @@
 import { DayTasksData } from "@/components/calendar/day-view";
+import { formatDateLocal } from "./utils";
 
 const STORAGE_PREFIX = "kroni-today-tasks-";
 
 function getTodayKey(): string {
   const today = new Date();
-  return `${STORAGE_PREFIX}${today.toISOString().split('T')[0]}`;
+  return `${STORAGE_PREFIX}${formatDateLocal(today)}`;
 }
 
 function getAllTaskKeys(): string[] {
@@ -64,7 +65,7 @@ const ORDER_KEY_PREFIX = "kroni-today-order-";
 
 function getTodayOrderKey(): string {
   const today = new Date();
-  return `${ORDER_KEY_PREFIX}${today.toISOString().split('T')[0]}`;
+  return `${ORDER_KEY_PREFIX}${formatDateLocal(today)}`;
 }
 
 export function getTodayTaskOrder(): string[] {
@@ -104,7 +105,7 @@ const HIDDEN_KEY_PREFIX = "kroni-today-hidden-";
 
 function getTodayHiddenKey(): string {
   const today = new Date();
-  return `${HIDDEN_KEY_PREFIX}${today.toISOString().split('T')[0]}`;
+  return `${HIDDEN_KEY_PREFIX}${formatDateLocal(today)}`;
 }
 
 export function getTodayHiddenTaskIds(): string[] {
@@ -156,7 +157,7 @@ const TEMP_TASKS_PREFIX = "kroni-temp-tasks-";
 
 function getTodayTempTasksKey(): string {
   const today = new Date();
-  return `${TEMP_TASKS_PREFIX}${today.toISOString().split('T')[0]}`;
+  return `${TEMP_TASKS_PREFIX}${formatDateLocal(today)}`;
 }
 
 function getAllTempTaskKeys(): string[] {
@@ -176,7 +177,7 @@ export interface TempTask {
   id: string;
   title: string;
   description: string;
-  is_remote?: boolean;
+  mode?: 'Tous' | 'Présentiel' | 'Distanciel';
   in_progress?: boolean;
   created_at: string;
 }
@@ -202,7 +203,7 @@ export function getTodayTempTasks(): TempTask[] {
 export function createTodayTempTask(
   title: string,
   description: string = '',
-  is_remote: boolean = false,
+  mode: 'Tous' | 'Présentiel' | 'Distanciel' = 'Tous',
   in_progress: boolean = false
 ): TempTask {
   if (typeof window === 'undefined') {
@@ -216,7 +217,7 @@ export function createTodayTempTask(
     id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title,
     description,
-    is_remote,
+    mode,
     in_progress,
     created_at: new Date().toISOString(),
   };
@@ -230,7 +231,7 @@ export function createTodayTempTask(
 
 export function updateTodayTempTask(
   id: string,
-  updates: Partial<Pick<TempTask, 'title' | 'description' | 'is_remote' | 'in_progress'>>
+  updates: Partial<Pick<TempTask, 'title' | 'description' | 'mode' | 'in_progress'>>
 ): TempTask | null {
   if (typeof window === 'undefined') return null;
   
@@ -285,7 +286,7 @@ const TEMP_HIDDEN_KEY_PREFIX = "kroni-temp-hidden-";
 
 function getTodayTempHiddenKey(): string {
   const today = new Date();
-  return `${TEMP_HIDDEN_KEY_PREFIX}${today.toISOString().split('T')[0]}`;
+  return `${TEMP_HIDDEN_KEY_PREFIX}${formatDateLocal(today)}`;
 }
 
 export function getTodayHiddenTempTaskIds(): string[] {

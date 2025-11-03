@@ -11,7 +11,7 @@ export interface Task {
   due_on?: string;
   postponed_days?: number;
   in_progress?: boolean;
-  is_remote?: boolean;
+  mode?: 'Tous' | 'Présentiel' | 'Distanciel';
   created_at: string;
   updated_at: string;
 }

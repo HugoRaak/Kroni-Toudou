@@ -126,7 +126,10 @@ export function WeekView({
           const mode = (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel';
           const dayTasks = mode === 'Congé'
             ? []
-            : dayTasksAll.filter(t => (mode === 'Distanciel' ? t.is_remote === true : t.is_remote === false));
+            : dayTasksAll.filter(t => {
+                const taskMode = (t as any).mode ?? 'Tous';
+                return taskMode === 'Tous' || taskMode === mode;
+              });
 
           return (
             <div key={index} onClick={() => handleDayClick(dayDate)}>
@@ -159,7 +162,10 @@ export function WeekView({
         const dayTasksAll = getTasksForDate(tasks, selectedDate);
         const dayTasks = mode === 'Congé'
           ? []
-          : dayTasksAll.filter(t => (mode === 'Distanciel' ? t.is_remote === true : t.is_remote === false));
+          : dayTasksAll.filter(t => {
+              const taskMode = (t as any).mode ?? 'Tous';
+              return taskMode === 'Tous' || taskMode === mode;
+            });
         return (
           <DayTasksDialog
             open={dialogOpen}

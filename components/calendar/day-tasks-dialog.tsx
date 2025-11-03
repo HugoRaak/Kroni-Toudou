@@ -26,7 +26,7 @@ function calendarTaskToTask(calendarTask: CalendarTask): Partial<import("@/lib/t
     day: calendarTask.day,
     due_on: calendarTask.due_on,
     in_progress: calendarTask.in_progress,
-    is_remote: calendarTask.is_remote,
+    mode: calendarTask.mode,
     postponed_days: undefined, // Not available in CalendarTask
   };
 }

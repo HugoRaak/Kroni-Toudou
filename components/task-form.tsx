@@ -218,18 +218,22 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
         </div>
       )}
 
-      {/* Champ distanciel pour tous les types (sauf tâches temporaires) */}
+      {/* Work mode for all types (except temporary tasks) */}
       {!isTempTask && (
         <div className="flex items-center space-x-2">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              name="is_remote"
-              defaultChecked={!!task?.is_remote}
-              className="rounded"
-            />
-            <span className="text-sm font-medium text-foreground">Distanciel</span>
+          <label className="text-sm font-medium text-foreground" htmlFor={`${prefix}-mode`}>
+            Mode
           </label>
+          <select
+            id={`${prefix}-mode`}
+            name="mode"
+            defaultValue={(task as any)?.mode ?? 'Tous'}
+            className="border rounded px-2 py-1 bg-background"
+          >
+            <option value="Tous">Tous</option>
+            <option value="Présentiel">Présentiel</option>
+            <option value="Distanciel">Distanciel</option>
+          </select>
         </div>
       )}
 
@@ -239,7 +243,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
           <label className="flex items-center space-x-2">
             <input
               type="checkbox"
-              checked={isViewingToday}
+              checked={isTempTask}
               onChange={(e) => setIsTempTask(e.target.checked)}
               className="rounded"
             />

@@ -58,9 +58,16 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
             {showProgressStatus && !task.in_progress && (
               <span className="px-2 py-1 rounded border bg-muted/50">Pas commencé</span>
             )}
-            <span className={`px-2 py-1 rounded border ${task.is_remote ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-pink-50 text-pink-700 border-pink-200"}`}>
-              {task.is_remote ? "Distanciel" : "Présentiel"}
-            </span>
+            {(() => {
+              const mode = task.mode ?? 'Tous';
+              if (mode === 'Distanciel') {
+                return <span className={"px-2 py-1 rounded border bg-blue-50 text-blue-700 border-blue-200"}>Distanciel</span>;
+              }
+              if (mode === 'Présentiel') {
+                return <span className={"px-2 py-1 rounded border bg-pink-50 text-pink-700 border-pink-200"}>Présentiel</span>;
+              }
+              return <span className={"px-2 py-1 rounded border bg-gradient-to-r from-blue-50 to-pink-50 text-foreground border-blue-200/50"}>Tous</span>;
+            })()}
           </div>
         </button>
       }

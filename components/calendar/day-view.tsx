@@ -63,8 +63,10 @@ export function DayView({
       if (workMode === 'Congé') {
         setTempTasks([]);
       } else {
-        const remote = workMode === 'Distanciel';
-        const filtered = allTempTasks.filter(t => remote ? t.is_remote === true : t.is_remote === false);
+        const filtered = allTempTasks.filter(t => {
+          const taskMode = t.mode ?? 'Tous';
+          return taskMode === 'Tous' || taskMode === workMode;
+        });
         setTempTasks(filtered);
       }
     } else {
@@ -84,8 +86,10 @@ export function DayView({
         if (workMode === 'Congé') {
           setTempTasks([]);
         } else {
-          const remote = workMode === 'Distanciel';
-          const filtered = allTempTasks.filter(t => remote ? t.is_remote === true : t.is_remote === false);
+          const filtered = allTempTasks.filter(t => {
+            const taskMode = t.mode ?? 'Tous';
+            return taskMode === 'Tous' || taskMode === workMode;
+          });
           setTempTasks(filtered);
         }
       } else {
@@ -291,7 +295,7 @@ export function DayView({
         id: tempTask.id,
         title: tempTask.title,
         description: tempTask.description,
-        is_remote: tempTask.is_remote,
+        mode: tempTask.mode,
         in_progress: tempTask.in_progress,
         created_at: tempTask.created_at,
         updated_at: tempTask.created_at,

@@ -12,7 +12,7 @@ export interface CalendarTask {
   day?: DayOfWeek;
   due_on?: string;
   in_progress?: boolean;
-  is_remote?: boolean;
+  mode?: 'Tous' | 'Présentiel' | 'Distanciel';
 }
 
 // Helper function to get day name in French
@@ -92,8 +92,10 @@ export async function getTasksForDay(userId: string, date?: Date): Promise<{
 
   const filterByMode = (tasks: Task[]): Task[] => {
     if (workMode === 'Congé') return [];
-    const remote = workMode === 'Distanciel';
-    return tasks.filter(t => (remote ? t.is_remote === true : t.is_remote === false));
+    return tasks.filter(t => {
+      const taskMode = t.mode ?? 'Tous';
+      return taskMode === 'Tous' || taskMode === workMode;
+    });
   };
   
   return {
@@ -155,7 +157,7 @@ export async function getTasksForDateRange(
       day: task.day,
       due_on: task.due_on,
       in_progress: task.in_progress,
-      is_remote: task.is_remote
+      mode: task.mode
     });
   });
   

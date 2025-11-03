@@ -47,10 +47,9 @@ export function SectionWithFilters({
   const [frequencyFilter, setFrequencyFilter] = useState<FrequencyFilter>('all');
 
   const filteredTasks = tasks.filter(task => {
-    // is_remote defaults to false (présentiel), so undefined/null = présentiel
-    const isRemote = task.is_remote === true;
-    if (presenceFilter === 'presentiel' && isRemote) return false;
-    if (presenceFilter === 'distanciel' && !isRemote) return false;
+    const mode = task.mode ?? 'Tous';
+    if (presenceFilter === 'presentiel' && mode === 'Distanciel') return false;
+    if (presenceFilter === 'distanciel' && mode === 'Présentiel') return false;
     if (showFrequencyFilter && frequencyFilter !== 'all' && task.frequency !== frequencyFilter) return false;
     return true;
   });

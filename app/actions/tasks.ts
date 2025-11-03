@@ -26,7 +26,7 @@ export async function createTaskAction(
   due_on?: string,
   postponed_days?: number,
   in_progress?: boolean,
-  is_remote?: boolean,
+  mode?: 'Tous' | 'Présentiel' | 'Distanciel',
 ): Promise<Task | null> {
   const supabase = await supabaseServer();
   
@@ -40,7 +40,7 @@ export async function createTaskAction(
         day,
         due_on,
         in_progress,
-        is_remote,
+        mode,
         postponed_days,
     })
     .select()
@@ -56,7 +56,7 @@ export async function createTaskAction(
 
 export async function updateTaskAction(
   id: string,
-  updates: Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'due_on' | 'postponed_days' | 'in_progress' | 'is_remote'>>
+  updates: Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'due_on' | 'postponed_days' | 'in_progress' | 'mode'>>
 ): Promise<Task | null> {
   const supabase = await supabaseServer();
   
@@ -102,7 +102,8 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
   const dayRaw = String(formData.get('day') || '');
   const due_onRaw = String(formData.get('due_on') || '');
   const postponed_daysRaw = String(formData.get('postponed_days') || '');
-  const is_remote = formData.get('is_remote') != null;
+  const modeRaw = String(formData.get('mode') || '');
+  const mode: 'Tous' | 'Présentiel' | 'Distanciel' = (modeRaw === 'Présentiel' || modeRaw === 'Distanciel') ? modeRaw : 'Tous';
 
   // Préparer les données selon le type de tâche
   let taskData = {
@@ -114,7 +115,7 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
     due_on: undefined as string | undefined,
     postponed_days: undefined as number | undefined,
     in_progress: undefined as boolean | undefined,
-    is_remote,
+    mode,
   };
 
   // Adapter les données selon le type
@@ -137,6 +138,6 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
     taskData.due_on,
     taskData.postponed_days,
     taskData.in_progress,
-    taskData.is_remote
+    taskData.mode
   );
 }
