@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarTask } from "@/lib/calendar/calendar-utils";
+import { useMemo } from "react";
 
 type WorkMode = "Présentiel" | "Distanciel" | "Congé";
 
@@ -29,7 +30,7 @@ export function DayCell({
   taskLimit?: number;
   minContentHeight?: number;
   }) {
-  const baseContainerClasses = (() => {
+  const baseContainerClasses = useMemo(() => {
     if (loading || !editing) {
       return isToday ? "border-primary bg-primary/10" : (isCurrentMonth ? "border-border bg-card" : "border-transparent bg-muted/30");
     }
@@ -41,10 +42,17 @@ export function DayCell({
       default:
         return 'bg-pink-100 border-pink-200';
     }
-  })();
+  }, [loading, editing, isToday, isCurrentMonth, mode]);
 
-  const modeDotClass = mode === 'Congé' ? 'bg-emerald-500' : mode === 'Distanciel' ? 'bg-blue-500' : 'bg-pink-300';
-  const modeTextClass = mode === 'Congé' ? 'text-emerald-700' : mode === 'Distanciel' ? 'text-blue-700' : 'text-pink-700';
+  const modeDotClass = useMemo(
+    () => mode === 'Congé' ? 'bg-emerald-500' : mode === 'Distanciel' ? 'bg-blue-500' : 'bg-pink-300',
+    [mode]
+  );
+  
+  const modeTextClass = useMemo(
+    () => mode === 'Congé' ? 'text-emerald-700' : mode === 'Distanciel' ? 'text-blue-700' : 'text-pink-700',
+    [mode]
+  );
 
   return (
     <div

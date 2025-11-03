@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Task, TaskWithType } from "@/lib/types";
@@ -45,22 +45,27 @@ export function DayView({
   onUpdateTask: (formData: FormData) => Promise<boolean>;
   onDeleteTask: (id: string) => Promise<boolean>;
 }) {
-  const day = date.getDate();
-  const month = date.toLocaleDateString("fr-FR", { month: "long" });
-  const year = date.getFullYear();
-  const dayName = date.toLocaleDateString("fr-FR", { weekday: "long" });
-  const isTodayView = isToday(date);
+  const day = useMemo(() => date.getDate(), [date]);
+  const month = useMemo(() => date.toLocaleDateString("fr-FR", { month: "long" }), [date]);
+  const year = useMemo(() => date.getFullYear(), [date]);
+  const dayName = useMemo(() => date.toLocaleDateString("fr-FR", { weekday: "long" }), [date]);
+  const isTodayView = useMemo(() => isToday(date), [date]);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [taskToHide, setTaskToHide] = useState<TaskWithType | null>(null);
 
   // Use temp tasks hook
   const { tempTasks, loadTempTasks, getHiddenTempTaskIds } = useTempTasks(isTodayView, workMode);
 
+  // Memoize loadTempTasks to avoid recreating handler
+  const loadTempTasksMemo = useCallback(() => {
+    loadTempTasks();
+  }, [loadTempTasks]);
+
   // Use unified task handlers
   const { handleUpdateTaskUnified, handleDeleteTaskUnified } = useUnifiedTaskHandlers({
     onUpdateTask,
     onDeleteTask,
-    loadTempTasks,
+    loadTempTasks: loadTempTasksMemo,
   });
 
   // Track order updates to force recalculation

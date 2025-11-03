@@ -7,6 +7,69 @@ import { DayTasksDialog } from "@/components/calendar/dialogs/day-tasks-dialog";
 import { formatDateLocal } from "@/lib/utils";
 import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
 import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
+import { useMemo, memo, useCallback } from "react";
+
+// Memoized wrapper component for DayCell in week view
+const WeekDayCellWrapper = memo(({
+  dayDate,
+  dayName,
+  dayNumber,
+  isToday,
+  tasks,
+  workdays,
+  localWorkdays,
+  editing,
+  loading,
+  onDayClick,
+}: {
+  dayDate: Date;
+  dayName: string;
+  dayNumber: number;
+  isToday: boolean;
+  tasks: CalendarTask[];
+  workdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
+  localWorkdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
+  editing: boolean;
+  loading: boolean;
+  onDayClick: (date: Date) => void;
+}) => {
+  const dayTasksAll = useMemo(
+    () => getTasksForDate(tasks, dayDate),
+    [tasks, dayDate]
+  );
+  const iso = useMemo(() => formatDateLocal(dayDate), [dayDate]);
+  const mode = useMemo(
+    () => (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel',
+    [editing, localWorkdays, workdays, iso]
+  );
+  const dayTasks = useMemo(
+    () => filterTasksByWorkMode(dayTasksAll, mode),
+    [dayTasksAll, mode]
+  );
+
+  const handleClick = useCallback(() => {
+    onDayClick(dayDate);
+  }, [onDayClick, dayDate]);
+
+  return (
+    <div onClick={handleClick}>
+      <DayCell
+        titleTop={dayName}
+        titleMain={dayNumber}
+        mode={mode}
+        loading={loading}
+        editing={editing}
+        isToday={isToday}
+        isCurrentMonth={true}
+        tasks={dayTasks}
+        taskLimit={3}
+        minContentHeight={60}
+      />
+    </div>
+  );
+});
+
+WeekDayCellWrapper.displayName = "WeekDayCellWrapper";
 
 export function WeekView({
   anchorDate,
@@ -42,9 +105,13 @@ export function WeekView({
     handleCancel,
     handleSave,
   } = useWorkdaysEditor(workdays, onSaved);
-  const { start: startOfWeek, end: endOfWeek } = getWeekDateRange(anchorDate);
+  
+  const { start: startOfWeek, end: endOfWeek } = useMemo(
+    () => getWeekDateRange(anchorDate),
+    [anchorDate]
+  );
 
-  const weekDates = (() => {
+  const weekDates = useMemo(() => {
     const today = new Date();
     return Array.from({ length: 7 }, (_, i) => {
       const date = new Date(startOfWeek);
@@ -53,15 +120,21 @@ export function WeekView({
         date: date.getDate(),
         dayName: date.toLocaleDateString("fr-FR", { weekday: "short" }),
         isToday: date.toDateString() === today.toDateString(),
+        dateObj: date,
       };
     });
-  })();
+  }, [startOfWeek]);
+
+  const subtitle = useMemo(
+    () => `${startOfWeek.getDate()} ${startOfWeek.toLocaleDateString("fr-FR", { month: "long" }).slice(0, 3)} - ${endOfWeek.getDate()} ${endOfWeek.toLocaleDateString("fr-FR", { month: "long" }).slice(0, 3)} ${endOfWeek.getFullYear()}`,
+    [startOfWeek, endOfWeek]
+  );
 
   return (
     <div className="space-y-4">
       <CalendarHeader
         title={"Semaine"}
-        subtitle={`${startOfWeek.getDate()} ${startOfWeek.toLocaleDateString("fr-FR", { month: "long" }).slice(0, 3)} - ${endOfWeek.getDate()} ${endOfWeek.toLocaleDateString("fr-FR", { month: "long" }).slice(0, 3)} ${endOfWeek.getFullYear()}`}
+        subtitle={subtitle}
         loading={loading}
         editing={editing}
         saving={saving}
@@ -72,31 +145,21 @@ export function WeekView({
         onSave={handleSave}
       />
       <div className="grid grid-cols-7 gap-2">
-        {weekDates.map((day, index) => {
-          const dayDate = new Date(startOfWeek);
-          dayDate.setDate(startOfWeek.getDate() + index);
-          const dayTasksAll = getTasksForDate(tasks, dayDate);
-          const iso = formatDateLocal(dayDate);
-          const mode = (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel';
-          const dayTasks = filterTasksByWorkMode(dayTasksAll, mode);
-
-          return (
-            <div key={index} onClick={() => handleDayClick(dayDate)}>
-              <DayCell
-                titleTop={day.dayName}
-                titleMain={day.date}
-                mode={mode}
-                loading={loading}
-                editing={editing}
-                isToday={day.isToday}
-                isCurrentMonth={true}
-                tasks={dayTasks}
-                taskLimit={3}
-                minContentHeight={60}
-              />
-            </div>
-          );
-        })}
+        {weekDates.map((day, index) => (
+          <WeekDayCellWrapper
+            key={`${day.dateObj.getTime()}`}
+            dayDate={day.dateObj}
+            dayName={day.dayName}
+            dayNumber={day.date}
+            isToday={day.isToday}
+            tasks={tasks}
+            workdays={workdays}
+            localWorkdays={localWorkdays}
+            editing={editing}
+            loading={loading}
+            onDayClick={handleDayClick}
+          />
+        ))}
       </div>
       {!loading && (
         <div className="flex items-center gap-4 text-xs text-muted-foreground">

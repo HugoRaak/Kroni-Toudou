@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Task, Frequency } from '@/lib/types';
 import TaskItem from '@/components/tasks/task-item';
 import {
@@ -17,6 +17,46 @@ import { Filter } from 'lucide-react';
 
 type PresenceFilter = 'all' | 'presentiel' | 'distanciel';
 type FrequencyFilter = 'all' | Frequency;
+
+// Constants extracted outside component to avoid recreation
+const ACCENT_CLASSES: Record<string, { bar: string; chip: string; headerBg: string; title: string }> = {
+  yellow: {
+    bar: 'bg-yellow-400/30',
+    chip: 'bg-yellow-50',
+    headerBg: 'bg-yellow-200/50',
+    title: 'text-yellow-900',
+  },
+  violet: {
+    bar: 'bg-violet-500/20',
+    chip: 'bg-violet-500/10 text-violet-700',
+    headerBg: 'bg-violet-500/10',
+    title: 'text-violet-800',
+  },
+  orange: {
+    bar: 'bg-orange-600/25',
+    chip: 'bg-orange-50 text-orange-800',
+    headerBg: 'bg-orange-200/40',
+    title: 'text-orange-800',
+  },
+};
+
+const FILTER_BUTTON_CLASSES: Record<string, { active: string; hover: string; icon: string }> = {
+  yellow: {
+    active: 'bg-yellow-100 hover:bg-yellow-200',
+    hover: 'hover:bg-yellow-50',
+    icon: 'text-yellow-700',
+  },
+  violet: {
+    active: 'bg-violet-100 hover:bg-violet-200',
+    hover: 'hover:bg-violet-50',
+    icon: 'text-violet-700',
+  },
+  orange: {
+    active: 'bg-orange-100 hover:bg-orange-200',
+    hover: 'hover:bg-orange-50',
+    icon: 'text-orange-700',
+  },
+};
 
 interface SectionWithFiltersProps {
   title: string;
@@ -46,58 +86,22 @@ export function SectionWithFilters({
   const [presenceFilter, setPresenceFilter] = useState<PresenceFilter>('all');
   const [frequencyFilter, setFrequencyFilter] = useState<FrequencyFilter>('all');
 
-  const filteredTasks = tasks.filter(task => {
-    const mode = task.mode ?? 'Tous';
-    if (presenceFilter === 'presentiel' && mode === 'Distanciel') return false;
-    if (presenceFilter === 'distanciel' && mode === 'Présentiel') return false;
-    if (showFrequencyFilter && frequencyFilter !== 'all' && task.frequency !== frequencyFilter) return false;
-    return true;
-  });
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(task => {
+      const mode = task.mode ?? 'Tous';
+      if (presenceFilter === 'presentiel' && mode === 'Distanciel') return false;
+      if (presenceFilter === 'distanciel' && mode === 'Présentiel') return false;
+      if (showFrequencyFilter && frequencyFilter !== 'all' && task.frequency !== frequencyFilter) return false;
+      return true;
+    });
+  }, [tasks, presenceFilter, frequencyFilter, showFrequencyFilter]);
 
-  const accentClasses: Record<string, { bar: string; chip: string; headerBg: string; title: string }> = {
-    yellow: {
-      bar: 'bg-yellow-400/30',
-      chip: 'bg-yellow-50',
-      headerBg: 'bg-yellow-200/50',
-      title: 'text-yellow-900',
-    },
-    violet: {
-      bar: 'bg-violet-500/20',
-      chip: 'bg-violet-500/10 text-violet-700',
-      headerBg: 'bg-violet-500/10',
-      title: 'text-violet-800',
-    },
-    orange: {
-      bar: 'bg-orange-600/25',
-      chip: 'bg-orange-50 text-orange-800',
-      headerBg: 'bg-orange-200/40',
-      title: 'text-orange-800',
-    },
-  };
+  const c = useMemo(() => ACCENT_CLASSES[accent], [accent]);
+  const hasActiveFilters = useMemo(() => {
+    return presenceFilter !== 'all' || (showFrequencyFilter && frequencyFilter !== 'all');
+  }, [presenceFilter, frequencyFilter, showFrequencyFilter]);
 
-  const c = accentClasses[accent];
-  const hasActiveFilters = presenceFilter !== 'all' || (showFrequencyFilter && frequencyFilter !== 'all');
-
-  // Couleurs pour le bouton filtre selon l'accent
-  const filterButtonClasses: Record<string, { active: string; hover: string; icon: string }> = {
-    yellow: {
-      active: 'bg-yellow-100 hover:bg-yellow-200',
-      hover: 'hover:bg-yellow-50',
-      icon: 'text-yellow-700',
-    },
-    violet: {
-      active: 'bg-violet-100 hover:bg-violet-200',
-      hover: 'hover:bg-violet-50',
-      icon: 'text-violet-700',
-    },
-    orange: {
-      active: 'bg-orange-100 hover:bg-orange-200',
-      hover: 'hover:bg-orange-50',
-      icon: 'text-orange-700',
-    },
-  };
-
-  const filterColors = filterButtonClasses[accent];
+  const filterColors = useMemo(() => FILTER_BUTTON_CLASSES[accent], [accent]);
 
   return (
     <section className="mb-8 group transition-transform">

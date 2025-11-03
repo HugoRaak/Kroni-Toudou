@@ -2,6 +2,7 @@
 
 import { Task } from "@/lib/types";
 import { TaskEditDialog } from "./task-edit-dialog";
+import { useMemo } from "react";
 
 type TaskItemProps = {
   task: Task;
@@ -18,7 +19,24 @@ function formatDateDisplay(dateStr: string): string {
   return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
+// Mode badge component to avoid recreating JSX on each render
+function ModeBadge({ mode }: { mode: string }) {
+  if (mode === 'Distanciel') {
+    return <span className="px-2 py-1 rounded border bg-blue-50 text-blue-700 border-blue-200">Distanciel</span>;
+  }
+  if (mode === 'Présentiel') {
+    return <span className="px-2 py-1 rounded border bg-pink-50 text-pink-700 border-pink-200">Présentiel</span>;
+  }
+  return <span className="px-2 py-1 rounded border bg-gradient-to-r from-blue-50 to-pink-50 text-foreground border-blue-200/50">Tous</span>;
+}
+
 export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus = false }: TaskItemProps) {
+  const formattedDueOn = useMemo(() => {
+    return task.due_on ? formatDateDisplay(task.due_on) : null;
+  }, [task.due_on]);
+
+  const taskMode = useMemo(() => task.mode ?? 'Tous', [task.mode]);
+
   return (
     <TaskEditDialog
       task={task}
@@ -44,11 +62,11 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
             {task.day ? (
               <span className="px-2 py-1 rounded border bg-muted/50">{task.day}</span>
             ) : null}
-            {task.due_on ? (
+            {formattedDueOn && (
               <span className="px-2 py-1 rounded border bg-muted/50">
-                {formatDateDisplay(task.due_on)}
+                {formattedDueOn}
               </span>
-            ) : null}
+            )}
             {typeof task.postponed_days === "number" ? (
               <span className="px-2 py-1 rounded border bg-muted/50">à reporter dans {task.postponed_days} jours</span>
             ) : null}
@@ -58,16 +76,7 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
             {showProgressStatus && !task.in_progress && (
               <span className="px-2 py-1 rounded border bg-muted/50">Pas commencé</span>
             )}
-            {(() => {
-              const mode = task.mode ?? 'Tous';
-              if (mode === 'Distanciel') {
-                return <span className={"px-2 py-1 rounded border bg-blue-50 text-blue-700 border-blue-200"}>Distanciel</span>;
-              }
-              if (mode === 'Présentiel') {
-                return <span className={"px-2 py-1 rounded border bg-pink-50 text-pink-700 border-pink-200"}>Présentiel</span>;
-              }
-              return <span className={"px-2 py-1 rounded border bg-gradient-to-r from-blue-50 to-pink-50 text-foreground border-blue-200/50"}>Tous</span>;
-            })()}
+            <ModeBadge mode={taskMode} />
           </div>
         </button>
       }

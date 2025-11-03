@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/actions/auth";
 import { getCurrentUser } from "@/app/actions/auth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import {
   DropdownMenu,
@@ -16,6 +16,11 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { AuthDialog } from "@/components/auth/auth-dialog";
+
+// Constants extracted outside component to avoid recreation
+const LINK_BASE = "inline-flex items-center h-8 px-3 rounded-full text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
+const LINK_ACTIVE = "bg-primary/10 text-foreground";
+const LINK_INACTIVE = "text-muted-foreground hover:text-foreground hover:bg-muted";
 
 export function Navbar() {
   const [user, setUser] = useState<any>(null);
@@ -31,13 +36,9 @@ export function Navbar() {
     fetchUser();
   }, []);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     await signOut();
-  };
-
-  const linkBase = "inline-flex items-center h-8 px-3 rounded-full text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
-  const linkActive = "bg-primary/10 text-foreground";
-  const linkInactive = "text-muted-foreground hover:text-foreground hover:bg-muted";
+  }, []);
 
   return (
     <nav className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -63,13 +64,13 @@ export function Navbar() {
                 <nav className="hidden sm:flex items-center gap-2 mr-1" aria-label="Navigation principale">
                   <Link
                     href="/home"
-                    className={`${linkBase} ${pathname === "/home" ? linkActive : linkInactive}`}
+                    className={`${LINK_BASE} ${pathname === "/home" ? LINK_ACTIVE : LINK_INACTIVE}`}
                   >
                     Accueil
                   </Link>
                   <Link
                     href="/mes-taches"
-                    className={`${linkBase} ${pathname?.startsWith("/mes-taches") ? linkActive : linkInactive}`}
+                    className={`${LINK_BASE} ${pathname?.startsWith("/mes-taches") ? LINK_ACTIVE : LINK_INACTIVE}`}
                   >
                     Mes tâches
                   </Link>

@@ -7,6 +7,69 @@ import { DayTasksDialog } from "@/components/calendar/dialogs/day-tasks-dialog";
 import { formatDateLocal } from "@/lib/utils";
 import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
 import { getMonthGridDates, getMonthGridDatesArray } from "@/lib/calendar/calendar-date-utils";
+import { useMemo, useCallback, memo } from "react";
+
+// Constants extracted outside component
+const WEEK_DAYS = ["L", "M", "M", "J", "V", "S", "D"] as const;
+
+// Memoized wrapper component for DayCell to avoid unnecessary rerenders
+const DayCellWrapper = memo(({
+  date,
+  tasks,
+  workdays,
+  localWorkdays,
+  editing,
+  loading,
+  onDayClick,
+}: {
+  date: { year: number; month: number; date: number; isToday: boolean; isCurrentMonth: boolean };
+  tasks: CalendarTask[];
+  workdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
+  localWorkdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
+  editing: boolean;
+  loading: boolean;
+  onDayClick: (date: Date) => void;
+}) => {
+  const dayDateObj = useMemo(
+    () => new Date(date.year, date.month, date.date),
+    [date.year, date.month, date.date]
+  );
+  const dayTasksAll = useMemo(
+    () => getTasksForDate(tasks, dayDateObj),
+    [tasks, dayDateObj]
+  );
+  const iso = useMemo(() => formatDateLocal(dayDateObj), [dayDateObj]);
+  const mode = useMemo(
+    () => (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel',
+    [editing, localWorkdays, workdays, iso]
+  );
+  const dayTasks = useMemo(
+    () => filterTasksByWorkMode(dayTasksAll, mode),
+    [dayTasksAll, mode]
+  );
+  
+  const handleClick = useCallback(() => {
+    onDayClick(dayDateObj);
+  }, [onDayClick, dayDateObj]);
+
+  return (
+    <div onClick={handleClick}>
+      <DayCell
+        titleMain={date.date}
+        mode={mode}
+        loading={loading}
+        editing={editing}
+        isToday={date.isToday}
+        isCurrentMonth={date.isCurrentMonth}
+        tasks={dayTasks}
+        taskLimit={2}
+        minContentHeight={50}
+      />
+    </div>
+  );
+});
+
+DayCellWrapper.displayName = "DayCellWrapper";
 
 export function MonthView({
   anchorDate,
@@ -29,6 +92,8 @@ export function MonthView({
   onUpdateTask: (formData: FormData) => Promise<boolean>;
   onDeleteTask: (id: string) => Promise<boolean>;
 }) {
+  const getDatesToSave = useCallback(() => getMonthGridDatesArray(anchorDate), [anchorDate]);
+  
   const {
     editing,
     localWorkdays,
@@ -41,11 +106,14 @@ export function MonthView({
     handleStartEdit,
     handleCancel,
     handleSave,
-  } = useWorkdaysEditor(workdays, onSaved, () => getMonthGridDatesArray(anchorDate));
+  } = useWorkdaysEditor(workdays, onSaved, getDatesToSave);
   
-  const monthDates = getMonthGridDates(anchorDate);
+  const monthDates = useMemo(() => getMonthGridDates(anchorDate), [anchorDate]);
 
-  const monthName = anchorDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  const monthName = useMemo(
+    () => anchorDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }),
+    [anchorDate]
+  );
 
   return (
     <div className="space-y-4">
@@ -61,33 +129,23 @@ export function MonthView({
         onSave={handleSave}
       />
       <div className="grid grid-cols-7 gap-1">
-        {["L", "M", "M", "J", "V", "S", "D"].map((day, index) => (
+        {WEEK_DAYS.map((day, index) => (
           <div key={index} className="p-2 text-center text-sm font-medium text-muted-foreground">
             {loading ? <div className="mx-auto h-3 w-6 rounded bg-accent animate-pulse" /> : day}
           </div>
         ))}
-        {monthDates.map((date, index) => {
-          const dayDateObj = new Date(date.year, date.month, date.date);
-          const dayTasksAll = getTasksForDate(tasks, dayDateObj);
-          const iso = formatDateLocal(dayDateObj);
-          const mode = (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel';
-          const dayTasks = filterTasksByWorkMode(dayTasksAll, mode);
-          return (
-            <div key={index} onClick={() => handleDayClick(dayDateObj)}>
-              <DayCell
-                titleMain={date.date}
-                mode={mode}
-                loading={loading}
-                editing={editing}
-                isToday={date.isToday}
-                isCurrentMonth={date.isCurrentMonth}
-                tasks={dayTasks}
-                taskLimit={2}
-                minContentHeight={50}
-              />
-            </div>
-          );
-        })}
+        {monthDates.map((date, index) => (
+          <DayCellWrapper
+            key={`${date.year}-${date.month}-${date.date}`}
+            date={date}
+            tasks={tasks}
+            workdays={workdays}
+            localWorkdays={localWorkdays}
+            editing={editing}
+            loading={loading}
+            onDayClick={handleDayClick}
+          />
+        ))}
       </div>
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-pink-300" /> Présentiel</div>
