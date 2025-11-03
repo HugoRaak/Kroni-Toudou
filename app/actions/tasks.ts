@@ -8,6 +8,12 @@ import { revalidatePath } from "next/cache";
 import { verifyTaskOwnership, verifyAuthenticated } from "@/lib/auth/auth-helpers";
 
 export async function getTasksForDayAction(userId: string, date: Date) {
+  const supabase = await supabaseServer();
+  const user = await verifyAuthenticated(supabase);
+  if (!user || user.id !== userId) {
+    console.warn('Security: userId mismatch or user not authenticated');
+    return null;
+  }
   return await getTasksForDay(userId, date);
 }
 
@@ -16,6 +22,12 @@ export async function getTasksForDateRangeAction(
   startDate: Date,
   endDate: Date
 ) {
+  const supabase = await supabaseServer();
+  const user = await verifyAuthenticated(supabase);
+  if (!user || user.id !== userId) {
+    console.warn('Security: userId mismatch or user not authenticated');
+    return [];
+  }
   return await getTasksForDateRange(userId, startDate, endDate);
 }
 

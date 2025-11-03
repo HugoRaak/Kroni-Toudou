@@ -9,8 +9,6 @@ export async function validateLicense(licenseKey: string): Promise<{ valid: bool
     .eq('key', licenseKey)
     .maybeSingle();
 
-    console.log(licenseKey);
-
   if (error) {
     console.error('Error validating license:', error);
     return { valid: false, error: 'Erreur lors de la vérification de la licence' };
