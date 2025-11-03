@@ -55,33 +55,95 @@ export function TaskListDraggable({
 
   return (
     <div className="space-y-2">
+      {/* Drop zone before first task */}
+      {orderedTasks.length > 0 && (
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDropZoneDragOver(e, 0, 'before');
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDropZoneDrop(e, 0, 'before');
+          }}
+          className={`h-4 -mb-2 transition-all ${
+            draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
+          } ${
+            dragOverIndex === 0 && dropPosition === 'before' && draggedIndex !== null
+              ? 'bg-blue-500/20 border-t-2 border-dashed border-blue-500' 
+              : ''
+          }`}
+        />
+      )}
+      
       {orderedTasks.map((task, index) => (
         <div key={task.id} className="relative">
-          {/* Drop zone before task */}
-          <div
-            onDragOver={(e) => handleDropZoneDragOver(e, index, 'before')}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDropZoneDrop(e, index, 'before')}
-            className={`absolute top-0 left-0 right-0 h-3 z-10 transition-all pointer-events-none ${
-              draggedIndex !== null ? 'pointer-events-auto' : ''
-            } ${
-              dragOverIndex === index && dropPosition === 'before' && draggedIndex !== null && draggedIndex !== index
-                ? 'bg-blue-500/15 border-t-2 border-dashed border-blue-500/60 h-6 -mt-1.5' 
-                : ''
-            }`}
-          />
+          {/* Drop zone between tasks */}
+          {index > 0 && (
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Determine if we're closer to the previous task (after) or current task (before)
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                const mouseY = e.clientY;
+                const middle = rect.top + rect.height / 2;
+                
+                if (mouseY < middle) {
+                  // Closer to previous task, drop after it
+                  handleDropZoneDragOver(e, index - 1, 'after');
+                } else {
+                  // Closer to current task, drop before it
+                  handleDropZoneDragOver(e, index, 'before');
+                }
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Determine drop position based on mouse position
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                const mouseY = e.clientY;
+                const middle = rect.top + rect.height / 2;
+                
+                if (mouseY < middle) {
+                  handleDropZoneDrop(e, index - 1, 'after');
+                } else {
+                  handleDropZoneDrop(e, index, 'before');
+                }
+              }}
+              className={`h-4 -mt-2 -mb-2 transition-all z-20 ${
+                draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
+              } ${
+                (dragOverIndex === index - 1 && dropPosition === 'after' && draggedIndex !== null) ||
+                (dragOverIndex === index && dropPosition === 'before' && draggedIndex !== null)
+                  ? 'bg-blue-500/20 border-t-2 border-b-2 border-dashed border-blue-500' 
+                  : ''
+              }`}
+            />
+          )}
           
           {/* Task item */}
           <div
             draggable
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={(e) => handleTaskDragOver(e, index)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, index)}
+            onDragStart={(e) => {
+              e.dataTransfer.effectAllowed = 'move';
+              handleDragStart(index);
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              handleTaskDragOver(e, index);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleDrop(e, index);
+            }}
             onDragEnd={handleDragEnd}
             className={`relative group transition-all duration-200 ${
               draggedIndex === index 
-                ? 'z-50 cursor-grabbing' 
+                ? 'z-50 cursor-grabbing opacity-50' 
                 : 'cursor-move hover:opacity-90 z-0'
             }`}
           >
@@ -119,22 +181,33 @@ export function TaskListDraggable({
               <div className="absolute -bottom-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
             )}
           </div>
-          
-          {/* Drop zone after task */}
-          <div
-            onDragOver={(e) => handleDropZoneDragOver(e, index, 'after')}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDropZoneDrop(e, index, 'after')}
-            className={`absolute bottom-0 left-0 right-0 h-3 z-10 transition-all pointer-events-none ${
-              draggedIndex !== null ? 'pointer-events-auto' : ''
-            } ${
-              dragOverIndex === index && dropPosition === 'after' && draggedIndex !== null && draggedIndex !== index
-                ? 'bg-blue-500/15 border-b-2 border-dashed border-blue-500/60 h-6 -mb-1.5' 
-                : ''
-            }`}
-          />
         </div>
       ))}
+      
+      {/* Drop zone after last task */}
+      {orderedTasks.length > 0 && (
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const lastIndex = orderedTasks.length - 1;
+            handleDropZoneDragOver(e, lastIndex, 'after');
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const lastIndex = orderedTasks.length - 1;
+            handleDropZoneDrop(e, lastIndex, 'after');
+          }}
+          className={`h-4 -mt-2 transition-all ${
+            draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
+          } ${
+            dragOverIndex === orderedTasks.length - 1 && dropPosition === 'after' && draggedIndex !== null
+              ? 'bg-blue-500/20 border-b-2 border-dashed border-blue-500' 
+              : ''
+          }`}
+        />
+      )}
     </div>
   );
 }

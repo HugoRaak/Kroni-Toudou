@@ -25,7 +25,25 @@ export function useDragAndDrop<T extends { id: string }>(
   const handleDropZoneDragOver = (e: React.DragEvent, targetIndex: number, position: 'before' | 'after') => {
     e.preventDefault();
     e.stopPropagation();
-    if (draggedIndex !== null && draggedIndex !== targetIndex) {
+    if (draggedIndex === null) return;
+    
+    // Calculate where the item would be inserted
+    let insertIndex = targetIndex;
+    if (position === 'after') {
+      insertIndex = targetIndex + 1;
+    }
+    
+    // Adjust for the fact that we'll remove the dragged item first
+    let finalInsertIndex = insertIndex;
+    if (draggedIndex < insertIndex) {
+      finalInsertIndex = insertIndex - 1;
+    }
+    
+    // Allow drop if it results in a different position
+    // Also allow if we're dropping adjacent to current position (which is valid)
+    const isValidPosition = draggedIndex !== finalInsertIndex;
+    
+    if (isValidPosition) {
       setDragOverIndex(targetIndex);
       setDropPosition(position);
     }
@@ -36,6 +54,24 @@ export function useDragAndDrop<T extends { id: string }>(
     e.stopPropagation();
     
     if (draggedIndex === null) {
+      resetDragState();
+      return;
+    }
+
+    // Calculate the actual insertion index after removing the dragged item
+    let insertIndex = targetIndex;
+    if (position === 'after') {
+      insertIndex = targetIndex + 1;
+    }
+    
+    // Adjust insertIndex if we're moving forward (the dragged item will be removed)
+    let finalInsertIndex = insertIndex;
+    if (draggedIndex < insertIndex) {
+      finalInsertIndex = insertIndex - 1;
+    }
+    
+    // Check if this is a valid drop (not dropping at the same position)
+    if (draggedIndex === finalInsertIndex) {
       resetDragState();
       return;
     }

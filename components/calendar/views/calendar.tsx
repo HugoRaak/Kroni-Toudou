@@ -76,13 +76,11 @@ export function Calendar({
         
         // Load from DB (for today, when no localStorage or forceReload; for other days, always)
         if (isToday(dayDate)) {
-          console.log("Loading today's tasks from DB and saving to localStorage");
           // Today: load from DB and save to localStorage
           const [dayData, mode] = await Promise.all([
             getTasksForDayAction(userId, dayDate),
             getWorkdayAction(userId, dayDate),
           ]);
-          console.log(dayData);
           saveTodayTasksToStorage(dayData);
           setDayTasks(dayData);
           setDayWorkMode(mode);
@@ -92,7 +90,6 @@ export function Calendar({
             getTasksForDayAction(userId, dayDate),
             getWorkdayAction(userId, dayDate),
           ]);
-          console.log(dayData);
           setDayTasks(dayData);
           setDayWorkMode(mode);
         }
@@ -117,7 +114,6 @@ export function Calendar({
           getTasksForDateRangeAction(userId, startDate, endDate),
           getWorkdaysForRangeAction(userId, startDate, endDate),
         ]);
-        console.log(tasksData);
         setTasks(tasksData);
         setWorkdaysMap(workdays);
       }
