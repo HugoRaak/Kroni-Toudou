@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Task } from "@/lib/types";
 import { TaskItemCompact } from "@/components/task-item-compact";
 import { WorkModeBadge } from "@/components/calendar/workmode-badge";
-import { isToday, getTodayTaskOrder, saveTodayTaskOrder } from "@/lib/localStorage-tasks";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { isToday, getTodayTaskOrder, saveTodayTaskOrder, getTodayHiddenTaskIds, hideTodayTask } from "@/lib/localStorage-tasks";
 
 export type DayTasksData = {
   periodic: Task[];
@@ -49,6 +51,8 @@ export function DayView({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
+  const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
+  const [taskToHide, setTaskToHide] = useState<TaskWithType | null>(null);
 
   // Prepare ordered tasks for today view
   useEffect(() => {
@@ -63,18 +67,22 @@ export function DayView({
       ...tasks.specific.map(t => ({ ...t, taskType: 'specific' as const })),
     ];
 
+    // Filter out hidden tasks
+    const hiddenIds = getTodayHiddenTaskIds();
+    const visibleTasks = allTasks.filter(t => !hiddenIds.includes(t.id));
+
     // Get saved order from localStorage
     const savedOrder = getTodayTaskOrder();
     
     if (savedOrder.length > 0) {
       // Sort by saved order
       const ordered = savedOrder
-        .map(id => allTasks.find(t => t.id === id))
+        .map(id => visibleTasks.find(t => t.id === id))
         .filter((t): t is TaskWithType => t !== undefined);
       
       // Add any new tasks not in the saved order at the end
       const orderedIds = new Set(ordered.map(t => t.id));
-      const newTasks = allTasks.filter(t => !orderedIds.has(t.id));
+      const newTasks = visibleTasks.filter(t => !orderedIds.has(t.id));
       
       const finalOrdered = [...ordered, ...newTasks];
       setOrderedTasks(finalOrdered);
@@ -84,10 +92,10 @@ export function DayView({
       saveTodayTaskOrder(cleanedOrder);
     } else {
       // No saved order, use default order
-      setOrderedTasks(allTasks);
+      setOrderedTasks(visibleTasks);
       // Save initial order
-      if (allTasks.length > 0) {
-        saveTodayTaskOrder(allTasks.map(t => t.id));
+      if (visibleTasks.length > 0) {
+        saveTodayTaskOrder(visibleTasks.map(t => t.id));
       }
     }
   }, [tasks, isTodayView]);
@@ -213,6 +221,21 @@ export function DayView({
     setDraggedIndex(null);
     setDragOverIndex(null);
     setDropPosition(null);
+  };
+
+  const handleHideTaskClick = (task: TaskWithType) => {
+    setTaskToHide(task);
+    setHideConfirmOpen(true);
+  };
+
+  const handleConfirmHide = () => {
+    if (taskToHide) {
+      hideTodayTask(taskToHide.id);
+      // Update local state to remove hidden task
+      setOrderedTasks(prev => prev.filter(t => t.id !== taskToHide.id));
+      setHideConfirmOpen(false);
+      setTaskToHide(null);
+    }
   };
 
   const getTaskClassName = (taskType: 'periodic' | 'specific'): string => {
@@ -346,23 +369,39 @@ export function DayView({
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
-                      className={`relative transition-all duration-200 ${
+                      className={`relative group transition-all duration-200 ${
                         draggedIndex === index 
                           ? 'z-50 cursor-grabbing' 
                           : 'cursor-move hover:opacity-90 z-0'
                       }`}
                     >
-                      <TaskItemCompact 
-                        task={task} 
-                        className={`transition-all ${
-                          draggedIndex === index 
-                            ? 'shadow-2xl scale-105 ring-4 ring-blue-500/40 ring-offset-2 bg-background border-2 border-blue-500/60' 
-                            : ''
-                        } ${getTaskClassName(task.taskType)}`}
-                        onSubmit={onUpdateTask}
-                        onDelete={onDeleteTask}
-                        onSuccess={onModeSaved}
-                      />
+                      <div className="relative">
+                        <TaskItemCompact 
+                          task={task} 
+                          className={`transition-all ${
+                            draggedIndex === index 
+                              ? 'shadow-2xl scale-105 ring-4 ring-blue-500/40 ring-offset-2 bg-background border-2 border-blue-500/60' 
+                              : ''
+                          } ${getTaskClassName(task.taskType)}`}
+                          onSubmit={onUpdateTask}
+                          onDelete={onDeleteTask}
+                          onSuccess={onModeSaved}
+                        />
+                        {/* Hide button - always visible */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleHideTaskClick(task);
+                          }}
+                          className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 hover:bg-muted/50 transition-colors cursor-pointer z-30"
+                          title="Fini de faire cette tâche"
+                        >
+                          <svg className="w-5 h-5 text-muted-foreground hover:text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </button>
+                      </div>
                       {dragOverIndex === index && dropPosition === 'before' && draggedIndex !== null && draggedIndex !== index && (
                         <div className="absolute -top-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
                       )}
@@ -559,6 +598,45 @@ export function DayView({
           </div>
         )}
       </div>
+
+      {/* Confirmation dialog for hiding task */}
+      <Dialog open={hideConfirmOpen} onOpenChange={setHideConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex flex-col items-center gap-4 mb-4">
+              <DialogTitle className="text-center">C'est bon c'est fini ?</DialogTitle>
+              <Image 
+                src="/kroni-impatient.png" 
+                alt="Kroni impatient" 
+                width={80} 
+                height={80} 
+                className="rounded-md"
+              />
+              <DialogDescription className="text-center">
+                Êtes-vous sûr d'avoir bien fini la tâche <strong>"{taskToHide?.title}"</strong> ?<br />
+              </DialogDescription>
+            </div>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <DialogClose asChild>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full sm:w-auto cursor-pointer"
+              >
+                Annuler
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              className="w-full sm:w-auto cursor-pointer bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleConfirmHide}
+            >
+              Finis !
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
