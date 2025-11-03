@@ -95,6 +95,17 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
 
     // Validation for signup mode
     if (mode === "signup") {
+      const trimmedUsername = username.trim();
+      if (!trimmedUsername) {
+        setError("Le nom d'utilisateur est requis");
+        setLoading(false);
+        return;
+      }
+      if (trimmedUsername.length > 20) {
+        setError("Le nom d'utilisateur doit contenir au plus 20 caractères");
+        setLoading(false);
+        return;
+      }
       const passwordValidation = validatePassword(password);
       if (!passwordValidation.valid) {
         setError(passwordValidation.message);
@@ -111,7 +122,7 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
     try {
       const result = mode === "login" 
         ? await signIn(email, password)
-        : await signUp(email, password, username, licenseKey);
+        : await signUp(email, password, username.trim(), licenseKey);
 
       if ('error' in result) {
         setError(result.error || "Une erreur est survenue");
@@ -145,8 +156,10 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
               placeholder="Votre nom d'utilisateur"
               autoComplete="username"
               required
+              maxLength={20}
               disabled={emailSent}
             />
+            <p className="text-xs text-muted-foreground mt-1">20 caractères max</p>
           </div>
           <div>
             <label htmlFor="licenseKey" className="block text-sm font-medium text-foreground mb-1">

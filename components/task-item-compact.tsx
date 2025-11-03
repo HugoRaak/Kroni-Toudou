@@ -28,7 +28,7 @@ export function TaskItemCompact({
         <div className={`rounded-lg border p-3 cursor-pointer hover:opacity-80 transition-opacity ${className || ''}`}>
           <div className="font-medium text-foreground">{task.title}</div>
           {task.description && (
-            <div className="text-sm text-muted-foreground">{task.description}</div>
+            <div className="text-sm text-muted-foreground max-w-[90%]">{task.description}</div>
           )}
         </div>
       }

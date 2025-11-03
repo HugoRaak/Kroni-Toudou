@@ -60,6 +60,25 @@ export async function updateTaskAction(
 ): Promise<Task | null> {
   const supabase = await supabaseServer();
   
+  // Verify authenticated user
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    console.warn('Security: user not authenticated');
+    return null;
+  }
+
+  // Verify task ownership
+  const { data: existingTask } = await supabase
+    .from('tasks')
+    .select('user_id')
+    .eq('id', id)
+    .single();
+  
+  if (!existingTask || existingTask.user_id !== user.id) {
+    console.warn('Security: task ownership mismatch');
+    return null;
+  }
+  
   const { data, error } = await supabase
     .from('tasks')
     .update({
@@ -67,6 +86,7 @@ export async function updateTaskAction(
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
+    .eq('user_id', user.id)
     .select()
     .single();
 
@@ -81,10 +101,30 @@ export async function updateTaskAction(
 export async function deleteTaskAction(id: string): Promise<boolean> {
   const supabase = await supabaseServer();
   
+  // Verify authenticated user
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    console.warn('Security: user not authenticated');
+    return false;
+  }
+
+  // Verify task ownership
+  const { data: existingTask } = await supabase
+    .from('tasks')
+    .select('user_id')
+    .eq('id', id)
+    .single();
+  
+  if (!existingTask || existingTask.user_id !== user.id) {
+    console.warn('Security: task ownership mismatch');
+    return false;
+  }
+  
   const { error } = await supabase
     .from('tasks')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .eq('user_id', user.id);
 
   if (error) {
     console.error('Error deleting task:', error);
@@ -95,7 +135,15 @@ export async function deleteTaskAction(id: string): Promise<boolean> {
 }
 
 export async function createTaskFromForm(userId: string, formData: FormData): Promise<Task | null> {
-  const title = String(formData.get('title') || '');
+  // Verify authenticated user
+  const supabase = await supabaseServer();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user || user.id !== userId) {
+    console.warn('Security: userId mismatch');
+    return null;
+  }
+
+  const title = String(formData.get('title') || '').trim();
   const description = String(formData.get('description') || '');
   const taskType = String(formData.get('taskType') || '');
   const frequencyRaw = String(formData.get('frequency') || '');
@@ -104,6 +152,22 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
   const postponed_daysRaw = String(formData.get('postponed_days') || '');
   const modeRaw = String(formData.get('mode') || '');
   const mode: 'Tous' | 'Présentiel' | 'Distanciel' = (modeRaw === 'Présentiel' || modeRaw === 'Distanciel') ? modeRaw : 'Tous';
+
+  // Basic validation: title length
+  if (!title || title.length > 100) {
+    console.warn('Validation failed: title');
+    return null;
+  }
+  if (description.length > 3000) {
+    console.warn('Validation failed: description');
+    return null;
+  }
+  // taskType whitelist
+  const validTaskTypes = new Set(['periodic', 'specific', 'when-possible']);
+  if (!validTaskTypes.has(taskType)) {
+    console.warn('Validation failed: taskType');
+    return null;
+  }
 
   // Préparer les données selon le type de tâche
   let taskData = {
@@ -120,13 +184,45 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
 
   // Adapter les données selon le type
   if (taskType === 'periodic') {
-    taskData.frequency = frequencyRaw ? (frequencyRaw as Frequency) : undefined;
-    taskData.day = dayRaw ? (dayRaw as DayOfWeek) : undefined;
+    const validFrequencies: Frequency[] = ['quotidien','hebdomadaire','mensuel','annuel'] as any;
+    if (frequencyRaw) {
+      if (!validFrequencies.includes(frequencyRaw as Frequency)) {
+        console.warn('Validation failed: frequency');
+        return null;
+      }
+      taskData.frequency = frequencyRaw as Frequency;
+    }
+    if (dayRaw) {
+      const validDays: DayOfWeek[] = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'] as any;
+      if (!validDays.includes(dayRaw as DayOfWeek)) {
+        console.warn('Validation failed: day');
+        return null;
+      }
+      taskData.day = dayRaw as DayOfWeek;
+    }
   } else if (taskType === 'specific') {
-    taskData.due_on = due_onRaw || undefined;
-    taskData.postponed_days = postponed_daysRaw ? Number(postponed_daysRaw) : undefined;
+    if (due_onRaw) {
+      const ts = Date.parse(due_onRaw);
+      if (Number.isNaN(ts)) {
+        console.warn('Validation failed: due_on');
+        return null;
+      }
+      taskData.due_on = due_onRaw;
+    }
+    if (postponed_daysRaw) {
+      const parsed = Number(postponed_daysRaw);
+      if (!Number.isInteger(parsed) || parsed <= 0) {
+        console.warn('Validation failed: postponed_days');
+        return null;
+      }
+      taskData.postponed_days = parsed;
+    }
   } else if (taskType === 'when-possible') {
     taskData.in_progress = formData.get('in_progress') != null;
+    if (typeof taskData.in_progress !== 'boolean') {
+      console.warn('Validation failed: in_progress');
+      return null;
+    }
   }
 
   return await createTaskAction(

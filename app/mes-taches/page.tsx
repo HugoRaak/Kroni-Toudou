@@ -15,7 +15,7 @@ import { SectionWithFilters } from '@/components/section-with-filters';
 async function updateTaskFromForm(formData: FormData) {
   'use server';
   const id = String(formData.get('id'));
-  const title = String(formData.get('title') || '');
+  const title = String(formData.get('title') || '').trim();
   const description = String(formData.get('description') || '');
   const taskType = String(formData.get('taskType') || '');
   const frequencyRaw = String(formData.get('frequency') || '');
@@ -37,15 +37,54 @@ async function updateTaskFromForm(formData: FormData) {
     in_progress: undefined,
   };
 
+  // Validations communes
+  if (!updates.title || updates.title.length > 100) {
+    return false;
+  }
+  if ((updates.description ?? '').length > 3000) {
+    return false;
+  }
+  const validTaskTypes = new Set(['periodic','specific','when-possible']);
+  if (!validTaskTypes.has(taskType)) {
+    return false;
+  }
+
   // Adapter les données selon le type
   if (taskType === 'periodic') {
-    updates.frequency = frequencyRaw ? (frequencyRaw as Task['frequency']) : undefined;
-    updates.day = dayRaw ? (dayRaw as Task['day']) : undefined;
+    if (frequencyRaw) {
+      const validFrequencies = ['quotidien','hebdomadaire','mensuel','annuel'] as Task['frequency'][];
+      if (!validFrequencies.includes(frequencyRaw as Task['frequency'])) {
+        return false;
+      }
+      updates.frequency = frequencyRaw as Task['frequency'];
+    }
+    if (dayRaw) {
+      const validDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'] as Task['day'][];
+      if (!validDays.includes(dayRaw as Task['day'])) {
+        return false;
+      }
+      updates.day = dayRaw as Task['day'];
+    }
   } else if (taskType === 'specific') {
-    updates.due_on = due_onRaw || undefined;
-    updates.postponed_days = postponed_daysRaw ? Number(postponed_daysRaw) : undefined;
+    if (due_onRaw) {
+      const ts = Date.parse(due_onRaw);
+      if (Number.isNaN(ts)) {
+        return false;
+      }
+      updates.due_on = due_onRaw;
+    }
+    if (postponed_daysRaw) {
+      const parsed = Number(postponed_daysRaw);
+      if (!Number.isInteger(parsed) || parsed <= 0) {
+        return false;
+      }
+      updates.postponed_days = parsed;
+    }
   } else if (taskType === 'when-possible') {
     updates.in_progress = formData.get('in_progress') != null;
+    if (typeof updates.in_progress !== 'boolean') {
+      return false;
+    }
   }
 
   const result = await updateTaskAction(id, updates);

@@ -2,7 +2,7 @@
 
 import { supabaseServer } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
-import { validateLicense, processPendingLicense } from '@/lib/db/licenses';
+import { validateLicense } from '@/lib/db/licenses';
 
 function translateError(errorMessage: string): string {
   const errorLower = errorMessage.toLowerCase();
@@ -51,8 +51,23 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signUp(email: string, password: string, username: string, licenseKey: string) {
+  // Sanitize and validate username
+  const sanitizedUsername = username.trim();
+  if (!sanitizedUsername) {
+    return { error: 'Le nom d\'utilisateur est requis' };
+  }
+  if (sanitizedUsername.length > 20) {
+    return { error: 'Le nom d\'utilisateur doit contenir au plus 20 caractères' };
+  }
+
+  // Sanitize license key
+  const sanitizedLicenseKey = licenseKey.trim();
+  if (!sanitizedLicenseKey) {
+    return { error: 'La clé de licence est requise' };
+  }
+
   // Validate license before creating account
-  const licenseValidation = await validateLicense(licenseKey);
+  const licenseValidation = await validateLicense(sanitizedLicenseKey);
   if (!licenseValidation.valid) {
     return { error: licenseValidation.error || 'Licence invalide' };
   }
@@ -64,8 +79,8 @@ export async function signUp(email: string, password: string, username: string, 
     password,
     options: {
       data: {
-        username: username,
-        pending_license_key: licenseKey, // Store license key in user metadata until email is confirmed
+        username: sanitizedUsername,
+        pending_license_key: sanitizedLicenseKey, // Store license key in user metadata until email is confirmed
       },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/home`
     }

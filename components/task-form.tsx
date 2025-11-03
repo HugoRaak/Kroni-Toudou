@@ -70,6 +70,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
           type="text"
           defaultValue={task?.title || ""}
           placeholder="Titre de la tâche"
+          maxLength={100}
           required
         />
       </div>
@@ -83,6 +84,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
           name="description"
           defaultValue={task?.description || ""}
           placeholder="Description de la tâche"
+          maxLength={3000}
           rows={3}
         />
       </div>
@@ -197,7 +199,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
               type="number"
               defaultValue={typeof task?.postponed_days === "number" ? String(task.postponed_days) : ""}
               placeholder="0"
-              min="0"
+            min="1"
             />
           </div>
         </>
