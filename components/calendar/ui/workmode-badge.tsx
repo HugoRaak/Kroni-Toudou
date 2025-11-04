@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { setWorkdayForUserAction } from "@/app/actions/workdays";
+import { formatDateLocal } from "@/lib/utils";
 
 type WorkMode = "Présentiel" | "Distanciel" | "Congé";
 
@@ -43,7 +44,8 @@ export function WorkModeBadge({
     if (selectedMode === workMode) return;
     setSaving(true);
     try {
-      await setWorkdayForUserAction(date, selectedMode);
+      const dateStr = formatDateLocal(date);
+      await setWorkdayForUserAction(dateStr, selectedMode);
       onSaved?.();
     } finally {
       setSaving(false);

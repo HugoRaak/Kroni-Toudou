@@ -2,24 +2,23 @@
 
 import { getWorkday, getWorkdaysInRange, upsertWorkday, WorkMode } from "@/lib/db/workdays";
 import { supabaseServer } from "@/lib/supabase/supabase-server";
-import { formatDateLocal } from "@/lib/utils";
 import { verifyAuthenticated } from "@/lib/auth/auth-helpers";
 
-export async function getWorkdayAction(userId: string, date: Date): Promise<WorkMode> {
+// Accept YYYY-MM-DD strings instead of Date objects to avoid timezone serialization issues
+export async function getWorkdayAction(userId: string, dateStr: string): Promise<WorkMode> {
   const supabase = await supabaseServer();
   const user = await verifyAuthenticated(supabase);
   if (!user || user.id !== userId) {
     console.warn('Security: userId mismatch or user not authenticated');
     return 'Présentiel'; // Default fallback
   }
-  const iso = formatDateLocal(date);
-  return await getWorkday(userId, iso);
+  return await getWorkday(userId, dateStr);
 }
 
 export async function getWorkdaysForRangeAction(
   userId: string,
-  startDate: Date,
-  endDate: Date
+  startDateStr: string,
+  endDateStr: string
 ): Promise<Record<string, WorkMode>> {
   const supabase = await supabaseServer();
   const user = await verifyAuthenticated(supabase);
@@ -27,28 +26,24 @@ export async function getWorkdaysForRangeAction(
     console.warn('Security: userId mismatch or user not authenticated');
     return {};
   }
-  const start = formatDateLocal(startDate);
-  const end = formatDateLocal(endDate);
-  return await getWorkdaysInRange(userId, start, end);
+  return await getWorkdaysInRange(userId, startDateStr, endDateStr);
 }
 
-export async function setWorkdayAction(userId: string, date: Date, mode: WorkMode): Promise<boolean> {
+export async function setWorkdayAction(userId: string, dateStr: string, mode: WorkMode): Promise<boolean> {
   const supabase = await supabaseServer();
   const user = await verifyAuthenticated(supabase);
   if (!user || user.id !== userId) {
     console.warn('Security: userId mismatch or user not authenticated');
     return false;
   }
-  const iso = formatDateLocal(date);
-  return await upsertWorkday(userId, iso, mode);
+  return await upsertWorkday(userId, dateStr, mode);
 }
 
-export async function setWorkdayForUserAction(date: Date, mode: WorkMode): Promise<boolean> {
+export async function setWorkdayForUserAction(dateStr: string, mode: WorkMode): Promise<boolean> {
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
-  const iso = formatDateLocal(date);
-  return await upsertWorkday(user.id, iso, mode);
+  return await upsertWorkday(user.id, dateStr, mode);
 }
 
 

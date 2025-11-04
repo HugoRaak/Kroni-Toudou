@@ -60,7 +60,7 @@ export function useWorkdaysEditor(
           const from = workdays[iso] ?? 'Présentiel';
           const to = localWorkdays[iso] ?? 'Présentiel';
           if (from !== to) {
-            promises.push(setWorkdayForUserAction(date, to));
+            promises.push(setWorkdayForUserAction(iso, to));
           }
         }
       } else {
@@ -68,9 +68,8 @@ export function useWorkdaysEditor(
         for (const [iso, to] of Object.entries(localWorkdays)) {
           const from = workdays[iso] ?? 'Présentiel';
           if (from !== to) {
-            // Parse date string (YYYY-MM-DD) to Date object without timezone issues
-            const date = parseDateLocal(iso);
-            promises.push(setWorkdayForUserAction(date, to));
+            // Use date string directly (YYYY-MM-DD) to avoid timezone issues
+            promises.push(setWorkdayForUserAction(iso, to));
           }
         }
       }

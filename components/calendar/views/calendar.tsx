@@ -11,6 +11,7 @@ import { getWorkdayAction, getWorkdaysForRangeAction } from "@/app/actions/workd
 import { getTodayTasksFromStorage, saveTodayTasksToStorage, isToday } from "@/lib/storage/localStorage-tasks";
 import { navigateCalendarDate, type CalendarView } from "@/lib/calendar/calendar-navigation";
 import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
+import { formatDateLocal } from "@/lib/utils";
 
 export function Calendar({ 
   userId, 
@@ -66,7 +67,7 @@ export function Calendar({
           
           if (storedTasks) {
             // Load from localStorage
-            const mode = await getWorkdayAction(userId, dayDate);
+            const mode = await getWorkdayAction(userId, formatDateLocal(dayDate));
             setDayTasks(storedTasks);
             setDayWorkMode(mode);
             setLoading(false);
@@ -75,11 +76,12 @@ export function Calendar({
         }
         
         // Load from DB (for today, when no localStorage or forceReload; for other days, always)
+        const dayDateStr = formatDateLocal(dayDate);
         if (isToday(dayDate)) {
           // Today: load from DB and save to localStorage
           const [dayData, mode] = await Promise.all([
             getTasksForDayAction(userId, dayDate),
-            getWorkdayAction(userId, dayDate),
+            getWorkdayAction(userId, dayDateStr),
           ]);
           saveTodayTasksToStorage(dayData);
           setDayTasks(dayData);
@@ -88,7 +90,7 @@ export function Calendar({
           // Not today, load normally from DB
           const [dayData, mode] = await Promise.all([
             getTasksForDayAction(userId, dayDate),
-            getWorkdayAction(userId, dayDate),
+            getWorkdayAction(userId, dayDateStr),
           ]);
           setDayTasks(dayData);
           setDayWorkMode(mode);
@@ -112,7 +114,7 @@ export function Calendar({
 
         const [tasksData, workdays] = await Promise.all([
           getTasksForDateRangeAction(userId, startDate, endDate),
-          getWorkdaysForRangeAction(userId, startDate, endDate),
+          getWorkdaysForRangeAction(userId, formatDateLocal(startDate), formatDateLocal(endDate)),
         ]);
         setTasks(tasksData);
         setWorkdaysMap(workdays);
@@ -136,9 +138,10 @@ export function Calendar({
     
     // If viewing today in day view, reload from DB and update localStorage
     if (result && currentView === "day" && isToday(dayDate)) {
+      const dayDateStr = formatDateLocal(dayDate);
       const [dayData, mode] = await Promise.all([
         getTasksForDayAction(userId, dayDate),
-        getWorkdayAction(userId, dayDate),
+        getWorkdayAction(userId, dayDateStr),
       ]);
       saveTodayTasksToStorage(dayData);
       setDayTasks(dayData);
@@ -156,9 +159,10 @@ export function Calendar({
     
     // If viewing today in day view, reload from DB and update localStorage
     if (result && currentView === "day" && isToday(dayDate)) {
+      const dayDateStr = formatDateLocal(dayDate);
       const [dayData, mode] = await Promise.all([
         getTasksForDayAction(userId, dayDate),
-        getWorkdayAction(userId, dayDate),
+        getWorkdayAction(userId, dayDateStr),
       ]);
       saveTodayTasksToStorage(dayData);
       setDayTasks(dayData);
