@@ -16,7 +16,9 @@ function formatDateDisplay(dateStr: string): string {
   const datePart = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
   const [year, month, day] = datePart.split('-').map(Number);
   const date = new Date(year, month - 1, day);
-  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  const formatted = date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  // Capitalize first letter of month name
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
 // Mode badge component to avoid recreating JSX on each render

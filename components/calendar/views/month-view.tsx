@@ -110,10 +110,11 @@ export function MonthView({
   
   const monthDates = useMemo(() => getMonthGridDates(anchorDate), [anchorDate]);
 
-  const monthName = useMemo(
-    () => anchorDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }),
-    [anchorDate]
-  );
+  const monthName = useMemo(() => {
+    const monthStr = anchorDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+    // Capitalize first letter of month name
+    return monthStr.charAt(0).toUpperCase() + monthStr.slice(1);
+  }, [anchorDate]);
 
   return (
     <div className="space-y-4">

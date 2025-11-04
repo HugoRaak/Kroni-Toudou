@@ -2,7 +2,6 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CalendarTask, calendarTaskToTaskLike } from "@/lib/calendar/calendar-utils";
-import { TaskSectionPeriodic } from "@/components/calendar/tasks/task-section-periodic";
 import { TaskSectionSpecific } from "@/components/calendar/tasks/task-section-specific";
 import { WorkModeBadge } from "@/components/calendar/ui/workmode-badge";
 
@@ -28,14 +27,13 @@ export function DayTasksDialog({
   onSaved,
 }: DayTasksDialogProps) {
   const day = date.getDate();
-  const month = date.toLocaleDateString("fr-FR", { month: "long" });
+  const monthRaw = date.toLocaleDateString("fr-FR", { month: "long" });
+  const month = monthRaw.charAt(0).toUpperCase() + monthRaw.slice(1);
   const year = date.getFullYear();
-  const dayName = date.toLocaleDateString("fr-FR", { weekday: "long" });
+  const dayNameRaw = date.toLocaleDateString("fr-FR", { weekday: "long" });
+  const dayName = dayNameRaw.charAt(0).toUpperCase() + dayNameRaw.slice(1);
 
-  const periodic = tasks
-    .filter((t) => t.type === "periodic")
-    .map(calendarTaskToTaskLike)
-    .filter((t): t is import("@/lib/types").Task => t.id !== undefined);
+  // Only specific date tasks are passed to this dialog (from week/month views)
   const specific = tasks
     .filter((t) => t.type === "specific")
     .map(calendarTaskToTaskLike)
@@ -72,20 +70,12 @@ export function DayTasksDialog({
               {workMode === "Congé" ? "Là c'est repos !" : "Aucune tâche pour ce jour"}
             </p>
           ) : (
-            <>
-              <TaskSectionPeriodic
-                tasks={periodic}
-                onUpdateTask={onUpdateTask}
-                onDeleteTask={onDeleteTask}
-                onSuccess={onSaved}
-              />
-              <TaskSectionSpecific
-                tasks={specific}
-                onUpdateTask={onUpdateTask}
-                onDeleteTask={onDeleteTask}
-                onSuccess={onSaved}
-              />
-            </>
+            <TaskSectionSpecific
+              tasks={specific}
+              onUpdateTask={onUpdateTask}
+              onDeleteTask={onDeleteTask}
+              onSuccess={onSaved}
+            />
           )}
         </div>
       </DialogContent>

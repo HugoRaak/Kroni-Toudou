@@ -14,6 +14,7 @@ import { isToday, getTodayHiddenTaskIds, hideTodayTask, hideTodayTempTask } from
 import { useTempTasks } from "@/lib/hooks/use-temp-tasks";
 import { useUnifiedTaskHandlers } from "@/lib/hooks/use-unified-task-handlers";
 import { prepareTasksForToday } from "@/lib/tasks/task-preparation";
+import { formatDateLocal } from "@/lib/utils";
 
 export type DayTasksData = {
   periodic: Task[];
@@ -46,9 +47,15 @@ export function DayView({
   onDeleteTask: (id: string) => Promise<boolean>;
 }) {
   const day = useMemo(() => date.getDate(), [date]);
-  const month = useMemo(() => date.toLocaleDateString("fr-FR", { month: "long" }), [date]);
+  const month = useMemo(() => {
+    const monthStr = date.toLocaleDateString("fr-FR", { month: "long" });
+    return monthStr.charAt(0).toUpperCase() + monthStr.slice(1);
+  }, [date]);
   const year = useMemo(() => date.getFullYear(), [date]);
-  const dayName = useMemo(() => date.toLocaleDateString("fr-FR", { weekday: "long" }), [date]);
+  const dayName = useMemo(() => {
+    const dayNameStr = date.toLocaleDateString("fr-FR", { weekday: "long" });
+    return dayNameStr.charAt(0).toUpperCase() + dayNameStr.slice(1);
+  }, [date]);
   const isTodayView = useMemo(() => isToday(date), [date]);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [taskToHide, setTaskToHide] = useState<TaskWithType | null>(null);
@@ -132,7 +139,7 @@ export function DayView({
           </svg>
         </Button>
         <div className="text-center">
-          {date.toDateString() === new Date().toDateString() && (
+          {formatDateLocal(date) === formatDateLocal(new Date()) && (
             <span className="inline-block mb-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
               Aujourd'hui
             </span>
