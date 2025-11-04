@@ -1,7 +1,7 @@
 // One-line note: calculates default work mode based on day of week and French public holidays from API
 
 import { WorkMode } from "@/lib/db/workdays";
-import { formatDateLocal } from "@/lib/utils";
+import { formatDateLocal, parseDateLocal } from "@/lib/utils";
 
 // Cache for public holidays by year
 const holidaysCache = new Map<number, Set<string>>();
@@ -62,7 +62,7 @@ async function isFrenchPublicHoliday(date: Date): Promise<boolean> {
  * - Monday, Tuesday, Thursday -> Présentiel
  */
 export async function getDefaultWorkMode(date: Date | string): Promise<WorkMode> {
-  const dateObj = typeof date === 'string' ? new Date(date + 'T00:00:00') : date;
+  const dateObj = typeof date === 'string' ? parseDateLocal(date) : date;
   const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
   // Weekends are always Congé

@@ -212,7 +212,7 @@ export function DayView({
             </div>
           </div>
         ) : !tasks ? (
-          <p className="text-center text-muted-foreground">{workMode === 'Congé' ? 'Là c&apos;est repos !' : 'Aucune tâche pour ce jour'}</p>
+          <p className="text-center text-muted-foreground">{workMode === 'Congé' ? "Là c'est repos !" : 'Aucune tâche pour ce jour'}</p>
         ) : isTodayView ? (
           // Today view: merged list with drag & drop (including temp tasks)
           <div className="space-y-6">
@@ -240,7 +240,7 @@ export function DayView({
             {preparedTasks.length === 0 &&
               tasks.whenPossible.inProgress.length === 0 &&
               tasks.whenPossible.notStarted.length === 0 && (
-                <p className="text-center text-muted-foreground">{workMode === 'Congé' ? 'Là c&apos;est repos !' : 'Aucune tâche pour ce jour'}</p>
+                <p className="text-center text-muted-foreground">{workMode === 'Congé' ? "Là c'est repos !" : 'Aucune tâche pour ce jour'}</p>
               )}
           </div>
         ) : (
@@ -269,7 +269,7 @@ export function DayView({
               tasks.specific.length === 0 &&
               tasks.whenPossible.inProgress.length === 0 &&
               tasks.whenPossible.notStarted.length === 0 && (
-                <p className="text-center text-muted-foreground">{workMode === 'Congé' ? 'Là c&apos;est repos !' : 'Aucune tâche pour ce jour'}</p>
+                <p className="text-center text-muted-foreground">{workMode === 'Congé' ? "Là c'est repos !" : 'Aucune tâche pour ce jour'}</p>
               )}
           </div>
         )}

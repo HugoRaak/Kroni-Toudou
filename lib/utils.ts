@@ -12,3 +12,9 @@ export function formatDateLocal(date: Date): string {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+// Parses a YYYY-MM-DD date string to Date object using local timezone (avoids UTC timezone issues)
+export function parseDateLocal(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
