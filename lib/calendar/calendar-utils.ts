@@ -109,37 +109,18 @@ export async function getTasksForDay(userId: string, date?: Date): Promise<{
 }
 
 // Get tasks for a date range (week/month view)
+// Only returns specific date tasks, excluding periodic tasks (weekly/monthly)
 export async function getTasksForDateRange(
   userId: string,
   startDate: Date,
   endDate: Date
 ): Promise<CalendarTask[]> {
   const allTasks = await getTasks(userId);
-  const { periodic, specific } = filterTasksByType(allTasks);
+  const { specific } = filterTasksByType(allTasks);
   
   const tasks: CalendarTask[] = [];
   
-  // Add periodic tasks (weekly and monthly only for week/month view)
-  // Keep only periodic tasks that have at least one occurrence within [start, end]
-  const periodicForView = periodic.filter(task => {
-    if (task.frequency !== 'hebdomadaire' && task.frequency !== 'mensuel') return false;
-    if (!task.day) return false;
-
-    // Iterate through the date range to detect at least one matching occurrence
-    const cursor = new Date(startDate);
-    while (cursor <= endDate) {
-      if (task.frequency === 'hebdomadaire') {
-        if (getDayName(cursor) === task.day) return true;
-      } else if (task.frequency === 'mensuel') {
-        // Include only if the first occurrence of the task's weekday in its month falls within the range
-        if (getDayName(cursor) === task.day && cursor.getDate() <= 7) return true;
-      }
-      cursor.setDate(cursor.getDate() + 1);
-    }
-    return false;
-  });
-  
-  // Add specific date tasks
+  // Add only specific date tasks (no periodic tasks for week/month view)
   // Compare date strings (YYYY-MM-DD format) to avoid timezone issues
   const startDateStr = formatDateLocal(startDate);
   const endDateStr = formatDateLocal(endDate);
@@ -150,12 +131,12 @@ export async function getTasksForDateRange(
   });
   
   // Convert to CalendarTask format
-  [...periodicForView, ...specificForRange].forEach(task => {
+  specificForRange.forEach(task => {
     tasks.push({
       id: task.id,
       title: task.title,
       description: task.description,
-      type: task.frequency ? 'periodic' : 'specific',
+      type: 'specific',
       frequency: task.frequency,
       day: task.day,
       due_on: task.due_on,

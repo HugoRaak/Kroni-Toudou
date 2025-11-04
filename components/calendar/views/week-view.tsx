@@ -113,22 +113,27 @@ export function WeekView({
 
   const weekDates = useMemo(() => {
     const today = new Date();
+    const todayStr = formatDateLocal(today);
     return Array.from({ length: 7 }, (_, i) => {
       const date = new Date(startOfWeek);
       date.setDate(startOfWeek.getDate() + i);
       return {
         date: date.getDate(),
         dayName: date.toLocaleDateString("fr-FR", { weekday: "short" }),
-        isToday: date.toDateString() === today.toDateString(),
+        isToday: formatDateLocal(date) === todayStr,
         dateObj: date,
       };
     });
   }, [startOfWeek]);
 
-  const subtitle = useMemo(
-    () => `${startOfWeek.getDate()} ${startOfWeek.toLocaleDateString("fr-FR", { month: "long" }).slice(0, 3)} - ${endOfWeek.getDate()} ${endOfWeek.toLocaleDateString("fr-FR", { month: "long" }).slice(0, 3)} ${endOfWeek.getFullYear()}`,
-    [startOfWeek, endOfWeek]
-  );
+  const subtitle = useMemo(() => {
+    const startMonth = startOfWeek.toLocaleDateString("fr-FR", { month: "long" });
+    const endMonth = endOfWeek.toLocaleDateString("fr-FR", { month: "long" });
+    // Capitalize first letter of month names
+    const startMonthCap = startMonth.charAt(0).toUpperCase() + startMonth.slice(1);
+    const endMonthCap = endMonth.charAt(0).toUpperCase() + endMonth.slice(1);
+    return `${startOfWeek.getDate()} ${startMonthCap} - ${endOfWeek.getDate()} ${endMonthCap} ${endOfWeek.getFullYear()}`;
+  }, [startOfWeek, endOfWeek]);
 
   return (
     <div className="space-y-4">

@@ -66,7 +66,7 @@ export function Navbar() {
                     href="/home"
                     className={`${LINK_BASE} ${pathname === "/home" ? LINK_ACTIVE : LINK_INACTIVE}`}
                   >
-                    Accueil
+                    Calendrier
                   </Link>
                   <Link
                     href="/mes-taches"
@@ -103,7 +103,7 @@ export function Navbar() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/home" className="cursor-pointer">Accueil</Link>
+                      <Link href="/home" className="cursor-pointer">Calendrier</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/mes-taches" className="cursor-pointer">Mes tâches</Link>
