@@ -29,7 +29,7 @@ export function HideTaskDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex flex-col items-center gap-4 mb-4">
-            <DialogTitle className="text-center">C&apos;est bon c&apos;est fini ?</DialogTitle>
+            <DialogTitle className="text-center">C'est bon c'est fini ?</DialogTitle>
             <Image
               src="/kroni-impatient.png"
               alt="Kroni impatient"
@@ -38,7 +38,7 @@ export function HideTaskDialog({
               className="rounded-md"
             />
             <DialogDescription className="text-center">
-              Êtes-vous sûr d&apos;avoir bien fini la tâche <strong>&quot;{task?.title}&quot;</strong> ?<br />
+              Êtes-vous sûr d'avoir bien fini la tâche <strong>"{task?.title}"</strong> ?<br />
             </DialogDescription>
           </div>
         </DialogHeader>

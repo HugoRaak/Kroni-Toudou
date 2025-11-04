@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { setWorkdayForUserAction } from '@/app/actions/workdays';
-import { formatDateLocal } from '@/lib/utils';
+import { formatDateLocal, parseDateLocal } from '@/lib/utils';
 
 type WorkMode = 'Présentiel' | 'Distanciel' | 'Congé';
 
@@ -69,8 +69,7 @@ export function useWorkdaysEditor(
           const from = workdays[iso] ?? 'Présentiel';
           if (from !== to) {
             // Parse date string (YYYY-MM-DD) to Date object without timezone issues
-            const [year, month, day] = iso.split('-').map(Number);
-            const date = new Date(year, month - 1, day);
+            const date = parseDateLocal(iso);
             promises.push(setWorkdayForUserAction(date, to));
           }
         }
