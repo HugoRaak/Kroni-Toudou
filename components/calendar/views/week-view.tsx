@@ -127,8 +127,8 @@ export function WeekView({
   }, [startOfWeek]);
 
   const subtitle = useMemo(() => {
-    const startMonth = startOfWeek.toLocaleDateString("fr-FR", { month: "long" });
-    const endMonth = endOfWeek.toLocaleDateString("fr-FR", { month: "long" });
+    const startMonth = startOfWeek.toLocaleDateString("fr-FR", { month: "short" });
+    const endMonth = endOfWeek.toLocaleDateString("fr-FR", { month: "short" });
     // Capitalize first letter of month names
     const startMonthCap = startMonth.charAt(0).toUpperCase() + startMonth.slice(1);
     const endMonthCap = endMonth.charAt(0).toUpperCase() + endMonth.slice(1);
