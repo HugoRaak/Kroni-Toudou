@@ -18,3 +18,8 @@ export function parseDateLocal(dateStr: string): Date {
   const [year, month, day] = dateStr.split('-').map(Number);
   return new Date(year, month - 1, day);
 }
+
+// Normalizes a date to midnight local time (00:00:00) to avoid timezone issues
+export function normalizeToMidnight(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}

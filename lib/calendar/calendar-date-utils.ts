@@ -2,7 +2,7 @@
  * Calendar date utilities for month and week views
  */
 
-import { formatDateLocal } from "@/lib/utils";
+import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 
 export interface MonthGridDate {
   date: number;
@@ -17,8 +17,9 @@ export interface MonthGridDate {
  * Week starts on Monday (French locale)
  */
 export function getMonthGridDates(anchorDate: Date): MonthGridDate[] {
-  const year = anchorDate.getFullYear();
-  const month = anchorDate.getMonth();
+  const normalizedAnchor = normalizeToMidnight(anchorDate);
+  const year = normalizedAnchor.getFullYear();
+  const month = normalizedAnchor.getMonth();
 
   const firstDay = new Date(year, month, 1);
   const startDate = new Date(firstDay);
@@ -30,7 +31,7 @@ export function getMonthGridDates(anchorDate: Date): MonthGridDate[] {
 
   const dates: MonthGridDate[] = [];
   const dateIterator = new Date(startDate);
-  const today = new Date();
+  const today = normalizeToMidnight(new Date());
   const todayStr = formatDateLocal(today);
 
   for (let i = 0; i < 42; i++) {
@@ -53,12 +54,13 @@ export function getMonthGridDates(anchorDate: Date): MonthGridDate[] {
  * Week starts on Monday (French locale)
  */
 export function getWeekDateRange(anchorDate: Date): { start: Date; end: Date } {
-  const startDate = new Date(anchorDate);
+  const normalizedAnchor = normalizeToMidnight(anchorDate);
+  const startDate = new Date(normalizedAnchor);
   // Get Monday of the week: getDay() returns 0 (Sunday) to 6 (Saturday)
   // To get Monday: if day is 0 (Sunday), go back 6 days; otherwise go back (day - 1) days
-  const dayOfWeek = anchorDate.getDay();
+  const dayOfWeek = normalizedAnchor.getDay();
   const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  startDate.setDate(anchorDate.getDate() - daysToMonday);
+  startDate.setDate(normalizedAnchor.getDate() - daysToMonday);
   
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + 6); // Sunday
@@ -71,7 +73,8 @@ export function getWeekDateRange(anchorDate: Date): { start: Date; end: Date } {
  * Week starts on Monday (French locale)
  */
 export function getMonthGridDatesArray(anchorDate: Date): Date[] {
-  const firstDay = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1);
+  const normalizedAnchor = normalizeToMidnight(anchorDate);
+  const firstDay = new Date(normalizedAnchor.getFullYear(), normalizedAnchor.getMonth(), 1);
   const startDate = new Date(firstDay);
   // Start from Monday: getDay() returns 0 (Sunday) to 6 (Saturday)
   // To get Monday: if day is 0 (Sunday), go back 6 days; otherwise go back (day - 1) days

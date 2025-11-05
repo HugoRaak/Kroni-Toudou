@@ -4,7 +4,7 @@ import DayCell from "@/components/calendar/ui/day-cell";
 import CalendarHeader from "@/components/calendar/ui/calendar-header";
 import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar/calendar-utils";
 import { DayTasksDialog } from "@/components/calendar/dialogs/day-tasks-dialog";
-import { formatDateLocal } from "@/lib/utils";
+import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
 import { getMonthGridDates, getMonthGridDatesArray } from "@/lib/calendar/calendar-date-utils";
 import { useMemo, useCallback, memo } from "react";
@@ -31,7 +31,7 @@ const DayCellWrapper = memo(({
   onDayClick: (date: Date) => void;
 }) => {
   const dayDateObj = useMemo(
-    () => new Date(date.year, date.month, date.date),
+    () => normalizeToMidnight(new Date(date.year, date.month, date.date)),
     [date.year, date.month, date.date]
   );
   const dayTasksAll = useMemo(

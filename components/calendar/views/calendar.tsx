@@ -11,7 +11,7 @@ import { getWorkdayAction, getWorkdaysForRangeAction } from "@/app/actions/workd
 import { getTodayTasksFromStorage, saveTodayTasksToStorage, isToday } from "@/lib/storage/localStorage-tasks";
 import { navigateCalendarDate, type CalendarView } from "@/lib/calendar/calendar-navigation";
 import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
-import { formatDateLocal } from "@/lib/utils";
+import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 
 export function Calendar({ 
   userId, 
@@ -105,11 +105,12 @@ export function Calendar({
           startDate = range.start;
           endDate = range.end;
         } else if (currentView === "month") {
-          startDate = new Date(anchor.getFullYear(), anchor.getMonth(), 1); // Premier du mois
-          endDate = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0); // Dernier du mois
+          const normalizedAnchor = normalizeToMidnight(anchor);
+          startDate = new Date(normalizedAnchor.getFullYear(), normalizedAnchor.getMonth(), 1); // Premier du mois
+          endDate = new Date(normalizedAnchor.getFullYear(), normalizedAnchor.getMonth() + 1, 0); // Dernier du mois
         } else {
-          startDate = new Date(anchor);
-          endDate = new Date(anchor);
+          startDate = normalizeToMidnight(anchor);
+          endDate = normalizeToMidnight(anchor);
         }
 
         const [tasksData, workdays] = await Promise.all([

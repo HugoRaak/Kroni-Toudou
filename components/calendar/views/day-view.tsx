@@ -14,7 +14,7 @@ import { isToday, getTodayHiddenTaskIds, hideTodayTask, hideTodayTempTask } from
 import { useTempTasks } from "@/lib/hooks/use-temp-tasks";
 import { useUnifiedTaskHandlers } from "@/lib/hooks/use-unified-task-handlers";
 import { prepareTasksForToday } from "@/lib/tasks/task-preparation";
-import { formatDateLocal } from "@/lib/utils";
+import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 
 export type DayTasksData = {
   periodic: Task[];
@@ -139,7 +139,7 @@ export function DayView({
           </svg>
         </Button>
         <div className="text-center">
-          {formatDateLocal(date) === formatDateLocal(new Date()) && (
+          {formatDateLocal(normalizeToMidnight(date)) === formatDateLocal(normalizeToMidnight(new Date())) && (
             <span className="inline-block mb-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
               Aujourd'hui
             </span>

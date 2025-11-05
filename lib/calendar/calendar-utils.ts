@@ -1,7 +1,7 @@
 import { Task, Frequency, DayOfWeek } from '@/lib/types';
 import { getTasks } from '@/lib/db/tasks';
 import { getWorkday } from '@/lib/db/workdays';
-import { formatDateLocal } from '@/lib/utils';
+import { formatDateLocal, normalizeToMidnight } from '@/lib/utils';
 
 export interface CalendarTask {
   id: string;
@@ -36,7 +36,8 @@ export function filterTasksByType(tasks: Task[]): {
 
 // Get periodic tasks for a specific date
 export function getPeriodicTasksForDate(tasks: Task[], date: Date): Task[] {
-  const dayName = getDayName(date);
+  const normalizedDate = normalizeToMidnight(date);
+  const dayName = getDayName(normalizedDate);
   
   return tasks.filter(task => {
     if (!task.frequency) return false;
@@ -49,7 +50,7 @@ export function getPeriodicTasksForDate(tasks: Task[], date: Date): Task[] {
         return task.day === dayName;
       
       case 'mensuel':
-        return task.day === dayName && date.getDate() <= 7;
+        return task.day === dayName && normalizedDate.getDate() <= 7;
       
       default:
         return false;
@@ -59,7 +60,8 @@ export function getPeriodicTasksForDate(tasks: Task[], date: Date): Task[] {
 
 // Get specific date tasks for a specific date
 export function getSpecificTasksForDate(tasks: Task[], date: Date): Task[] {
-  const dateString = formatDateLocal(date);
+  const normalizedDate = normalizeToMidnight(date);
+  const dateString = formatDateLocal(normalizedDate);
   return tasks.filter(task => task.due_on === dateString);
 }
 
@@ -86,7 +88,7 @@ export async function getTasksForDay(userId: string, date?: Date): Promise<{
   const allTasks = await getTasks(userId);
   const { periodic, specific, whenPossible } = filterTasksByType(allTasks);
   
-  const today = date ? date : new Date();
+  const today = date ? normalizeToMidnight(date) : normalizeToMidnight(new Date());
   const iso = formatDateLocal(today);
   const workMode = (await getWorkday(userId, iso)) ?? 'Présentiel';
 
@@ -122,8 +124,10 @@ export async function getTasksForDateRange(
   
   // Add only specific date tasks (no periodic tasks for week/month view)
   // Compare date strings (YYYY-MM-DD format) to avoid timezone issues
-  const startDateStr = formatDateLocal(startDate);
-  const endDateStr = formatDateLocal(endDate);
+  const normalizedStartDate = normalizeToMidnight(startDate);
+  const normalizedEndDate = normalizeToMidnight(endDate);
+  const startDateStr = formatDateLocal(normalizedStartDate);
+  const endDateStr = formatDateLocal(normalizedEndDate);
   const specificForRange = specific.filter(task => {
     if (!task.due_on) return false;
     // task.due_on is already in YYYY-MM-DD format
@@ -150,11 +154,12 @@ export async function getTasksForDateRange(
 
 // Get tasks for a specific date (legacy function for compatibility)
 export function getTasksForDate(tasks: CalendarTask[], date: Date): CalendarTask[] {
-  const dayName = getDayName(date);
+  const normalizedDate = normalizeToMidnight(date);
+  const dayName = getDayName(normalizedDate);
   
   return tasks.filter(task => {
     if (task.type === 'specific') {
-      return task.due_on === formatDateLocal(date);
+      return task.due_on === formatDateLocal(normalizedDate);
     }
     
     if (task.type === 'periodic' && task.frequency && task.day) {
@@ -162,7 +167,7 @@ export function getTasksForDate(tasks: CalendarTask[], date: Date): CalendarTask
         case 'hebdomadaire':
           return task.day === dayName;
         case 'mensuel':
-          return task.day === dayName && date.getDate() <= 7;
+          return task.day === dayName && normalizedDate.getDate() <= 7;
         default:
           return false;
       }
