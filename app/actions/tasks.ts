@@ -6,21 +6,24 @@ import { Task, Frequency, DayOfWeek } from "@/lib/types";
 import { parseTaskFormData, parsedDataToTaskUpdates } from "@/lib/tasks/task-form-parser";
 import { revalidatePath } from "next/cache";
 import { verifyTaskOwnership, verifyAuthenticated } from "@/lib/auth/auth-helpers";
+import { parseDateLocal } from "@/lib/utils";
 
-export async function getTasksForDayAction(userId: string, date: Date) {
+// Accept YYYY-MM-DD strings instead of Date objects to avoid timezone serialization issues
+export async function getTasksForDayAction(userId: string, dateStr: string) {
   const supabase = await supabaseServer();
   const user = await verifyAuthenticated(supabase);
   if (!user || user.id !== userId) {
     console.warn('Security: userId mismatch or user not authenticated');
     return null;
   }
+  const date = parseDateLocal(dateStr);
   return await getTasksForDay(userId, date);
 }
 
 export async function getTasksForDateRangeAction(
   userId: string,
-  startDate: Date,
-  endDate: Date
+  startDateStr: string,
+  endDateStr: string
 ) {
   const supabase = await supabaseServer();
   const user = await verifyAuthenticated(supabase);
@@ -28,6 +31,8 @@ export async function getTasksForDateRangeAction(
     console.warn('Security: userId mismatch or user not authenticated');
     return [];
   }
+  const startDate = parseDateLocal(startDateStr);
+  const endDate = parseDateLocal(endDateStr);
   return await getTasksForDateRange(userId, startDate, endDate);
 }
 

@@ -22,28 +22,28 @@ export function getMonthGridDates(anchorDate: Date): MonthGridDate[] {
   const month = normalizedAnchor.getMonth();
 
   const firstDay = new Date(year, month, 1);
-  const startDate = new Date(firstDay);
   // Start from Monday: getDay() returns 0 (Sunday) to 6 (Saturday)
   // To get Monday: if day is 0 (Sunday), go back 6 days; otherwise go back (day - 1) days
   const dayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  startDate.setDate(startDate.getDate() - daysToMonday);
+  // Create start date directly using constructor to guarantee midnight local time
+  const startDate = new Date(year, month, 1 - daysToMonday);
 
   const dates: MonthGridDate[] = [];
-  const dateIterator = new Date(startDate);
   const today = normalizeToMidnight(new Date());
   const todayStr = formatDateLocal(today);
 
   for (let i = 0; i < 42; i++) {
-    const dateStr = formatDateLocal(dateIterator);
+    // Create each date directly using constructor to guarantee midnight local time
+    const date = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i);
+    const dateStr = formatDateLocal(date);
     dates.push({
-      date: dateIterator.getDate(),
-      month: dateIterator.getMonth(),
-      year: dateIterator.getFullYear(),
-      isCurrentMonth: dateIterator.getMonth() === month,
+      date: date.getDate(),
+      month: date.getMonth(),
+      year: date.getFullYear(),
+      isCurrentMonth: date.getMonth() === month,
       isToday: dateStr === todayStr,
     });
-    dateIterator.setDate(dateIterator.getDate() + 1);
   }
 
   return dates;
@@ -55,15 +55,13 @@ export function getMonthGridDates(anchorDate: Date): MonthGridDate[] {
  */
 export function getWeekDateRange(anchorDate: Date): { start: Date; end: Date } {
   const normalizedAnchor = normalizeToMidnight(anchorDate);
-  const startDate = new Date(normalizedAnchor);
   // Get Monday of the week: getDay() returns 0 (Sunday) to 6 (Saturday)
   // To get Monday: if day is 0 (Sunday), go back 6 days; otherwise go back (day - 1) days
   const dayOfWeek = normalizedAnchor.getDay();
   const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  startDate.setDate(normalizedAnchor.getDate() - daysToMonday);
-  
-  const endDate = new Date(startDate);
-  endDate.setDate(startDate.getDate() + 6); // Sunday
+  // Create dates directly using constructor to guarantee midnight local time
+  const startDate = new Date(normalizedAnchor.getFullYear(), normalizedAnchor.getMonth(), normalizedAnchor.getDate() - daysToMonday);
+  const endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6); // Sunday
 
   return { start: startDate, end: endDate };
 }
@@ -74,19 +72,20 @@ export function getWeekDateRange(anchorDate: Date): { start: Date; end: Date } {
  */
 export function getMonthGridDatesArray(anchorDate: Date): Date[] {
   const normalizedAnchor = normalizeToMidnight(anchorDate);
-  const firstDay = new Date(normalizedAnchor.getFullYear(), normalizedAnchor.getMonth(), 1);
-  const startDate = new Date(firstDay);
+  const year = normalizedAnchor.getFullYear();
+  const month = normalizedAnchor.getMonth();
+  const firstDay = new Date(year, month, 1);
   // Start from Monday: getDay() returns 0 (Sunday) to 6 (Saturday)
   // To get Monday: if day is 0 (Sunday), go back 6 days; otherwise go back (day - 1) days
   const dayOfWeek = firstDay.getDay();
   const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  startDate.setDate(startDate.getDate() - daysToMonday);
+  // Create start date directly using constructor to guarantee midnight local time
+  const startDate = new Date(year, month, 1 - daysToMonday);
   
   const dates: Date[] = [];
   for (let i = 0; i < 42; i++) {
-    const d = new Date(startDate);
-    d.setDate(startDate.getDate() + i);
-    dates.push(d);
+    // Create each date directly using constructor to guarantee midnight local time
+    dates.push(new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i));
   }
   return dates;
 }

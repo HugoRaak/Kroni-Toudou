@@ -114,15 +114,14 @@ export function WeekView({
   const weekDates = useMemo(() => {
     const today = normalizeToMidnight(new Date());
     const todayStr = formatDateLocal(today);
+    const normalizedStart = normalizeToMidnight(startOfWeek);
     return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
-      const normalizedDate = normalizeToMidnight(date);
+      const date = new Date(normalizedStart.getFullYear(), normalizedStart.getMonth(), normalizedStart.getDate() + i);
       return {
-        date: normalizedDate.getDate(),
-        dayName: normalizedDate.toLocaleDateString("fr-FR", { weekday: "short" }),
-        isToday: formatDateLocal(normalizedDate) === todayStr,
-        dateObj: normalizedDate,
+        date: date.getDate(),
+        dayName: date.toLocaleDateString("fr-FR", { weekday: "short" }),
+        isToday: formatDateLocal(date) === todayStr,
+        dateObj: date,
       };
     });
   }, [startOfWeek]);

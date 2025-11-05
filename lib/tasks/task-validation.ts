@@ -1,5 +1,6 @@
 import type { Task, Frequency, DayOfWeek } from '@/lib/types';
 import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_TITLE_MAX_LENGTH, TASK_DESCRIPTION_MAX_LENGTH } from '@/lib/tasks/task-constants';
+import { parseDateLocal } from '@/lib/utils';
 
 export function isValidTaskType(type: string): type is typeof TASK_TYPES[keyof typeof TASK_TYPES] {
   return Object.values(TASK_TYPES).includes(type as any);
@@ -36,10 +37,11 @@ export function validateDueOn(dueOn: string): boolean {
   if (!dateRegex.test(dueOn)) {
     return false;
   }
-  // Parse components to ensure valid date
+  // Parse using utility function for consistency (creates date at midnight local time)
   const [year, month, day] = dueOn.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
+  const date = parseDateLocal(dueOn);
   // Check if date components match (handles invalid dates like 2025-02-30)
+  // If date is invalid (e.g., 2025-02-30), the constructor will adjust it
   return date.getFullYear() === year && 
          date.getMonth() === month - 1 && 
          date.getDate() === day;

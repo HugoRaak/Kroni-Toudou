@@ -1,4 +1,4 @@
-import { formatDateLocal } from "@/lib/utils";
+import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 import { DayTasksData } from "@/components/calendar/views/day-view";
 import { TempTask } from "@/lib/types";
 
@@ -7,7 +7,7 @@ import { TempTask } from "@/lib/types";
  */
 
 function getStorageKey(prefix: string, date?: Date): string {
-  const targetDate = date || new Date();
+  const targetDate = date || normalizeToMidnight(new Date());
   return `${prefix}${formatDateLocal(targetDate)}`;
 }
 

@@ -51,14 +51,18 @@ export async function getWorkdaysInRange(
   // Fill missing dates with defaults
   const start = parseDateLocal(startDate);
   const end = parseDateLocal(endDate);
-  const current = new Date(start);
   
-  while (current <= end) {
+  // Iterate through dates using constructor to guarantee midnight local time
+  let current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const endDateObj = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  
+  while (current <= endDateObj) {
     const dateStr = formatDateLocal(current);
     if (!dbWorkdays.has(dateStr)) {
       map[dateStr] = await getDefaultWorkMode(current);
     }
-    current.setDate(current.getDate() + 1);
+    // Create next date using constructor to guarantee midnight local time
+    current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 1);
   }
   
   return map;

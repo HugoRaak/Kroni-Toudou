@@ -3,6 +3,7 @@
 import { Task } from "@/lib/types";
 import { TaskEditDialog } from "./task-edit-dialog";
 import { useMemo } from "react";
+import { parseDateLocal } from "@/lib/utils";
 
 type TaskItemProps = {
   task: Task;
@@ -14,8 +15,7 @@ type TaskItemProps = {
 // Format date string as local date without timezone conversion
 function formatDateDisplay(dateStr: string): string {
   const datePart = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
-  const [year, month, day] = datePart.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
+  const date = parseDateLocal(datePart); // Reuses utility function for consistency
   const formatted = date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
   // Capitalize first letter of month name
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);

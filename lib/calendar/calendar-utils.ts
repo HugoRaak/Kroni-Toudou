@@ -88,9 +88,11 @@ export async function getTasksForDay(userId: string, date?: Date): Promise<{
   const allTasks = await getTasks(userId);
   const { periodic, specific, whenPossible } = filterTasksByType(allTasks);
   
+  // Use provided date or create from current date string to avoid timezone issues
+  // When called from server action, date is already parsed from YYYY-MM-DD string
   const today = date ? normalizeToMidnight(date) : normalizeToMidnight(new Date());
   const iso = formatDateLocal(today);
-  const workMode = (await getWorkday(userId, iso)) ?? 'Présentiel';
+  const workMode = (await getWorkday(userId, iso)) ?? 'Présentiel'; // Default to 'Présentiel' if no workday found
 
   const filterByMode = (tasks: Task[]): Task[] => {
     if (workMode === 'Congé') return [];
