@@ -8,6 +8,7 @@ import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
 import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
 import { useMemo, memo, useCallback } from "react";
+import { WorkModeConflictDialog } from "@/components/calendar/workmode-conflict-dialog";
 
 // Memoized wrapper component for DayCell in week view
 const WeekDayCellWrapper = memo(({
@@ -104,6 +105,14 @@ export function WeekView({
     handleStartEdit,
     handleCancel,
     handleSave,
+    modeConflict,
+    currentConflictIndex,
+    totalConflicts,
+    userId,
+    handleDateChange,
+    handleConfirmAnyway,
+    handleCancelConflict,
+    handleConflictResolved,
   } = useWorkdaysEditor(workdays, onSaved);
   
   const { start: startOfWeek, end: endOfWeek } = useMemo(
@@ -183,6 +192,20 @@ export function WeekView({
           onUpdateTask={onUpdateTask}
           onDeleteTask={onDeleteTask}
           onSaved={onSaved}
+        />
+      )}
+      {modeConflict && userId && (
+        <WorkModeConflictDialog
+          open={!!modeConflict}
+          onOpenChange={(open) => !open && handleCancelConflict()}
+          conflict={modeConflict.conflict}
+          userId={userId}
+          onDateChange={handleDateChange}
+          onCancel={handleCancelConflict}
+          onConfirm={handleConfirmAnyway}
+          onConflictResolved={handleConflictResolved}
+          conflictIndex={currentConflictIndex}
+          totalConflicts={totalConflicts}
         />
       )}
     </div>

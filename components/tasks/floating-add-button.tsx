@@ -4,13 +4,14 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { TaskForm } from "@/components/tasks/task-form";
-import { createTaskFromForm } from "@/app/actions/tasks";
+import { createTaskFromForm, ModeConflictError, TaskActionResult } from "@/app/actions/tasks";
 import { createTodayTempTask } from "@/lib/storage/localStorage-tasks";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { CalendarView } from "@/lib/calendar/calendar-navigation";
+import { ModeConflictDialog } from "@/components/tasks/mode-conflict-dialog";
 
 interface FloatingAddButtonProps {
   userId: string;
@@ -24,15 +25,18 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isTempTask, setIsTempTask] = useState(false);
+  const [modeConflict, setModeConflict] = useState<ModeConflictError | null>(null);
+  const [conflictTaskTitle, setConflictTaskTitle] = useState("");
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const isTemp = formData.get('is_temp_task') === 'true';
+    const taskTitle = String(formData.get('title') || '');
     
     startTransition(async () => {
-      let result;
+      let result: any;
       
       if (isTemp) {
         // Create temporary task in localStorage
@@ -55,6 +59,13 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
         result = await createTaskFromForm(userId, formData);
       }
       
+      // Check for mode conflict
+      if (result && typeof result === 'object' && 'type' in result && result.type === 'MODE_CONFLICT') {
+        setModeConflict(result as ModeConflictError);
+        setConflictTaskTitle(taskTitle);
+        return;
+      }
+      
       if (result) {
         toast.success("Tâche créée avec succès");
         setIsOpen(false);
@@ -73,7 +84,33 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
     });
   };
 
+  const handleConflictResolve = () => {
+    setModeConflict(null);
+    setConflictTaskTitle("");
+    // Re-submit the form after resolving conflict
+    const form = document.querySelector('form');
+    if (form) {
+      form.requestSubmit();
+    }
+  };
+
+  const handleDateChange = (newDate: string) => {
+    const form = document.querySelector('form');
+    if (form) {
+      const dueOnInput = form.querySelector('input[name="due_on"]') as HTMLInputElement;
+      if (dueOnInput) {
+        dueOnInput.value = newDate;
+      }
+    }
+  };
+
+  const handleModeChange = () => {
+    // Mode change is handled server-side, just refresh
+    router.refresh();
+  };
+
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
@@ -144,5 +181,19 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
         </div>
       </DialogContent>
     </Dialog>
+    
+    {modeConflict && (
+      <ModeConflictDialog
+        open={!!modeConflict}
+        onOpenChange={(open) => !open && setModeConflict(null)}
+        conflict={modeConflict}
+        userId={userId}
+        taskTitle={conflictTaskTitle}
+        onDateChange={handleDateChange}
+        onModeChange={handleModeChange}
+        onResolve={handleConflictResolve}
+      />
+    )}
+  </>
   );
 }

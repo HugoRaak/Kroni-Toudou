@@ -1,6 +1,6 @@
 import { Task, Frequency, DayOfWeek } from '@/lib/types';
 import { getTasks } from '@/lib/db/tasks';
-import { getWorkday } from '@/lib/db/workdays';
+import { getWorkday, getWorkdaysInRange, WorkMode } from '@/lib/db/workdays';
 import { formatDateLocal, normalizeToMidnight } from '@/lib/utils';
 
 export interface CalendarTask {
@@ -13,12 +13,90 @@ export interface CalendarTask {
   due_on?: string;
   in_progress?: boolean;
   mode?: 'Tous' | 'Présentiel' | 'Distanciel';
+  shiftInfo?: {
+    originalDay: DayOfWeek;
+    originalDate: string; // YYYY-MM-DD
+    shiftedDate: string; // YYYY-MM-DD
+  };
+}
+
+export interface TaskWithShift extends Task {
+  shiftInfo?: {
+    originalDay: DayOfWeek;
+    originalDate: string; // YYYY-MM-DD
+    shiftedDate: string; // YYYY-MM-DD
+  };
 }
 
 // Helper function to get day name in French
 function getDayName(date: Date): DayOfWeek {
   const days: DayOfWeek[] = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   return days[date.getDay()];
+}
+
+// Helper function to get day index (0 = Sunday, 1 = Monday, etc.)
+function getDayIndex(dayName: DayOfWeek): number {
+  const days: DayOfWeek[] = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  return days.indexOf(dayName);
+}
+
+// Helper function to add days to a date
+// Uses milliseconds to avoid timezone and month boundary issues
+function addDays(date: Date, days: number): Date {
+  const normalized = normalizeToMidnight(date);
+  const result = new Date(normalized.getTime() + days * 24 * 60 * 60 * 1000);
+  return normalizeToMidnight(result);
+}
+
+function getFirstWeekday(year: number, month: number, targetDay: number): Date {
+  const date = normalizeToMidnight(new Date(year, month, 1));
+  const offset = (targetDay - date.getDay() + 7) % 7;
+  return addDays(date, offset);
+}
+
+// Find the next date that matches the task's mode, starting from the given date
+// Returns null if no match found within 7 days (safety limit)
+async function findNextMatchingDate(
+  userId: string,
+  startDate: Date,
+  taskMode: 'Tous' | 'Présentiel' | 'Distanciel',
+  frequency: Frequency
+): Promise<Date | null> {
+  if (taskMode === 'Tous') {
+    return startDate; // No need to shift if task is for all modes
+  }
+  const maxDays = frequency === 'hebdomadaire' ? 7 : frequency === 'mensuel' ? 28 : 0;
+  const current = normalizeToMidnight(startDate);
+  const endDate = addDays(current, maxDays);
+  const startDateStr = formatDateLocal(current);
+  const endDateStr = formatDateLocal(endDate);
+  
+  const workdaysMap = await getWorkdaysInRange(userId, startDateStr, endDateStr);
+  
+  let checkDate = new Date(current);
+  let daysChecked = 0;
+  
+  while (daysChecked <= maxDays) {
+    const dateStr = formatDateLocal(checkDate);
+    const workMode = workdaysMap[dateStr] ?? 'Présentiel'; // Default to Présentiel if not found
+    
+    // Skip if it's a holiday
+    if (workMode === 'Congé') {
+      checkDate = addDays(checkDate, 1);
+      daysChecked++;
+      continue;
+    }
+    
+    // Check if work mode matches task mode (taskMode is 'Présentiel' | 'Distanciel' here)
+    if (taskMode === workMode) {
+      return checkDate;
+    }
+    
+    checkDate = addDays(checkDate, 1);
+    daysChecked++;
+  }
+  
+  return null; // No match found within the limit
 }
 
 // Filter tasks by type
@@ -34,28 +112,101 @@ export function filterTasksByType(tasks: Task[]): {
   };
 }
 
-// Get periodic tasks for a specific date
-export function getPeriodicTasksForDate(tasks: Task[], date: Date): Task[] {
+// Get periodic tasks for a specific date with mode-based shifting
+// Returns tasks that should be displayed on the given date, potentially shifted from their original day
+async function getPeriodicTasksForDateWithShift(
+  userId: string,
+  tasks: Task[],
+  date: Date
+): Promise<TaskWithShift[]> {
   const normalizedDate = normalizeToMidnight(date);
-  const dayName = getDayName(normalizedDate);
+  const dateStr = formatDateLocal(normalizedDate);
   
-  return tasks.filter(task => {
-    if (!task.frequency) return false;
-    
-    switch (task.frequency) {
-      case 'quotidien':
-        return true;
-      
-      case 'hebdomadaire':
-        return task.day === dayName;
-      
-      case 'mensuel':
-        return task.day === dayName && normalizedDate.getDate() <= 7;
-      
-      default:
-        return false;
-    }
+  // Get all periodic tasks (weekly and monthly only, daily don't need shifting)
+  const periodicTasks = tasks.filter(task => {
+    return task.frequency === 'hebdomadaire' || task.frequency === 'mensuel';
   });
+
+  
+  const result: TaskWithShift[] = [];
+  
+  for (const task of periodicTasks) {
+    if (!task.day) continue;
+    
+    const taskMode = task.mode ?? 'Tous';
+    
+    // Calculate the original scheduled date for this task
+    let originalScheduledDate: Date | null = null;
+    const dayName = getDayName(normalizedDate);
+    const taskDayIndex = getDayIndex(task.day);
+    const currentDayIndex = getDayIndex(dayName);
+    
+    if (task.frequency === 'hebdomadaire') {
+      // For weekly tasks, find this week's occurrence of the task day
+      if (task.day === dayName) {
+        // Today is the scheduled day
+        originalScheduledDate = normalizedDate;
+      } else {
+        originalScheduledDate = addDays(normalizedDate, -(7 - Math.abs(currentDayIndex - taskDayIndex)));
+      }
+    } else if (task.frequency === 'mensuel') {
+      // For monthly tasks, find the first occurrence of the task day in this month
+      if (task.day === dayName && normalizedDate.getDate() <= 7) {
+        // Today is the scheduled day (first occurrence in month)
+        originalScheduledDate = normalizedDate;
+      } else {
+        const candidateDate = getFirstWeekday(normalizedDate.getFullYear(), normalizedDate.getMonth(), taskDayIndex);;
+        if (candidateDate > normalizedDate && normalizedDate.getDate() <= 7) {
+          continue;
+        } else {
+          originalScheduledDate = candidateDate;
+        }
+      }
+    }
+    
+    if (!originalScheduledDate) continue;
+    
+    // Check the work mode on the original scheduled date
+    const originalDateStr = formatDateLocal(originalScheduledDate);
+    const originalWorkMode = await getWorkday(userId, originalDateStr);
+    
+    // If task mode is "Tous", always show on scheduled day
+    if (taskMode === 'Tous') {
+      if (originalDateStr === dateStr) {
+        result.push(task);
+      }
+      continue;
+    }
+    
+    // If original day matches task mode, show it on that day
+    if (originalWorkMode === taskMode && originalDateStr === dateStr) {
+      result.push(task);
+      continue;
+    }
+    
+    // If original day doesn't match and it's not a holiday, shift to next matching day
+    if (originalWorkMode !== taskMode && originalWorkMode !== 'Congé') {
+      const shiftedDate = await findNextMatchingDate(userId, originalScheduledDate, taskMode, task.frequency ?? 'hebdomadaire');
+      
+      if (shiftedDate && formatDateLocal(shiftedDate) === dateStr) {
+        // Today is the shifted date, include the task with shift info
+        result.push({
+          ...task,
+          shiftInfo: {
+            originalDay: task.day,
+            originalDate: formatDateLocal(originalScheduledDate),
+            shiftedDate: dateStr
+          }
+        });
+      }
+    }
+  }
+  
+  // Also include daily tasks (they don't need shifting)
+  const dailyTasks = tasks.filter(task => task.frequency === 'quotidien');
+  result.push(...dailyTasks);
+  
+  return result;
 }
 
 // Get specific date tasks for a specific date
@@ -78,7 +229,7 @@ export function getWhenPossibleTasks(tasks: Task[]): {
 
 // Get all tasks for today's view
 export async function getTasksForDay(userId: string, date?: Date): Promise<{
-  periodic: Task[];
+  periodic: TaskWithShift[];
   specific: Task[];
   whenPossible: {
     inProgress: Task[];
@@ -101,9 +252,20 @@ export async function getTasksForDay(userId: string, date?: Date): Promise<{
       return taskMode === 'Tous' || taskMode === workMode;
     });
   };
+
+  // Use the new shifting logic for periodic tasks
+  const periodicWithShift = await getPeriodicTasksForDateWithShift(userId, periodic, today);
+  
+  // Filter daily tasks by mode (they come from getPeriodicTasksForDateWithShift but need mode filtering)
+  const filteredPeriodic = periodicWithShift.filter(task => {
+    if (workMode === 'Congé') return false;
+    // Tasks with shiftInfo are already correctly shifted, just check mode
+    const taskMode = task.mode ?? 'Tous';
+    return taskMode === 'Tous' || taskMode === workMode;
+  });
   
   return {
-    periodic: filterByMode(getPeriodicTasksForDate(periodic, today)),
+    periodic: filteredPeriodic,
     specific: filterByMode(getSpecificTasksForDate(specific, today)),
     whenPossible: {
       inProgress: filterByMode(getWhenPossibleTasks(whenPossible).inProgress),

@@ -65,8 +65,6 @@ export async function getWorkdaysInRange(
     current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 1);
   }
 
-  console.log('map', map);
-  
   return map;
 }
 

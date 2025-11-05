@@ -7,6 +7,17 @@ import { parseTaskFormData, parsedDataToTaskUpdates } from "@/lib/tasks/task-for
 import { revalidatePath } from "next/cache";
 import { verifyTaskOwnership, verifyAuthenticated } from "@/lib/auth/auth-helpers";
 import { parseDateLocal } from "@/lib/utils";
+import { getWorkday } from "@/lib/db/workdays";
+import { TASK_TYPES } from "@/lib/tasks/task-constants";
+
+export type ModeConflictError = {
+  type: 'MODE_CONFLICT';
+  taskDate: string;
+  taskMode: 'Tous' | 'Présentiel' | 'Distanciel';
+  workMode: 'Présentiel' | 'Distanciel' | 'Congé';
+};
+
+export type TaskActionResult = Task | null | ModeConflictError;
 
 // Accept YYYY-MM-DD strings instead of Date objects to avoid timezone serialization issues
 export async function getTasksForDayAction(userId: string, dateStr: string) {
@@ -36,6 +47,43 @@ export async function getTasksForDateRangeAction(
   return await getTasksForDateRange(userId, startDate, endDate);
 }
 
+// Check if task mode matches work mode for specific date tasks
+async function checkModeConflict(
+  userId: string,
+  due_on: string | undefined,
+  mode: 'Tous' | 'Présentiel' | 'Distanciel' | undefined
+): Promise<ModeConflictError | null> {
+  // Only check for specific date tasks
+  if (!due_on) return null;
+  
+  // Mode "Tous" always matches
+  if (!mode || mode === 'Tous') return null;
+  
+  const workMode = await getWorkday(userId, due_on);
+  
+  // Congé (holiday) doesn't match any task mode
+  if (workMode === 'Congé') {
+    return {
+      type: 'MODE_CONFLICT',
+      taskDate: due_on,
+      taskMode: mode,
+      workMode: 'Congé'
+    };
+  }
+  
+  // Check if modes match
+  if (mode !== workMode) {
+    return {
+      type: 'MODE_CONFLICT',
+      taskDate: due_on,
+      taskMode: mode,
+      workMode: workMode
+    };
+  }
+  
+  return null;
+}
+
 // Server Actions pour les mutations
 export async function createTaskAction(
   userId: string,
@@ -47,7 +95,7 @@ export async function createTaskAction(
   postponed_days?: number,
   in_progress?: boolean,
   mode?: 'Tous' | 'Présentiel' | 'Distanciel',
-): Promise<Task | null> {
+): Promise<TaskActionResult> {
   const supabase = await supabaseServer();
   
   // Verify authenticated user and userId match
@@ -55,6 +103,12 @@ export async function createTaskAction(
   if (!user || user.id !== userId) {
     console.warn('Security: userId mismatch or user not authenticated');
     return null;
+  }
+  
+  // Check mode conflict for specific date tasks
+  const modeConflict = await checkModeConflict(userId, due_on, mode);
+  if (modeConflict) {
+    return modeConflict;
   }
   
   const { data, error } = await supabase
@@ -84,12 +138,32 @@ export async function createTaskAction(
 export async function updateTaskAction(
   id: string,
   updates: Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'due_on' | 'postponed_days' | 'in_progress' | 'mode'>>
-): Promise<Task | null> {
+): Promise<TaskActionResult> {
   const supabase = await supabaseServer();
   
   const verification = await verifyTaskOwnership(supabase, id);
   if (!verification) {
     return null;
+  }
+  
+  // Check mode conflict if due_on or mode is being updated
+  if (updates.due_on !== undefined || updates.mode !== undefined) {
+    // Get current task to check if it's a specific date task
+    const { data: currentTask } = await supabase
+      .from('tasks')
+      .select('due_on, mode')
+      .eq('id', id)
+      .single();
+    
+    if (currentTask) {
+      const due_on = updates.due_on ?? currentTask.due_on;
+      const mode = updates.mode ?? currentTask.mode;
+      
+      const modeConflict = await checkModeConflict(verification.user.id, due_on, mode);
+      if (modeConflict) {
+        return modeConflict;
+      }
+    }
   }
   
   const { data, error } = await supabase
@@ -133,7 +207,7 @@ export async function deleteTaskAction(id: string): Promise<boolean> {
   return true;
 }
 
-export async function createTaskFromForm(userId: string, formData: FormData): Promise<Task | null> {
+export async function createTaskFromForm(userId: string, formData: FormData): Promise<TaskActionResult> {
   const supabase = await supabaseServer();
   const user = await verifyAuthenticated(supabase);
   
@@ -161,7 +235,7 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
 }
 
 // Centralized server actions for form handling (with revalidation)
-export async function updateTaskFromFormAction(formData: FormData): Promise<boolean> {
+export async function updateTaskFromFormAction(formData: FormData): Promise<boolean | ModeConflictError> {
   'use server';
   const id = String(formData.get('id') || '');
   const parsed = parseTaskFormData(formData);
@@ -173,11 +247,18 @@ export async function updateTaskFromFormAction(formData: FormData): Promise<bool
   const updates = parsedDataToTaskUpdates(parsed);
   const result = await updateTaskAction(id, updates);
   
-  if (result) {
+  // Return mode conflict error if present
+  if (result && typeof result === 'object' && 'type' in result && result.type === 'MODE_CONFLICT') {
+    return result;
+  }
+  
+  if (result && typeof result === 'object' && 'id' in result) {
     revalidatePath('/home');
     revalidatePath('/mes-taches');
+    return true;
   }
-  return !!result;
+  
+  return false;
 }
 
 export async function deleteTaskActionWrapper(id: string): Promise<boolean> {
@@ -190,7 +271,7 @@ export async function deleteTaskActionWrapper(id: string): Promise<boolean> {
   return result;
 }
 
-export async function createTaskFromFormAction(formData: FormData): Promise<Task | null> {
+export async function createTaskFromFormAction(formData: FormData): Promise<TaskActionResult> {
   'use server';
   const supabase = await supabaseServerReadOnly();
   const user = await verifyAuthenticated(supabase);
@@ -200,9 +281,19 @@ export async function createTaskFromFormAction(formData: FormData): Promise<Task
   }
   
   const result = await createTaskFromForm(user.id, formData);
-  if (result) {
+  
+  // Only revalidate if task was created successfully (not a mode conflict)
+  if (result && typeof result === 'object' && 'id' in result) {
     revalidatePath('/home');
     revalidatePath('/mes-taches');
   }
+  
   return result;
+}
+
+export async function getCurrentUserIdAction(): Promise<string | null> {
+  'use server';
+  const supabase = await supabaseServerReadOnly();
+  const user = await verifyAuthenticated(supabase);
+  return user?.id ?? null;
 }

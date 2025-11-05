@@ -8,11 +8,15 @@ import { TaskForm } from "@/components/tasks/task-form";
 import { toast } from "sonner";
 import { Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
+import { ModeConflictError } from "@/app/actions/tasks";
+import { ModeConflictDialog } from "@/components/tasks/mode-conflict-dialog";
+import { getCurrentUserIdAction } from "@/app/actions/tasks";
+import { useRouter } from "next/navigation";
 
 type TaskEditDialogProps = {
   task: Task | (Partial<Task> & { id: string; title: string });
   trigger: React.ReactNode;
-  onSubmit: (formData: FormData) => Promise<boolean>;
+  onSubmit: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDelete?: (id: string) => Promise<boolean>;
   onSuccess?: () => void;
 };
@@ -29,8 +33,17 @@ export function TaskEditDialog({
   const [isPending, startTransition] = useTransition();
   const [isDeleting, setIsDeleting] = useState(false);
   const [shouldRenderContent, setShouldRenderContent] = useState(false);
+  const [modeConflict, setModeConflict] = useState<ModeConflictError | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const router = useRouter();
   
   const deferredOpen = useDeferredValue(open);
+
+  useEffect(() => {
+    if (open && !userId) {
+      getCurrentUserIdAction().then(setUserId);
+    }
+  }, [open, userId]);
   
   useEffect(() => {
     if (open) {
@@ -45,6 +58,13 @@ export function TaskEditDialog({
 
   const handleSubmit = async (formData: FormData) => {
     const result = await onSubmit(formData);
+    
+    // Check for mode conflict
+    if (result && typeof result === 'object' && 'type' in result && result.type === 'MODE_CONFLICT') {
+      setModeConflict(result as ModeConflictError);
+      return;
+    }
+    
     if (result) {
       toast.success("Tâche modifiée avec succès");
       setOpen(false);
@@ -52,6 +72,30 @@ export function TaskEditDialog({
     } else {
       toast.error("Erreur lors de la modification de la tâche");
     }
+  };
+
+  const handleConflictResolve = () => {
+    setModeConflict(null);
+    // Re-submit the form after resolving conflict
+    const form = document.querySelector('form');
+    if (form) {
+      form.requestSubmit();
+    }
+  };
+
+  const handleDateChange = (newDate: string) => {
+    const form = document.querySelector('form');
+    if (form) {
+      const dueOnInput = form.querySelector('input[name="due_on"]') as HTMLInputElement;
+      if (dueOnInput) {
+        dueOnInput.value = newDate;
+      }
+    }
+  };
+
+  const handleModeChange = () => {
+    // Mode change is handled server-side, just refresh
+    router.refresh();
   };
 
   const handleDelete = async () => {
@@ -211,6 +255,19 @@ export function TaskEditDialog({
             </DialogContent>
           )}
         </Dialog>
+      )}
+      
+      {modeConflict && userId && (
+        <ModeConflictDialog
+          open={!!modeConflict}
+          onOpenChange={(open) => !open && setModeConflict(null)}
+          conflict={modeConflict}
+          userId={userId}
+          taskTitle={task.title}
+          onDateChange={handleDateChange}
+          onModeChange={handleModeChange}
+          onResolve={handleConflictResolve}
+        />
       )}
     </>
   );

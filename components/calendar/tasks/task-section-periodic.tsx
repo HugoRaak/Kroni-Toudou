@@ -1,9 +1,9 @@
-import { Task } from '@/lib/types';
+import { TaskWithShift } from '@/lib/calendar/calendar-utils';
 import { TaskItemCompact } from '@/components/tasks/task-item-compact';
 import { TASK_TYPE_STYLES } from '@/lib/tasks/task-constants';
 
 type TaskSectionPeriodicProps = {
-  tasks: Task[];
+  tasks: TaskWithShift[];
   onUpdateTask: (formData: FormData) => Promise<boolean>;
   onDeleteTask: (id: string) => Promise<boolean>;
   onSuccess?: () => void;

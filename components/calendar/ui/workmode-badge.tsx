@@ -2,8 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { setWorkdayForUserAction } from "@/app/actions/workdays";
+import { setWorkdayForUserAction, setWorkdayForUserActionForce } from "@/app/actions/workdays";
+import { ModeConflictError } from "@/app/actions/tasks";
 import { formatDateLocal } from "@/lib/utils";
+import { WorkModeConflictDialog } from "@/components/calendar/workmode-conflict-dialog";
+import { updateTaskAction } from "@/app/actions/tasks";
+import { getCurrentUserIdAction } from "@/app/actions/tasks";
+import { toast } from "sonner";
 
 type WorkMode = "Présentiel" | "Distanciel" | "Congé";
 
@@ -30,10 +35,18 @@ export function WorkModeBadge({
 }: WorkModeBadgeProps) {
   const [selectedMode, setSelectedMode] = useState<WorkMode>(workMode);
   const [saving, setSaving] = useState(false);
+  const [modeConflict, setModeConflict] = useState<ModeConflictError | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedMode(workMode);
   }, [workMode]);
+
+  useEffect(() => {
+    if (!userId) {
+      getCurrentUserIdAction().then(setUserId);
+    }
+  }, [userId]);
 
   const handleClickBadge = () => {
     if (disabled) return;
@@ -45,11 +58,51 @@ export function WorkModeBadge({
     setSaving(true);
     try {
       const dateStr = formatDateLocal(date);
-      await setWorkdayForUserAction(dateStr, selectedMode);
-      onSaved?.();
+      const result = await setWorkdayForUserAction(dateStr, selectedMode);
+      
+      // Check for mode conflict
+      if (result && typeof result === 'object' && 'type' in result && result.type === 'MODE_CONFLICT') {
+        setModeConflict(result as ModeConflictError);
+        // Revert to original mode
+        setSelectedMode(workMode);
+        return;
+      }
+      
+      if (result) {
+        onSaved?.();
+      }
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDateChange = async (taskId: string, newDate: string) => {
+    if (!userId) return;
+    const result = await updateTaskAction(taskId, { due_on: newDate });
+    if (result && typeof result === 'object' && 'id' in result) {
+      // Task updated successfully
+      return;
+    }
+    toast.error("Erreur lors de la modification de la date de la tâche");
+  };
+
+  const handleConfirmAnyway = async () => {
+    if (!modeConflict) return;
+    
+    // Save the conflicted change using force
+    const success = await setWorkdayForUserActionForce(modeConflict.taskDate, modeConflict.workMode);
+    
+    if (success) {
+      setModeConflict(null);
+      onSaved?.();
+    } else {
+      toast.error("Erreur lors de la modification du mode de travail");
+    }
+  };
+
+  const handleCancel = () => {
+    setModeConflict(null);
+    setSelectedMode(workMode);
   };
 
   const containerClassName = saveButtonClassName.includes('absolute')
@@ -89,6 +142,18 @@ export function WorkModeBadge({
             </svg>
           )}
         </Button>
+      )}
+      
+      {modeConflict && userId && (
+        <WorkModeConflictDialog
+          open={!!modeConflict}
+          onOpenChange={(open) => !open && setModeConflict(null)}
+          conflict={modeConflict}
+          userId={userId}
+          onDateChange={handleDateChange}
+          onCancel={handleCancel}
+          onConfirm={handleConfirmAnyway}
+        />
       )}
     </div>
   );

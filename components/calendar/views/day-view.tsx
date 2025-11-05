@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Task, TaskWithType } from "@/lib/types";
+import { TaskWithShift } from "@/lib/calendar/calendar-utils";
 import { WorkModeBadge } from "@/components/calendar/ui/workmode-badge";
 import { TaskSectionPeriodic } from "@/components/calendar/tasks/task-section-periodic";
 import { TaskSectionSpecific } from "@/components/calendar/tasks/task-section-specific";
@@ -17,7 +18,7 @@ import { prepareTasksForToday } from "@/lib/tasks/task-preparation";
 import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 
 export type DayTasksData = {
-  periodic: Task[];
+  periodic: TaskWithShift[];
   specific: Task[];
   whenPossible: {
     inProgress: Task[];

@@ -8,6 +8,7 @@ import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
 import { getMonthGridDates, getMonthGridDatesArray } from "@/lib/calendar/calendar-date-utils";
 import { useMemo, useCallback, memo } from "react";
+import { WorkModeConflictDialog } from "@/components/calendar/workmode-conflict-dialog";
 
 // Constants extracted outside component
 const WEEK_DAYS = ["L", "M", "M", "J", "V", "S", "D"] as const;
@@ -106,6 +107,14 @@ export function MonthView({
     handleStartEdit,
     handleCancel,
     handleSave,
+    modeConflict,
+    currentConflictIndex,
+    totalConflicts,
+    userId,
+    handleDateChange,
+    handleConfirmAnyway,
+    handleCancelConflict,
+    handleConflictResolved,
   } = useWorkdaysEditor(workdays, onSaved, getDatesToSave);
   
   const monthDates = useMemo(() => getMonthGridDates(anchorDate), [anchorDate]);
@@ -163,6 +172,20 @@ export function MonthView({
           onUpdateTask={onUpdateTask}
           onDeleteTask={onDeleteTask}
           onSaved={onSaved}
+        />
+      )}
+      {modeConflict && userId && (
+        <WorkModeConflictDialog
+          open={!!modeConflict}
+          onOpenChange={(open) => !open && handleCancelConflict()}
+          conflict={modeConflict.conflict}
+          userId={userId}
+          onDateChange={handleDateChange}
+          onCancel={handleCancelConflict}
+          onConfirm={handleConfirmAnyway}
+          onConflictResolved={handleConflictResolved}
+          conflictIndex={currentConflictIndex}
+          totalConflicts={totalConflicts}
         />
       )}
     </div>
