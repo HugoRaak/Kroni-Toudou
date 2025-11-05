@@ -1,6 +1,7 @@
 import { DayTasksData } from "@/components/calendar/views/day-view";
 import { TempTask } from "@/lib/types";
 import { storage } from "./localStorage-helpers";
+import { normalizeToMidnight } from "@/lib/utils";
 
 /**
  * Re-export TempTask interface for backward compatibility
@@ -11,11 +12,12 @@ export type { TempTask };
  * Check if a date is today
  */
 export function isToday(date: Date): boolean {
-  const today = new Date();
+  const normalizedDate = normalizeToMidnight(date);
+  const normalizedToday = normalizeToMidnight(new Date());
   return (
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
+    normalizedDate.getDate() === normalizedToday.getDate() &&
+    normalizedDate.getMonth() === normalizedToday.getMonth() &&
+    normalizedDate.getFullYear() === normalizedToday.getFullYear()
   );
 }
 

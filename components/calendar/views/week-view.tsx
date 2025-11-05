@@ -4,7 +4,7 @@ import DayCell from "@/components/calendar/ui/day-cell";
 import CalendarHeader from "@/components/calendar/ui/calendar-header";
 import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar/calendar-utils";
 import { DayTasksDialog } from "@/components/calendar/dialogs/day-tasks-dialog";
-import { formatDateLocal } from "@/lib/utils";
+import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
 import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
 import { useMemo, memo, useCallback } from "react";
@@ -112,11 +112,11 @@ export function WeekView({
   );
 
   const weekDates = useMemo(() => {
-    const today = new Date();
+    const today = normalizeToMidnight(new Date());
     const todayStr = formatDateLocal(today);
+    const normalizedStart = normalizeToMidnight(startOfWeek);
     return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
+      const date = new Date(normalizedStart.getFullYear(), normalizedStart.getMonth(), normalizedStart.getDate() + i);
       return {
         date: date.getDate(),
         dayName: date.toLocaleDateString("fr-FR", { weekday: "short" }),
