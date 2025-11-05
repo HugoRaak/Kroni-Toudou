@@ -64,6 +64,8 @@ export async function getWorkdaysInRange(
     // Create next date using constructor to guarantee midnight local time
     current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 1);
   }
+
+  console.log('map', map);
   
   return map;
 }

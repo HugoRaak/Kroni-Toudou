@@ -60,25 +60,31 @@ async function isFrenchPublicHoliday(date: Date): Promise<boolean> {
 }
 
 /**
- * Calculates day of week (0=Sunday, 1=Monday, ..., 6=Saturday) using Zeller's congruence
- * This is timezone-independent and works correctly regardless of server timezone
+ * Day of week (0=Sunday, 1=Monday, ..., 6=Saturday) via Zeller's congruence (Gregorian).
+ * month: 1..12, day: 1..31
  */
-function getDayOfWeek(year: number, month: number, day: number): number {
-  // Zeller's congruence: works for any date, timezone-independent
-  // Adjust month for Zeller (March = 3, April = 4, ..., February = 14)
+export function getDayOfWeek(year: number, month: number, day: number): number {
   let m = month;
   let y = year;
-  if (m < 3) {
-    m += 12;
-    y -= 1;
-  }
-  
-  const k = y % 100; // Year of century
-  const j = Math.floor(y / 100); // Century
-  const h = (day + Math.floor(13 * (m + 1) / 5) + k + Math.floor(k / 4) + Math.floor(j / 4) - 2 * j) % 7;
-  
-  // Convert to Sunday = 0 format (Zeller gives Saturday = 0)
-  return ((h + 5) % 7);
+  if (m < 3) { m += 12; y -= 1; }
+
+  const k = y % 100;         // year of century
+  const j = Math.floor(y / 100); // zero-based century
+
+  // Zeller: h = 0..6 with 0=Saturday
+  const hRaw =
+    day +
+    Math.floor((13 * (m + 1)) / 5) +
+    k +
+    Math.floor(k / 4) +
+    Math.floor(j / 4) -
+    2 * j;
+
+  // Normalise modulo 7 pour éviter les négatifs
+  const h = ((hRaw % 7) + 7) % 7;
+
+  // Convertir 0=Saturday -> 0=Sunday
+  return (h + 6) % 7;
 }
 
 /**
