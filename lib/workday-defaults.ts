@@ -12,13 +12,17 @@ const holidaysCache = new Map<number, Set<string>>();
  */
 async function fetchFrenchPublicHolidays(year: number): Promise<Set<string>> {
   try {
+    // Use fetch without Next.js cache options in server context to avoid issues
     const response = await fetch(
       `https://calendrier.api.gouv.fr/jours-feries/metropole/${year}.json`,
-      { next: { revalidate: 86400 } } // Cache for 24 hours
+      { 
+        cache: 'force-cache',
+        next: { revalidate: 86400 } // Cache for 24 hours (only works in certain Next.js contexts)
+      }
     );
     
     if (!response.ok) {
-      console.error(`Failed to fetch holidays for year ${year}: ${response.status}`);
+      console.error(`Failed to fetch holidays for year ${year}: ${response.status} ${response.statusText}`);
       return new Set<string>();
     }
     
@@ -26,6 +30,7 @@ async function fetchFrenchPublicHolidays(year: number): Promise<Set<string>> {
     // Keys are dates in YYYY-MM-DD format
     return new Set(Object.keys(data));
   } catch (error) {
+    // Log error but return empty set to allow fallback to weekday logic
     console.error(`Error fetching holidays for year ${year}:`, error);
     return new Set<string>();
   }
@@ -55,6 +60,28 @@ async function isFrenchPublicHoliday(date: Date): Promise<boolean> {
 }
 
 /**
+ * Calculates day of week (0=Sunday, 1=Monday, ..., 6=Saturday) using Zeller's congruence
+ * This is timezone-independent and works correctly regardless of server timezone
+ */
+function getDayOfWeek(year: number, month: number, day: number): number {
+  // Zeller's congruence: works for any date, timezone-independent
+  // Adjust month for Zeller (March = 3, April = 4, ..., February = 14)
+  let m = month;
+  let y = year;
+  if (m < 3) {
+    m += 12;
+    y -= 1;
+  }
+  
+  const k = y % 100; // Year of century
+  const j = Math.floor(y / 100); // Century
+  const h = (day + Math.floor(13 * (m + 1) / 5) + k + Math.floor(k / 4) + Math.floor(j / 4) - 2 * j) % 7;
+  
+  // Convert to Sunday = 0 format (Zeller gives Saturday = 0)
+  return ((h + 5) % 7);
+}
+
+/**
  * Calculates default work mode for a given date based on:
  * - Weekends (Saturday, Sunday) -> Congé
  * - French public holidays -> Congé
@@ -62,17 +89,29 @@ async function isFrenchPublicHoliday(date: Date): Promise<boolean> {
  * - Monday, Tuesday, Thursday -> Présentiel
  */
 export async function getDefaultWorkMode(date: Date | string): Promise<WorkMode> {
-  const dateObj = typeof date === 'string' ? parseDateLocal(date) : date;
-  const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  // Parse date string to ensure consistent date object
+  const dateStr = typeof date === 'string' ? date : formatDateLocal(date);
+  const [year, month, day] = dateStr.split('-').map(Number);
+  
+  // Calculate day of week using timezone-independent formula
+  const dayOfWeek = getDayOfWeek(year, month, day);
 
   // Weekends are always Congé
   if (dayOfWeek === 0 || dayOfWeek === 6) {
     return 'Congé';
   }
 
+  // Create date object for holiday check (needed for formatDateLocal)
+  const dateObj = new Date(year, month - 1, day);
+
   // French public holidays are Congé
-  if (await isFrenchPublicHoliday(dateObj)) {
-    return 'Congé';
+  try {
+    if (await isFrenchPublicHoliday(dateObj)) {
+      return 'Congé';
+    }
+  } catch (error) {
+    // If holiday check fails, log but continue with weekday logic
+    console.error(`Error checking holiday for ${dateStr}:`, error);
   }
 
   // Wednesday (3) and Friday (5) are Distanciel
