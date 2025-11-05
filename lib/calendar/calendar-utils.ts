@@ -132,7 +132,7 @@ async function getPeriodicTasksForDateWithShift(
   
   for (const task of periodicTasks) {
     if (!task.day) continue;
-    
+
     const taskMode = task.mode ?? 'Tous';
     
     // Calculate the original scheduled date for this task
@@ -147,7 +147,11 @@ async function getPeriodicTasksForDateWithShift(
         // Today is the scheduled day
         originalScheduledDate = normalizedDate;
       } else {
-        originalScheduledDate = addDays(normalizedDate, -(7 - Math.abs(currentDayIndex - taskDayIndex)));
+        if (currentDayIndex > taskDayIndex) {
+          originalScheduledDate = addDays(normalizedDate, -(currentDayIndex - taskDayIndex));
+        } else {
+          originalScheduledDate = addDays(normalizedDate, -(7-(taskDayIndex - currentDayIndex)));
+        }
       }
     } else if (task.frequency === 'mensuel') {
       // For monthly tasks, find the first occurrence of the task day in this month

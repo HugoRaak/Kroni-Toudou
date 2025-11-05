@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import DayView, { DayTasksData } from "@/components/calendar/views/day-view";
 import ViewSwitcher from "@/components/calendar/ui/view-switcher";
 import { CalendarTask } from "@/lib/calendar/calendar-utils";
@@ -34,9 +34,32 @@ export function Calendar({
   const [loading, setLoading] = useState(true);
   const [dayWorkMode, setDayWorkMode] = useState<"Présentiel" | "Distanciel" | "Congé">("Présentiel");
   const [workdaysMap, setWorkdaysMap] = useState<Record<string, "Présentiel" | "Distanciel" | "Congé">>({});
+  
+  // Track the latest load request to ignore stale responses
+  const loadRequestIdRef = useRef(0);
+  const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isLoadingRef = useRef(false);
 
   useEffect(() => {
-    loadTasks();
+    // Clear any pending timeout - this ensures only the last change triggers a load
+    if (loadTimeoutRef.current) {
+      clearTimeout(loadTimeoutRef.current);
+      loadTimeoutRef.current = null;
+    }
+    
+    // Debounce: wait 250ms before loading to avoid multiple requests on rapid clicks
+    // If user clicks multiple times, only the last click will trigger a load
+    loadTimeoutRef.current = setTimeout(() => {
+      loadTimeoutRef.current = null;
+      loadTasks();
+    }, 250);
+    
+    return () => {
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current);
+        loadTimeoutRef.current = null;
+      }
+    };
   }, [currentView, dayDate, weekDate, monthDate]);
 
   // Refresh tasks when a task is created via the floating button
@@ -58,6 +81,12 @@ export function Calendar({
   }, [currentView, dayDate, onViewChange]);
 
   const loadTasks = async (forceReload = false) => {
+    // Increment request ID to mark this as the latest request
+    loadRequestIdRef.current += 1;
+    const currentRequestId = loadRequestIdRef.current;
+    
+    // Mark as loading
+    isLoadingRef.current = true;
     setLoading(true);
     try {
       if (currentView === "day") {
@@ -68,8 +97,14 @@ export function Calendar({
           if (storedTasks) {
             // Load from localStorage
             const mode = await getWorkdayAction(userId, formatDateLocal(dayDate));
+            // Ignore if a newer request has started
+            if (currentRequestId !== loadRequestIdRef.current) {
+              isLoadingRef.current = false;
+              return;
+            }
             setDayTasks(storedTasks);
             setDayWorkMode(mode);
+            isLoadingRef.current = false;
             setLoading(false);
             return;
           }
@@ -83,6 +118,8 @@ export function Calendar({
             getTasksForDayAction(userId, dayDateStr),
             getWorkdayAction(userId, dayDateStr),
           ]);
+          // Ignore if a newer request has started
+          if (currentRequestId !== loadRequestIdRef.current) return;
           saveTodayTasksToStorage(dayData);
           setDayTasks(dayData);
           setDayWorkMode(mode);
@@ -92,6 +129,8 @@ export function Calendar({
             getTasksForDayAction(userId, dayDateStr),
             getWorkdayAction(userId, dayDateStr),
           ]);
+          // Ignore if a newer request has started
+          if (currentRequestId !== loadRequestIdRef.current) return;
           setDayTasks(dayData);
           setDayWorkMode(mode);
         }
@@ -117,13 +156,24 @@ export function Calendar({
           getTasksForDateRangeAction(userId, formatDateLocal(startDate), formatDateLocal(endDate)),
           getWorkdaysForRangeAction(userId, formatDateLocal(startDate), formatDateLocal(endDate)),
         ]);
+        // Ignore if a newer request has started
+        if (currentRequestId !== loadRequestIdRef.current) return;
         setTasks(tasksData);
         setWorkdaysMap(workdays);
       }
     } catch (error) {
+      // Ignore errors from stale requests
+      if (currentRequestId !== loadRequestIdRef.current) return;
       console.error('Error loading tasks:', error);
     } finally {
-      setLoading(false);
+      // Only update loading state if this is still the latest request
+      if (currentRequestId === loadRequestIdRef.current) {
+        isLoadingRef.current = false;
+        setLoading(false);
+      } else {
+        // If this request was superseded, still mark as not loading for this request
+        isLoadingRef.current = false;
+      }
     }
   };
 
