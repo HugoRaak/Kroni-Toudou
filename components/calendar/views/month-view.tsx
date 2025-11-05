@@ -4,7 +4,7 @@ import DayCell from "@/components/calendar/ui/day-cell";
 import CalendarHeader from "@/components/calendar/ui/calendar-header";
 import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar/calendar-utils";
 import { DayTasksDialog } from "@/components/calendar/dialogs/day-tasks-dialog";
-import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
+import { formatDateLocal, normalizeToMidnight, isPastDate } from "@/lib/utils";
 import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
 import { getMonthGridDates, getMonthGridDatesArray } from "@/lib/calendar/calendar-date-utils";
 import { useMemo, useCallback, memo } from "react";
@@ -49,9 +49,15 @@ const DayCellWrapper = memo(({
     [dayTasksAll, mode]
   );
   
+  const isPast = useMemo(() => isPastDate(dayDateObj), [dayDateObj]);
+  
   const handleClick = useCallback(() => {
+    // Only prevent clicks when editing past dates; allow viewing past dates
+    if (editing && isPast) {
+      return;
+    }
     onDayClick(dayDateObj);
-  }, [onDayClick, dayDateObj]);
+  }, [onDayClick, dayDateObj, isPast, editing]);
 
   return (
     <div onClick={handleClick}>
@@ -65,6 +71,7 @@ const DayCellWrapper = memo(({
         tasks={dayTasks}
         taskLimit={2}
         minContentHeight={50}
+        disabled={editing && isPast}
       />
     </div>
   );

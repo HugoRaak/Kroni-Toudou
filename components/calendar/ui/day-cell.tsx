@@ -17,6 +17,7 @@ export function DayCell({
   onClick,
   taskLimit = 3,
   minContentHeight = 60,
+  disabled = false,
 }: {
   titleTop?: string;
   titleMain: string | number;
@@ -29,6 +30,7 @@ export function DayCell({
   onClick?: () => void;
   taskLimit?: number;
   minContentHeight?: number;
+  disabled?: boolean;
   }) {
   const baseContainerClasses = useMemo(() => {
     if (loading || !editing) {
@@ -56,8 +58,8 @@ export function DayCell({
 
   return (
     <div
-      className={`relative rounded-lg border p-2 text-center cursor-pointer ${editing ? 'select-none' : ''} ${baseContainerClasses}`}
-      onClick={onClick}
+      className={`relative rounded-lg border p-2 text-center ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${editing ? 'select-none' : ''} ${baseContainerClasses}`}
+      onClick={disabled ? undefined : onClick}
     >
       {!editing && !loading && (
         <span className={`absolute right-2 top-2 h-2 w-2 rounded-full ${modeDotClass}`} aria-label={`Mode: ${mode}`} title={mode} />

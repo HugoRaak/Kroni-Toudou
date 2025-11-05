@@ -23,3 +23,10 @@ export function parseDateLocal(dateStr: string): Date {
 export function normalizeToMidnight(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
+
+// Checks if a date is before today (in the past)
+export function isPastDate(date: Date): boolean {
+  const normalizedDate = normalizeToMidnight(date);
+  const normalizedToday = normalizeToMidnight(new Date());
+  return normalizedDate < normalizedToday;
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { setWorkdayForUserAction, setWorkdayForUserActionForce, checkWorkdayConflictForUserAction } from '@/app/actions/workdays';
 import { ModeConflictError } from '@/app/actions/tasks';
-import { formatDateLocal, parseDateLocal } from '@/lib/utils';
+import { formatDateLocal, parseDateLocal, isPastDate } from '@/lib/utils';
 import { getCurrentUserIdAction } from '@/app/actions/tasks';
 import { updateTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
@@ -41,6 +41,10 @@ export function useWorkdaysEditor(
 
   const handleDayClick = (dateObj: Date) => {
     if (editing) {
+      // Prevent editing past dates
+      if (isPastDate(dateObj)) {
+        return;
+      }
       const iso = formatDateLocal(dateObj);
       const current = (localWorkdays[iso] ?? 'Présentiel');
       const next = cycleMode(current);

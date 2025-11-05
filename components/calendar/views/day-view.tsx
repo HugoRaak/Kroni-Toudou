@@ -15,7 +15,7 @@ import { isToday, getTodayHiddenTaskIds, hideTodayTask, hideTodayTempTask } from
 import { useTempTasks } from "@/lib/hooks/use-temp-tasks";
 import { useUnifiedTaskHandlers } from "@/lib/hooks/use-unified-task-handlers";
 import { prepareTasksForToday } from "@/lib/tasks/task-preparation";
-import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
+import { formatDateLocal, normalizeToMidnight, isPastDate } from "@/lib/utils";
 
 export type DayTasksData = {
   periodic: TaskWithShift[];
@@ -155,7 +155,7 @@ export function DayView({
                 workMode={workMode}
                 date={date}
                 onSaved={onModeSaved}
-                disabled={loading}
+                disabled={loading || isPastDate(date)}
               />
             </div>
           )}
