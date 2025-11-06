@@ -4,11 +4,12 @@ import { Task } from "@/lib/types";
 import { TaskWithShift } from "@/lib/calendar/calendar-utils";
 import { TaskEditDialog } from "./task-edit-dialog";
 import { parseDateLocal } from "@/lib/utils";
+import type { ModeConflictError } from "@/app/actions/tasks";
 
 type TaskItemCompactProps = {
   task: Task | TaskWithShift | Partial<Task> & { id: string; title: string; description?: string; shiftInfo?: TaskWithShift['shiftInfo'] };
   className?: string;
-  onSubmit: (formData: FormData) => Promise<boolean>;
+  onSubmit: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDelete?: (id: string) => Promise<boolean>;
   onSuccess?: () => void;
 };

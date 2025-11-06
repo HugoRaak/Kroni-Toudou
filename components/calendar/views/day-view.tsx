@@ -16,6 +16,7 @@ import { useTempTasks } from "@/lib/hooks/use-temp-tasks";
 import { useUnifiedTaskHandlers } from "@/lib/hooks/use-unified-task-handlers";
 import { prepareTasksForToday } from "@/lib/tasks/task-preparation";
 import { formatDateLocal, normalizeToMidnight, isPastDate } from "@/lib/utils";
+import type { ModeConflictError } from "@/app/actions/tasks";
 
 export type DayTasksData = {
   periodic: TaskWithShift[];
@@ -44,7 +45,7 @@ export function DayView({
   onPrev: () => void;
   onNext: () => void;
   onModeSaved?: () => void;
-  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
 }) {
   const day = useMemo(() => date.getDate(), [date]);

@@ -1,10 +1,11 @@
 import { Task } from '@/lib/types';
 import { TaskItemCompact } from '@/components/tasks/task-item-compact';
 import { TASK_TYPE_STYLES } from '@/lib/tasks/task-constants';
+import type { ModeConflictError } from '@/app/actions/tasks';
 
 type TaskSectionSpecificProps = {
   tasks: Task[];
-  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
   onSuccess?: () => void;
 };

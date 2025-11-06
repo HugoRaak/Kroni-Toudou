@@ -6,10 +6,11 @@ import { TaskWithType } from "@/lib/types";
 import { taskWithTypeToTaskLike } from "@/lib/tasks/task-conversion";
 import { getTaskTypeClassName } from "@/lib/tasks/task-constants";
 import { useDragAndDrop } from "@/lib/hooks/use-drag-and-drop";
+import type { ModeConflictError } from "@/app/actions/tasks";
 
 interface TaskListDraggableProps {
   tasks: TaskWithType[];
-  onUpdate: (formData: FormData) => Promise<boolean>;
+  onUpdate: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDelete: (id: string) => Promise<boolean>;
   onHide: (task: TaskWithType) => void;
   onSuccess?: () => void;

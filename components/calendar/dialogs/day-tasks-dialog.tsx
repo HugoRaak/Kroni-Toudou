@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { CalendarTask, calendarTaskToTaskLike } from "@/lib/calendar/calendar-utils";
 import { TaskSectionSpecific } from "@/components/calendar/tasks/task-section-specific";
 import { WorkModeBadge } from "@/components/calendar/ui/workmode-badge";
+import type { ModeConflictError } from "@/app/actions/tasks";
 
 type DayTasksDialogProps = {
   open: boolean;
@@ -11,7 +12,7 @@ type DayTasksDialogProps = {
   date: Date;
   tasks: CalendarTask[];
   workMode: "Présentiel" | "Distanciel" | "Congé";
-  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
   onSaved?: () => void;
 };

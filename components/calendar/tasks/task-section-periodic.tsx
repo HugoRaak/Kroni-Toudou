@@ -1,10 +1,11 @@
 import { TaskWithShift } from '@/lib/calendar/calendar-utils';
 import { TaskItemCompact } from '@/components/tasks/task-item-compact';
 import { TASK_TYPE_STYLES } from '@/lib/tasks/task-constants';
+import type { ModeConflictError } from '@/app/actions/tasks';
 
 type TaskSectionPeriodicProps = {
   tasks: TaskWithShift[];
-  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
   onSuccess?: () => void;
 };

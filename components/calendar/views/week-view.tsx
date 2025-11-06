@@ -9,6 +9,7 @@ import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
 import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
 import { useMemo, memo, useCallback } from "react";
 import { WorkModeConflictDialog } from "@/components/calendar/workmode-conflict-dialog";
+import type { ModeConflictError } from "@/app/actions/tasks";
 
 // Memoized wrapper component for DayCell in week view
 const WeekDayCellWrapper = memo(({
@@ -97,7 +98,7 @@ export function WeekView({
   onPrev: () => void;
   onNext: () => void;
   onSaved: () => void;
-  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
 }) {
   const {

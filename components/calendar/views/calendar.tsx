@@ -12,6 +12,7 @@ import { getTodayTasksFromStorage, saveTodayTasksToStorage, isToday } from "@/li
 import { navigateCalendarDate, type CalendarView } from "@/lib/calendar/calendar-navigation";
 import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
 import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
+import type { ModeConflictError } from "@/app/actions/tasks";
 
 export function Calendar({ 
   userId, 
@@ -20,7 +21,7 @@ export function Calendar({
   onViewChange
 }: { 
   userId: string;
-  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
   onViewChange?: (isViewingToday: boolean, currentView: CalendarView, dayDate?: Date) => void;
 }) {
@@ -184,11 +185,14 @@ export function Calendar({
   };
 
   // Wrapper functions to update localStorage when modifying today's tasks
-  const handleUpdateTask = async (formData: FormData): Promise<boolean> => {
+  const handleUpdateTask = async (formData: FormData): Promise<boolean | ModeConflictError> => {
     const result = await onUpdateTask(formData);
     
+    // Only reload if task was successfully updated (not a mode conflict)
+    const success = result === true;
+    
     // If viewing today in day view, reload from DB and update localStorage
-    if (result && currentView === "day" && isToday(dayDate)) {
+    if (success && currentView === "day" && isToday(dayDate)) {
       const dayDateStr = formatDateLocal(dayDate);
       const [dayData, mode] = await Promise.all([
         getTasksForDayAction(userId, dayDateStr),
@@ -197,7 +201,7 @@ export function Calendar({
       saveTodayTasksToStorage(dayData);
       setDayTasks(dayData);
       setDayWorkMode(mode);
-    } else if (result && currentView === "day") {
+    } else if (success && currentView === "day") {
       // Not today, reload normally
       await loadTasks();
     }

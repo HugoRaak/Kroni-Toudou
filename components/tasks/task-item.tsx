@@ -4,10 +4,11 @@ import { Task } from "@/lib/types";
 import { TaskEditDialog } from "./task-edit-dialog";
 import { useMemo } from "react";
 import { parseDateLocal } from "@/lib/utils";
+import type { ModeConflictError } from "@/app/actions/tasks";
 
 type TaskItemProps = {
   task: Task;
-  onSubmit: (formData: FormData) => Promise<boolean>;
+  onSubmit: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDelete?: (id: string) => Promise<boolean>;
   showProgressStatus?: boolean;
 };

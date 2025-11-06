@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Filter } from 'lucide-react';
+import type { ModeConflictError } from '@/app/actions/tasks';
 
 type PresenceFilter = 'all' | 'presentiel' | 'distanciel';
 type FrequencyFilter = 'all' | Frequency;
@@ -65,7 +66,7 @@ interface SectionWithFiltersProps {
   icon: React.ReactNode;
   tasks: Task[];
   showFrequencyFilter?: boolean;
-  onSubmit: (formData: FormData) => Promise<boolean>;
+  onSubmit: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDelete: (id: string) => Promise<boolean>;
   showProgressStatus?: boolean;
   emptyMessage: string;

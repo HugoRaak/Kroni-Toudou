@@ -9,6 +9,7 @@ import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
 import { getMonthGridDates, getMonthGridDatesArray } from "@/lib/calendar/calendar-date-utils";
 import { useMemo, useCallback, memo } from "react";
 import { WorkModeConflictDialog } from "@/components/calendar/workmode-conflict-dialog";
+import type { ModeConflictError } from "@/app/actions/tasks";
 
 // Constants extracted outside component
 const WEEK_DAYS = ["L", "M", "M", "J", "V", "S", "D"] as const;
@@ -97,7 +98,7 @@ export function MonthView({
   onPrev: () => void;
   onNext: () => void;
   onSaved: () => void;
-  onUpdateTask: (formData: FormData) => Promise<boolean>;
+  onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
 }) {
   const getDatesToSave = useCallback(() => getMonthGridDatesArray(anchorDate), [anchorDate]);
