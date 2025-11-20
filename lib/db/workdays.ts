@@ -5,6 +5,7 @@ import { formatDateLocal, parseDateLocal } from "@/lib/utils";
 export type WorkMode = 'Présentiel' | 'Distanciel' | 'Congé';
 
 export async function getWorkday(userId: string, workDate: string): Promise<WorkMode> {
+  const startTime = performance.now();
   const supabase = await supabaseServerReadOnly();
   const { data, error } = await supabase
     .from('workdays')
@@ -17,7 +18,8 @@ export async function getWorkday(userId: string, workDate: string): Promise<Work
     console.error('Error fetching workday:', error);
     return await getDefaultWorkMode(workDate);
   }
-
+  const endTime = performance.now();
+  console.log("getWorkday time", endTime - startTime);
   return (data?.work_mode as WorkMode) ?? await getDefaultWorkMode(workDate);
 }
 

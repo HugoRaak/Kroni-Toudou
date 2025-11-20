@@ -49,21 +49,16 @@ function getFirstWeekday(year: number, month: number, targetDay: number): Date {
 // Find the next date that matches the task's mode, starting from the given date
 // Returns null if no match found within 7 days (safety limit)
 async function findNextMatchingDate(
-  userId: string,
   startDate: Date,
   taskMode: 'Tous' | 'Présentiel' | 'Distanciel',
-  frequency: Frequency
+  frequency: Frequency,
+  workdaysMap: Record<string, WorkMode>
 ): Promise<Date | null> {
   if (taskMode === 'Tous') {
     return startDate; // No need to shift if task is for all modes
   }
   const maxDays = frequency === 'hebdomadaire' ? 7 : frequency === 'mensuel' ? 28 : 0;
   const current = normalizeToMidnight(startDate);
-  const endDate = addDays(current, maxDays);
-  const startDateStr = formatDateLocal(current);
-  const endDateStr = formatDateLocal(endDate);
-  
-  const workdaysMap = await getWorkdaysInRange(userId, startDateStr, endDateStr);
   
   let checkDate = new Date(current);
   let daysChecked = 0;
@@ -91,6 +86,14 @@ async function findNextMatchingDate(
   return null; // No match found within the limit
 }
 
+async function getWorkdaysMap(userId: string, startDate: Date, maxDays: number = 28): Promise<Record<string, WorkMode>> {
+  const current = normalizeToMidnight(startDate);
+  const endDate = addDays(current, maxDays);
+  const startDateStr = formatDateLocal(current);
+  const endDateStr = formatDateLocal(endDate);
+  return await getWorkdaysInRange(userId, startDateStr, endDateStr);
+}
+
 // Filter tasks by type
 export function filterTasksByType(tasks: Task[]): {
   periodic: Task[];
@@ -109,7 +112,8 @@ export function filterTasksByType(tasks: Task[]): {
 async function getPeriodicTasksForDateWithShift(
   userId: string,
   tasks: Task[],
-  date: Date
+  date: Date,
+  originalWorkMode: WorkMode
 ): Promise<TaskWithShift[]> {
   const normalizedDate = normalizeToMidnight(date);
   const dateStr = formatDateLocal(normalizedDate);
@@ -121,7 +125,8 @@ async function getPeriodicTasksForDateWithShift(
 
   
   const result: TaskWithShift[] = [];
-  
+  const workdaysMap = await getWorkdaysMap(userId, normalizedDate);
+
   for (const task of periodicTasks) {
     if (!task.day) continue;
 
@@ -164,7 +169,6 @@ async function getPeriodicTasksForDateWithShift(
     
     // Check the work mode on the original scheduled date
     const originalDateStr = formatDateLocal(originalScheduledDate);
-    const originalWorkMode = await getWorkday(userId, originalDateStr);
     
     // If task mode is "Tous", always show on scheduled day
     if (taskMode === 'Tous') {
@@ -182,7 +186,7 @@ async function getPeriodicTasksForDateWithShift(
     
     // If original day doesn't match and it's not a holiday, shift to next matching day
     if (originalWorkMode !== taskMode && originalWorkMode !== 'Congé') {
-      const shiftedDate = await findNextMatchingDate(userId, originalScheduledDate, taskMode, task.frequency ?? 'hebdomadaire');
+      const shiftedDate = await findNextMatchingDate(originalScheduledDate, taskMode, task.frequency ?? 'hebdomadaire', workdaysMap);
       
       if (shiftedDate && formatDateLocal(shiftedDate) === dateStr) {
         // Today is the shifted date, include the task with shift info
@@ -224,7 +228,7 @@ export function getWhenPossibleTasks(tasks: Task[]): {
 }
 
 // Get all tasks for today's view
-export async function getTasksForDay(userId: string, date?: Date): Promise<{
+export async function getTasksForDay(userId: string, date?: Date, workModeValue?: WorkMode): Promise<{
   periodic: TaskWithShift[];
   specific: Task[];
   whenPossible: {
@@ -232,15 +236,20 @@ export async function getTasksForDay(userId: string, date?: Date): Promise<{
     notStarted: Task[];
   };
 }> {
+  const startTime = performance.now();
   const allTasks = await getTasks(userId);
   const { periodic, specific, whenPossible } = filterTasksByType(allTasks);
+  const endTime = performance.now();
+  console.log("getTasks time", endTime - startTime);
   
   // Use provided date or create from current date string to avoid timezone issues
   // When called from server action, date is already parsed from YYYY-MM-DD string
   const today = date ? normalizeToMidnight(date) : normalizeToMidnight(new Date());
   const iso = formatDateLocal(today);
-  const workMode = (await getWorkday(userId, iso)) ?? 'Présentiel'; // Default to 'Présentiel' if no workday found
-
+  const startTime2 = performance.now();
+  const workMode = workModeValue ?? (await getWorkday(userId, iso));
+  const endTime2 = performance.now();
+  console.log("workMode time", endTime2 - startTime2);
   const filterByMode = (tasks: Task[]): Task[] => {
     if (workMode === 'Congé') return [];
     return tasks.filter(t => {
@@ -250,8 +259,10 @@ export async function getTasksForDay(userId: string, date?: Date): Promise<{
   };
 
   // Use the new shifting logic for periodic tasks
-  const periodicWithShift = await getPeriodicTasksForDateWithShift(userId, periodic, today);
-  
+  const startTime3 = performance.now();
+  const periodicWithShift = await getPeriodicTasksForDateWithShift(userId, periodic, today, workMode);
+  const endTime3 = performance.now();
+  console.log("periodicWithShift time", endTime3 - startTime3);
   // Filter daily tasks by mode (they come from getPeriodicTasksForDateWithShift but need mode filtering)
   const filteredPeriodic = periodicWithShift.filter(task => {
     if (workMode === 'Congé') return false;
