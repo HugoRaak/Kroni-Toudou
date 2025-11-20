@@ -61,6 +61,7 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
     if (dayRaw && isValidDayOfWeek(dayRaw)) {
       result.day = dayRaw;
     }
+    result.in_progress = undefined;
   } else if (taskTypeRaw === TASK_TYPES.SPECIFIC) {
     if (due_onRaw && validateDueOn(due_onRaw)) {
       result.due_on = due_onRaw;
@@ -68,6 +69,7 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
     if (postponed_daysRaw && validatePostponedDays(postponed_daysRaw)) {
       result.postponed_days = Number(postponed_daysRaw);
     }
+    result.in_progress = undefined;
   } else if (taskTypeRaw === TASK_TYPES.WHEN_POSSIBLE) {
     result.in_progress = formData.get('in_progress') != null;
   }

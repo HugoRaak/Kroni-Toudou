@@ -35,7 +35,9 @@ export function WorkModeBadge({
 }: WorkModeBadgeProps) {
   const [selectedMode, setSelectedMode] = useState<WorkMode>(workMode);
   const [saving, setSaving] = useState(false);
-  const [modeConflict, setModeConflict] = useState<ModeConflictError | null>(null);
+  const [modeConflicts, setModeConflicts] = useState<ModeConflictError[]>([]);
+  const [currentConflictIndex, setCurrentConflictIndex] = useState(0);
+  const [confirmedConflicts, setConfirmedConflicts] = useState<Set<number>>(new Set());
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,15 +62,30 @@ export function WorkModeBadge({
       const dateStr = formatDateLocal(date);
       const result = await setWorkdayForUserAction(dateStr, selectedMode);
       
-      // Check for mode conflict
-      if (result && typeof result === 'object' && 'type' in result && result.type === 'MODE_CONFLICT') {
-        setModeConflict(result as ModeConflictError);
-        // Revert to original mode
-        setSelectedMode(workMode);
-        return;
+      // Check for mode conflict (can be single conflict or array of conflicts)
+      if (result && typeof result === 'object') {
+        let conflicts: ModeConflictError[] = [];
+        
+        if (Array.isArray(result)) {
+          // Multiple conflicts - keep all conflicts (one per task)
+          if (result.length > 0 && result[0].type === 'MODE_CONFLICT') {
+            conflicts = result as ModeConflictError[];
+          }
+        } else if ('type' in result && result.type === 'MODE_CONFLICT') {
+          // Single conflict
+          conflicts = [result as ModeConflictError];
+        }
+        
+        if (conflicts.length > 0) {
+          setModeConflicts(conflicts);
+          setCurrentConflictIndex(0);
+          setConfirmedConflicts(new Set());
+          setSelectedMode(workMode);
+          return;
+        }
       }
       
-      if (result) {
+      if (result === true) {
         onSaved?.();
       }
     } finally {
@@ -86,22 +103,76 @@ export function WorkModeBadge({
     toast.error("Erreur lors de la modification de la date de la tâche");
   };
 
-  const handleConfirmAnyway = async () => {
-    if (!modeConflict) return;
-    
-    // Save the conflicted change using force
-    const success = await setWorkdayForUserActionForce(modeConflict.taskDate, modeConflict.workMode);
-    
-    if (success) {
-      setModeConflict(null);
-      onSaved?.();
+  const handleConflictResolved = async () => {
+    // Move to next conflict or finish
+    if (currentConflictIndex < modeConflicts.length - 1) {
+      setCurrentConflictIndex(currentConflictIndex + 1);
     } else {
+      // All conflicts resolved, save the work mode change
+      if (modeConflicts.length > 0) {
+        const lastConflict = modeConflicts[modeConflicts.length - 1];
+        const success = await setWorkdayForUserActionForce(lastConflict.taskDate, lastConflict.workMode);
+        if (success) {
+          setModeConflicts([]);
+          setCurrentConflictIndex(0);
+          onSaved?.();
+        } else {
+          toast.error("Erreur lors de la modification du mode de travail");
+        }
+      }
+    }
+  };
+
+  const handleConfirmAnyway = () => {
+    if (modeConflicts.length === 0) return;
+    
+    // Mark current conflict as confirmed
+    const newConfirmed = new Set(confirmedConflicts);
+    newConfirmed.add(currentConflictIndex);
+    setConfirmedConflicts(newConfirmed);
+    
+    // Move to next conflict or save all if all are confirmed
+    if (currentConflictIndex < modeConflicts.length - 1) {
+      // There are more conflicts, move to next
+      setCurrentConflictIndex(currentConflictIndex + 1);
+    } else {
+      // This is the last conflict, check if all are confirmed before saving
+      const allConfirmed = newConfirmed.size === modeConflicts.length;
+      if (allConfirmed) {
+        // All conflicts confirmed, save all changes at once
+        saveAllConfirmedConflicts(newConfirmed);
+      }
+    }
+  };
+
+  const saveAllConfirmedConflicts = async (confirmed: Set<number>) => {
+    // Save all confirmed conflicts using force
+    const conflictsToSave = modeConflicts.filter((_, index) => confirmed.has(index));
+    
+    try {
+      for (const conflict of conflictsToSave) {
+        const success = await setWorkdayForUserActionForce(conflict.taskDate, conflict.workMode);
+        if (!success) {
+          toast.error("Erreur lors de la modification du mode de travail");
+          return;
+        }
+      }
+      
+      // All conflicts saved successfully
+      setModeConflicts([]);
+      setCurrentConflictIndex(0);
+      setConfirmedConflicts(new Set());
+      onSaved?.();
+    } catch (error) {
+      console.error('Error saving conflicts:', error);
       toast.error("Erreur lors de la modification du mode de travail");
     }
   };
 
   const handleCancel = () => {
-    setModeConflict(null);
+    setModeConflicts([]);
+    setCurrentConflictIndex(0);
+    setConfirmedConflicts(new Set());
     setSelectedMode(workMode);
   };
 
@@ -144,15 +215,22 @@ export function WorkModeBadge({
         </Button>
       )}
       
-      {modeConflict && userId && (
+      {modeConflicts.length > 0 && userId && currentConflictIndex < modeConflicts.length && (
         <WorkModeConflictDialog
-          open={!!modeConflict}
-          onOpenChange={(open) => !open && setModeConflict(null)}
-          conflict={modeConflict}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) {
+              handleCancel();
+            }
+          }}
+          conflict={modeConflicts[currentConflictIndex]}
           userId={userId}
           onDateChange={handleDateChange}
           onCancel={handleCancel}
           onConfirm={handleConfirmAnyway}
+          onConflictResolved={handleConflictResolved}
+          conflictIndex={currentConflictIndex}
+          totalConflicts={modeConflicts.length}
         />
       )}
     </div>

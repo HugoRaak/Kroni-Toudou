@@ -40,6 +40,9 @@ export function Calendar({
   const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isLoadingRef = useRef(false);
 
+  // Track if today tasks should be reloaded
+  const reloadTodayTasks = useRef(true);
+
   useEffect(() => {
     // Clear any pending timeout - this ensures only the last change triggers a load
     if (loadTimeoutRef.current) {
@@ -62,14 +65,20 @@ export function Calendar({
     };
   }, [currentView, dayDate, weekDate, monthDate]);
 
-  // Refresh tasks when a task is created via the floating button
+  // Refresh tasks when a task is created/updated/deleted from any view
   useEffect(() => {
     const handler = () => {
       // Force reload to bypass localStorage cache for today
-      loadTasks(true);
+      reloadTodayTasks.current = true;
     };
     window.addEventListener('task-created', handler);
-    return () => window.removeEventListener('task-created', handler);
+    window.addEventListener('task-updated', handler);
+    window.addEventListener('task-deleted', handler);
+    return () => {
+      window.removeEventListener('task-created', handler);
+      window.removeEventListener('task-updated', handler);
+      window.removeEventListener('task-deleted', handler);
+    };
   }, [dayDate, weekDate, monthDate, currentView]);
 
   // Notify parent when viewing today changes
@@ -91,7 +100,7 @@ export function Calendar({
     try {
       if (currentView === "day") {
         // Check if viewing today and load from localStorage first (unless forcing reload)
-        if (isToday(dayDate) && !forceReload) {
+        if (isToday(dayDate) && !forceReload && !reloadTodayTasks.current) {
           const storedTasks = getTodayTasksFromStorage();
           
           if (storedTasks) {
@@ -119,6 +128,7 @@ export function Calendar({
 
         if (isToday(dayDate)) {
           saveTodayTasksToStorage(dayData);
+          reloadTodayTasks.current = false;
         }
 
         setDayTasks(dayData);

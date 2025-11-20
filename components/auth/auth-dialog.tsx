@@ -38,7 +38,7 @@ export function AuthDialog() {
           Se connecter
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col p-0">
+      <DialogContent className="sm:max-w-lg max-h-[95vh] overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle>
             {mode === "login" ? "Connexion" : "Inscription"}
@@ -51,7 +51,7 @@ export function AuthDialog() {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="overflow-y-auto flex-1 px-6 pb-6">
+        <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-4">
           <AuthForm mode={mode} onSuccess={handleSuccess} />
           
           <div className="text-center mt-4">

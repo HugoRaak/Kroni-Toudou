@@ -68,6 +68,8 @@ export function TaskEditDialog({
     if (result) {
       toast.success("Tâche modifiée avec succès");
       setOpen(false);
+      // Notify calendar to reload tasks from DB
+      window.dispatchEvent(new Event('task-updated'));
       onSuccess?.();
     } else {
       toast.error("Erreur lors de la modification de la tâche");
@@ -107,6 +109,8 @@ export function TaskEditDialog({
         toast.success("Tâche supprimée avec succès");
         setDeleteConfirmOpen(false);
         setOpen(false);
+        // Notify calendar to reload tasks from DB
+        window.dispatchEvent(new Event('task-deleted'));
         onSuccess?.();
       } else {
         toast.error("Erreur lors de la suppression de la tâche");
@@ -139,7 +143,7 @@ export function TaskEditDialog({
             </DialogHeader>
             
             {shouldRenderContent && (
-              <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-1">
+              <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-4">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();

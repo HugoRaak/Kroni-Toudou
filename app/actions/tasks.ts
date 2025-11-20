@@ -56,20 +56,22 @@ async function checkModeConflict(
   // Only check for specific date tasks
   if (!due_on) return null;
   
-  // Mode "Tous" always matches
-  if (!mode || mode === 'Tous') return null;
-  
   const workMode = await getWorkday(userId, due_on);
   
-  // Congé (holiday) doesn't match any task mode
+  // Congé (holiday) doesn't match any task mode (including "Tous")
   if (workMode === 'Congé') {
+    const taskMode = mode ?? 'Tous';
     return {
       type: 'MODE_CONFLICT',
       taskDate: due_on,
-      taskMode: mode,
+      taskMode: taskMode,
       workMode: 'Congé'
     };
   }
+  
+  
+  // Mode "Tous" is compatible with Présentiel and Distanciel, but not Congé (already handled above)
+  if (!mode || mode === 'Tous') return null;
   
   // Check if modes match
   if (mode !== workMode) {
@@ -166,10 +168,16 @@ export async function updateTaskAction(
     }
   }
   
+  // Convert undefined to null for Supabase (undefined is ignored, null removes fields)
+  const cleanedUpdates: any = {};
+  for (const [key, value] of Object.entries(updates)) {
+    cleanedUpdates[key] = value === undefined ? null : value;
+  }
+  
   const { data, error } = await supabase
     .from('tasks')
     .update({
-      ...updates,
+      ...cleanedUpdates,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)

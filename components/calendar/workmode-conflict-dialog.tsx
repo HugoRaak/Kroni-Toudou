@@ -39,6 +39,7 @@ export function WorkModeConflictDialog({
   const [proposedDate, setProposedDate] = useState<string | null>(null);
   const [isSearchingDate, setIsSearchingDate] = useState(false);
   const [conflictingTasks, setConflictingTasks] = useState<Array<{ id: string; title: string }>>([]);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
 
   const formatDate = (dateStr: string): string => {
     const date = parseDateLocal(dateStr);
@@ -62,18 +63,31 @@ export function WorkModeConflictDialog({
   // Load conflicting tasks when dialog opens
   useEffect(() => {
     if (open && userId) {
+      setIsLoadingTasks(true);
       getTasksForDayAction(userId, conflict.taskDate).then(dayTasks => {
         if (dayTasks && dayTasks.specific) {
-          const conflicts = dayTasks.specific
+          const allConflictingTasks = dayTasks.specific
             .filter(task => task.mode === conflict.taskMode)
             .map(task => ({ id: task.id, title: task.title }));
-          setConflictingTasks(conflicts);
+          
+          // If there are multiple conflicts, show only one task at a time based on conflictIndex
+          // Otherwise, show all tasks for this conflict
+          if (totalConflicts > 1 && allConflictingTasks.length > 0) {
+            // Show only the task at the current conflict index
+            const taskIndex = conflictIndex % allConflictingTasks.length;
+            setConflictingTasks([allConflictingTasks[taskIndex]]);
+          } else {
+            // Single conflict or all tasks should be shown
+            setConflictingTasks(allConflictingTasks);
+          }
         }
       }).catch(err => {
         console.error('Error loading tasks:', err);
+      }).finally(() => {
+        setIsLoadingTasks(false);
       });
     }
-  }, [open, userId, conflict.taskDate, conflict.taskMode]);
+  }, [open, userId, conflict.taskDate, conflict.taskMode, conflictIndex, totalConflicts]);
 
   const handleSearchDate = async () => {
     setIsSearchingDate(true);
@@ -119,13 +133,19 @@ export function WorkModeConflictDialog({
         });
         toast.success(`${conflictingTasks.length} tâche(s) déplacée(s) au ${formatDate(proposedDate)}`);
         setProposedDate(null);
-        onOpenChange(false);
+        
         // If onConflictResolved is provided, use it (tasks moved, conflict should be resolved)
-        // Otherwise fall back to onConfirm (force save)
         if (onConflictResolved) {
+          const isLastConflict = conflictIndex >= totalConflicts - 1;
           onConflictResolved();
+          // Only close dialog if this was the last conflict
+          if (isLastConflict) {
+            onOpenChange(false);
+          }
         } else {
+          // Fall back to onConfirm (force save)
           onConfirm();
+          onOpenChange(false);
         }
       } finally {
         setIsResolving(false);
@@ -140,8 +160,12 @@ export function WorkModeConflictDialog({
 
   const handleConfirmAnyway = () => {
     // User wants to proceed with the mode change anyway
+    const isLastConflict = conflictIndex >= totalConflicts - 1;
     onConfirm();
-    onOpenChange(false);
+    // Only close dialog if this was the last conflict
+    if (isLastConflict) {
+      onOpenChange(false);
+    }
   };
 
   const handleCancel = () => {
@@ -248,7 +272,12 @@ export function WorkModeConflictDialog({
         </DialogHeader>
         
         <div className="py-3 sm:py-4 space-y-3">
-          {hasMultipleTasks && (
+          {isLoadingTasks ? (
+            <div className="bg-muted p-4 rounded-md flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <p className="text-xs sm:text-sm text-muted-foreground">Récupération des tâches en conflit...</p>
+            </div>
+          ) : hasMultipleTasks ? (
             <div className="bg-background border rounded-md p-3 max-h-32 overflow-y-auto">
               <p className="text-xs font-medium text-muted-foreground mb-2">Tâches en conflit :</p>
               <ul className="text-xs space-y-1 list-disc list-inside">
@@ -257,7 +286,7 @@ export function WorkModeConflictDialog({
                 ))}
               </ul>
             </div>
-          )}
+          ) : null}
           
           <div className="bg-muted p-3 rounded-md">
             <div className="text-xs sm:text-sm space-y-1.5 break-words">
@@ -281,7 +310,7 @@ export function WorkModeConflictDialog({
           <Button
             variant="default"
             onClick={handleSearchDate}
-            disabled={isResolving || isSearchingDate}
+            disabled={isResolving || isSearchingDate || isLoadingTasks}
             className="flex-1 text-sm cursor-pointer w-full"
           >
             {isSearchingDate ? (
@@ -299,7 +328,7 @@ export function WorkModeConflictDialog({
             <Button
               variant="outline"
               onClick={handleConfirmAnyway}
-              disabled={isResolving || isSearchingDate}
+              disabled={isResolving || isSearchingDate || isLoadingTasks}
               className="flex-1 text-sm cursor-pointer"
             >
               Confirmer quand même
@@ -307,7 +336,7 @@ export function WorkModeConflictDialog({
             <Button
               variant="outline"
               onClick={handleCancel}
-              disabled={isResolving || isSearchingDate}
+              disabled={isResolving || isSearchingDate || isLoadingTasks}
               className="flex-1 text-sm cursor-pointer"
             >
               Annuler

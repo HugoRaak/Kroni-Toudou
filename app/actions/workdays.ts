@@ -46,45 +46,48 @@ async function checkTasksForWorkModeConflict(
   userId: string,
   dateStr: string,
   newWorkMode: WorkMode
-): Promise<ModeConflictError | null> {
+): Promise<ModeConflictError[]> {
   // Get all tasks for the user
   const allTasks = await getTasks(userId);
   
   // Filter to get only specific date tasks for this date
   const specificTasksForDate = allTasks.filter(task => task.due_on === dateStr);
+
+  const conflicts: ModeConflictError[] = [];
   
   // Check each task for conflicts
   for (const task of specificTasksForDate) {
     const taskMode = task.mode ?? 'Tous';
     
-    // Skip if task mode is "Tous" (always compatible)
-    if (taskMode === 'Tous') continue;
-    
-    // If new work mode is Congé, all tasks conflict
+    // If new work mode is Congé, all tasks conflict (including "Tous")
     if (newWorkMode === 'Congé') {
-      return {
+      conflicts.push({
         type: 'MODE_CONFLICT',
         taskDate: dateStr,
         taskMode: taskMode,
         workMode: 'Congé'
-      };
+      });
+      continue;
     }
+    
+    // Task mode "Tous" is compatible with Présentiel and Distanciel, but not Congé (already handled above)
+    if (taskMode === 'Tous') continue;
     
     // Check if task mode doesn't match new work mode
     if (taskMode !== newWorkMode) {
-      return {
+      conflicts.push({
         type: 'MODE_CONFLICT',
         taskDate: dateStr,
         taskMode: taskMode,
         workMode: newWorkMode
-      };
+      });
     }
   }
   
-  return null;
+  return conflicts;
 }
 
-export type SetWorkdayResult = boolean | ModeConflictError;
+export type SetWorkdayResult = boolean | ModeConflictError | ModeConflictError[];
 
 export async function setWorkdayForUserAction(dateStr: string, mode: WorkMode): Promise<SetWorkdayResult> {
   const supabase = await supabaseServer();
@@ -92,19 +95,20 @@ export async function setWorkdayForUserAction(dateStr: string, mode: WorkMode): 
   if (!user) return false;
   
   // Check for conflicts with specific date tasks
-  const conflict = await checkTasksForWorkModeConflict(user.id, dateStr, mode);
-  if (conflict) {
-    return conflict;
+  const conflicts = await checkTasksForWorkModeConflict(user.id, dateStr, mode);
+  if (conflicts.length > 0) {
+    // Return first conflict for backward compatibility, or all conflicts
+    return conflicts.length === 1 ? conflicts[0] : conflicts;
   }
   
   return await upsertWorkday(user.id, dateStr, mode);
 }
 
 // Check for conflicts without saving (used to detect conflicts before saving)
-export async function checkWorkdayConflictForUserAction(dateStr: string, mode: WorkMode): Promise<ModeConflictError | null> {
+export async function checkWorkdayConflictForUserAction(dateStr: string, mode: WorkMode): Promise<ModeConflictError[]> {
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  if (!user) return [];
   return await checkTasksForWorkModeConflict(user.id, dateStr, mode);
 }
 
