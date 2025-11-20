@@ -22,7 +22,7 @@ const LINK_BASE = "inline-flex items-center h-8 px-3 rounded-full text-sm transi
 const LINK_ACTIVE = "bg-primary/10 text-foreground";
 const LINK_INACTIVE = "text-muted-foreground hover:text-foreground hover:bg-muted";
 
-export function Navbar({ user }: { user: User }) {
+export function Navbar({ user }: { user: User | null }) {
   const pathname = usePathname();
 
   const handleSignOut = useCallback(async () => {
