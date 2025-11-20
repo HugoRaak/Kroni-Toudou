@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { getWeekDateRange } from "./calendar/calendar-date-utils";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -29,4 +30,38 @@ export function isPastDate(date: Date): boolean {
   const normalizedDate = normalizeToMidnight(date);
   const normalizedToday = normalizeToMidnight(new Date());
   return normalizedDate < normalizedToday;
+}
+
+// Helper function to add days to a date
+// Uses milliseconds to avoid timezone and month boundary issues
+export function addDays(date: Date, days: number): Date {
+  const normalized = normalizeToMidnight(date);
+  const result = new Date(normalized.getTime() + days * 24 * 60 * 60 * 1000);
+  return normalizeToMidnight(result);
+}
+
+export function getRangeForView(
+  view: "day" | "week" | "month",
+  anchor: Date
+) {
+  const d = normalizeToMidnight(anchor);
+
+  if (view === "day") {
+    return { start: d, end: d };
+  }
+
+  if (view === "week") {
+    const range = getWeekDateRange(d);
+
+    return { start: range.start, end: range.end };
+  }
+
+  if (view === "month") {
+    return {
+      start: new Date(d.getFullYear(), d.getMonth(), 1),
+      end: new Date(d.getFullYear(), d.getMonth() + 1, 0)
+    };
+  }
+
+  throw new Error(`Unknown view: ${view}`);
 }

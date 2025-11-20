@@ -10,6 +10,7 @@ import { LicenseProcessor } from '@/components/license-processor';
 import { CalendarWithAddButton } from '@/components/calendar/ui/calendar-with-add-button';
 
 export default async function Home() {
+  console.log('Home page');
   const supabase = await supabaseServerReadOnly();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -20,7 +21,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-background">
       <LicenseProcessor />
-      <Navbar />
+      <Navbar user={user} />
       <main className="container mx-auto px-4 pt-4 pb-8">
         <CalendarWithAddButton
           userId={user.id}

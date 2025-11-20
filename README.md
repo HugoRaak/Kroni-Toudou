@@ -66,7 +66,7 @@ L'application peut être déployée sur toute plateforme supportant Next.js (Net
 - `app/` - Pages et routes Next.js
 - `components/` - Composants React réutilisables
 - `lib/` - Utilitaires, hooks, fonctions de base de données
-- `middleware.ts` - Middleware pour l'authentification et la protection des routes
+- `proxy.ts` - Middleware pour l'authentification et la protection des routes
 
 ## Fonctionnalités
 

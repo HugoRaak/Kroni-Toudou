@@ -1,7 +1,7 @@
 import { Task, Frequency, DayOfWeek } from '@/lib/types';
 import { getTasks } from '@/lib/db/tasks';
 import { getWorkday, getWorkdaysInRange, WorkMode } from '@/lib/db/workdays';
-import { formatDateLocal, normalizeToMidnight } from '@/lib/utils';
+import { formatDateLocal, normalizeToMidnight, addDays } from '@/lib/utils';
 
 export interface CalendarTask {
   id: string;
@@ -38,14 +38,6 @@ function getDayName(date: Date): DayOfWeek {
 function getDayIndex(dayName: DayOfWeek): number {
   const days: DayOfWeek[] = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   return days.indexOf(dayName);
-}
-
-// Helper function to add days to a date
-// Uses milliseconds to avoid timezone and month boundary issues
-function addDays(date: Date, days: number): Date {
-  const normalized = normalizeToMidnight(date);
-  const result = new Date(normalized.getTime() + days * 24 * 60 * 60 * 1000);
-  return normalizeToMidnight(result);
 }
 
 function getFirstWeekday(year: number, month: number, targetDay: number): Date {

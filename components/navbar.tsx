@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/actions/auth";
 import { getCurrentUser } from "@/app/actions/auth";
 import { useEffect, useState, useCallback, useMemo } from "react";
@@ -16,25 +15,15 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { AuthDialog } from "@/components/auth/auth-dialog";
+import { User } from "@supabase/supabase-js";
 
 // Constants extracted outside component to avoid recreation
 const LINK_BASE = "inline-flex items-center h-8 px-3 rounded-full text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
 const LINK_ACTIVE = "bg-primary/10 text-foreground";
 const LINK_INACTIVE = "text-muted-foreground hover:text-foreground hover:bg-muted";
 
-export function Navbar() {
-  const [user, setUser] = useState<any>(null);
+export function Navbar({ user }: { user: User }) {
   const pathname = usePathname();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const result = await getCurrentUser();
-      if ('user' in result && result.user) {
-        setUser(result.user);
-      }
-    };
-    fetchUser();
-  }, []);
 
   const handleSignOut = useCallback(async () => {
     await signOut();
