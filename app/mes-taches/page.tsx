@@ -16,18 +16,16 @@ import { SectionWithFilters } from '@/components/tasks/section-with-filters';
 export default async function MesTachesPage() {
   const supabase = await supabaseServerReadOnly();
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) {
     redirect('/login');
   }
-
   const tasks = await getTasks(user.id);
   const { periodic, specificDate, whenPossible } = groupTasksByType(tasks);
   const isEmpty = tasks.length === 0;
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Navbar user={user} />
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-center gap-4">

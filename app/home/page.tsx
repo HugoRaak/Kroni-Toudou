@@ -10,7 +10,6 @@ import { LicenseProcessor } from '@/components/license-processor';
 import { CalendarWithAddButton } from '@/components/calendar/ui/calendar-with-add-button';
 
 export default async function Home() {
-  console.log('Home page');
   const supabase = await supabaseServerReadOnly();
   const { data: { user } } = await supabase.auth.getUser();
 

@@ -236,20 +236,14 @@ export async function getTasksForDay(userId: string, date?: Date, workModeValue?
     notStarted: Task[];
   };
 }> {
-  const startTime = performance.now();
   const allTasks = await getTasks(userId);
   const { periodic, specific, whenPossible } = filterTasksByType(allTasks);
-  const endTime = performance.now();
-  console.log("getTasks time", endTime - startTime);
   
   // Use provided date or create from current date string to avoid timezone issues
   // When called from server action, date is already parsed from YYYY-MM-DD string
   const today = date ? normalizeToMidnight(date) : normalizeToMidnight(new Date());
   const iso = formatDateLocal(today);
-  const startTime2 = performance.now();
   const workMode = workModeValue ?? (await getWorkday(userId, iso));
-  const endTime2 = performance.now();
-  console.log("workMode time", endTime2 - startTime2);
   const filterByMode = (tasks: Task[]): Task[] => {
     if (workMode === 'Congé') return [];
     return tasks.filter(t => {
@@ -259,10 +253,7 @@ export async function getTasksForDay(userId: string, date?: Date, workModeValue?
   };
 
   // Use the new shifting logic for periodic tasks
-  const startTime3 = performance.now();
   const periodicWithShift = await getPeriodicTasksForDateWithShift(userId, periodic, today, workMode);
-  const endTime3 = performance.now();
-  console.log("periodicWithShift time", endTime3 - startTime3);
   // Filter daily tasks by mode (they come from getPeriodicTasksForDateWithShift but need mode filtering)
   const filteredPeriodic = periodicWithShift.filter(task => {
     if (workMode === 'Congé') return false;

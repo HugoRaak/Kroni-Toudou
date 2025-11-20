@@ -9,13 +9,10 @@ export async function getCalendarDayDataAction(params: {
   userId: string;
   date: Date;
 }) {
-  const startTime = performance.now();
   const { userId, date } = params;
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.id !== userId) throw new Error("Unauthorized");
-  const endTime = performance.now();
-  console.log("Auth check time", endTime - startTime);
   const workMode = await getWorkday(userId, formatDateLocal(date));
   const dayData = await getTasksForDay(userId, date, workMode);
   return { view: "day" as const, dayData, mode: workMode };

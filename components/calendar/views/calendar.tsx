@@ -24,7 +24,6 @@ export function Calendar({
   onDeleteTask: (id: string) => Promise<boolean>;
   onViewChange?: (isViewingToday: boolean, currentView: CalendarView, dayDate?: Date) => void;
   }) {
-  console.log('Calendar component');
   const [currentView, setCurrentView] = useState<CalendarView>("day");
   // Independent anchors per view (normalized to midnight local time to avoid timezone issues)
   const [dayDate, setDayDate] = useState<Date>(() => normalizeToMidnight(new Date()));
@@ -93,7 +92,6 @@ export function Calendar({
       if (currentView === "day") {
         // Check if viewing today and load from localStorage first (unless forcing reload)
         if (isToday(dayDate) && !forceReload) {
-          console.log('from localStorage');
           const storedTasks = getTodayTasksFromStorage();
           
           if (storedTasks) {
@@ -111,7 +109,6 @@ export function Calendar({
             return;
           }
         }
-        console.log('from DB');
 
         const { dayData, mode } = await getCalendarDayDataAction({
           userId,
