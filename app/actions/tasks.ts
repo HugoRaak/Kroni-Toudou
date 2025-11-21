@@ -305,3 +305,52 @@ export async function getCurrentUserIdAction(): Promise<string | null> {
   const user = await verifyAuthenticated(supabase);
   return user?.id ?? null;
 }
+
+export async function updateTasksDisplayOrderAction(taskIds: string[]): Promise<boolean> {
+  'use server';
+  const supabase = await supabaseServer();
+  const user = await verifyAuthenticated(supabase);
+  
+  if (!user) {
+    console.warn('Security: user not authenticated');
+    return false;
+  }
+
+  // Verify all tasks belong to the user
+  const { data: tasks, error: fetchError } = await supabase
+    .from('tasks')
+    .select('id')
+    .eq('user_id', user.id)
+    .in('id', taskIds);
+
+  if (fetchError || !tasks || tasks.length !== taskIds.length) {
+    console.error('Error verifying task ownership:', fetchError);
+    return false;
+  }
+
+  // Update display_order for each task based on its position in the array
+  const updates = taskIds.map((id, index) => ({
+    id,
+    display_order: index + 1,
+  }));
+
+  // Use Promise.all to update all tasks
+  const updatePromises = updates.map(({ id, display_order }) =>
+    supabase
+      .from('tasks')
+      .update({ display_order, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', user.id)
+  );
+
+  const results = await Promise.all(updatePromises);
+  const hasError = results.some(result => result.error);
+
+  if (hasError) {
+    console.error('Error updating display_order');
+    return false;
+  }
+
+  revalidatePath('/mes-taches');
+  return true;
+}

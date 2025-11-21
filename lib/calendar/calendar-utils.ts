@@ -13,6 +13,7 @@ export interface CalendarTask {
   due_on?: string;
   in_progress?: boolean;
   mode?: 'Tous' | 'Présentiel' | 'Distanciel';
+  display_order?: number;
   shiftInfo?: {
     originalDay: DayOfWeek;
     originalDate: string; // YYYY-MM-DD
@@ -92,6 +93,18 @@ async function getWorkdaysMap(userId: string, startDate: Date, maxDays: number =
   const startDateStr = formatDateLocal(current);
   const endDateStr = formatDateLocal(endDate);
   return await getWorkdaysInRange(userId, startDateStr, endDateStr);
+}
+
+// Sort tasks by display_order (ascending), with tasks without display_order at the end
+export function sortByDisplayOrder<T extends { display_order?: number }>(tasks: T[]): T[] {
+  return [...tasks].sort((a, b) => {
+    if (a.display_order !== undefined && b.display_order !== undefined) {
+      return a.display_order - b.display_order;
+    }
+    if (a.display_order !== undefined) return -1;
+    if (b.display_order !== undefined) return 1;
+    return 0;
+  });
 }
 
 // Filter tasks by type
@@ -206,14 +219,25 @@ async function getPeriodicTasksForDateWithShift(
   const dailyTasks = tasks.filter(task => task.frequency === 'quotidien');
   result.push(...dailyTasks);
   
-  return result;
+  // Sort by display_order
+  return sortByDisplayOrder(result);
 }
 
 // Get specific date tasks for a specific date
 export function getSpecificTasksForDate(tasks: Task[], date: Date): Task[] {
   const normalizedDate = normalizeToMidnight(date);
   const dateString = formatDateLocal(normalizedDate);
-  return tasks.filter(task => task.due_on === dateString);
+  const filtered = tasks.filter(task => task.due_on === dateString);
+  // Sort by display_order, then by due_on (oldest first) as secondary sort
+  return sortByDisplayOrder(filtered).sort((a, b) => {
+    // If display_order is equal or both undefined, sort by date
+    if ((a.display_order === undefined && b.display_order === undefined) ||
+        (a.display_order === b.display_order)) {
+      if (!a.due_on || !b.due_on) return 0;
+      return a.due_on.localeCompare(b.due_on);
+    }
+    return 0; // Already sorted by display_order
+  });
 }
 
 // Get when possible tasks (separated by in_progress status)
@@ -221,9 +245,13 @@ export function getWhenPossibleTasks(tasks: Task[]): {
   inProgress: Task[];
   notStarted: Task[];
 } {
+  const inProgress = tasks.filter(task => task.in_progress === true);
+  const notStarted = tasks.filter(task => task.in_progress === false);
+  
+  // Sort each group by display_order, then by in_progress status
   return {
-    inProgress: tasks.filter(task => task.in_progress === true),
-    notStarted: tasks.filter(task => task.in_progress === false)
+    inProgress: sortByDisplayOrder(inProgress),
+    notStarted: sortByDisplayOrder(notStarted)
   };
 }
 
@@ -296,7 +324,7 @@ export async function getTasksForDateRange(
     return task.due_on >= startDateStr && task.due_on <= endDateStr;
   });
   
-  // Convert to CalendarTask format
+  // Convert to CalendarTask format and sort by display_order
   specificForRange.forEach(task => {
     tasks.push({
       id: task.id,
@@ -307,11 +335,20 @@ export async function getTasksForDateRange(
       day: task.day,
       due_on: task.due_on,
       in_progress: task.in_progress,
-      mode: task.mode
+      mode: task.mode,
+      display_order: task.display_order
     });
   });
   
-  return tasks;
+  // Sort by display_order, then by due_on as secondary sort
+  return sortByDisplayOrder(tasks).sort((a, b) => {
+    if ((a.display_order === undefined && b.display_order === undefined) ||
+        (a.display_order === b.display_order)) {
+      if (!a.due_on || !b.due_on) return 0;
+      return a.due_on.localeCompare(b.due_on);
+    }
+    return 0;
+  });
 }
 
 // Get tasks for a specific date (legacy function for compatibility)

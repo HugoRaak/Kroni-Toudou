@@ -12,6 +12,7 @@ export interface Task {
   postponed_days?: number;
   in_progress?: boolean;
   mode?: 'Tous' | 'Présentiel' | 'Distanciel';
+  display_order?: number;
   created_at: string;
   updated_at: string;
 }

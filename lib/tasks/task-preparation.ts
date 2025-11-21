@@ -5,6 +5,26 @@ import {
   saveTodayTaskOrder,
 } from "@/lib/storage/localStorage-tasks";
 
+// Sort tasks by display_order (ascending), with tasks without display_order at the end
+function sortByDisplayOrder(tasks: TaskWithType[]): TaskWithType[] {
+  return [...tasks].sort((a, b) => {
+    // Check if task has display_order (only Task has it, TempTask doesn't)
+    const aOrder = 'display_order' in a && typeof (a as { display_order?: number }).display_order === 'number'
+      ? (a as { display_order: number }).display_order
+      : undefined;
+    const bOrder = 'display_order' in b && typeof (b as { display_order?: number }).display_order === 'number'
+      ? (b as { display_order: number }).display_order
+      : undefined;
+    
+    if (aOrder !== undefined && bOrder !== undefined) {
+      return aOrder - bOrder;
+    }
+    if (aOrder !== undefined) return -1;
+    if (bOrder !== undefined) return 1;
+    return 0;
+  });
+}
+
 export function prepareTasksForToday(
   tasks: DayTasksData,
   tempTasks: TempTask[],
@@ -30,22 +50,24 @@ export function prepareTasksForToday(
   const savedOrder = getTodayTaskOrder();
   
   if (savedOrder.length > 0) {
-    // Sort by saved order
+    // Sort by saved order (localStorage takes priority)
     const ordered = savedOrder
       .map(id => visibleTasks.find(t => t.id === id))
       .filter((t): t is TaskWithType => t !== undefined);
     
-    // Add any new tasks not in the saved order at the end
+    // Add any new tasks not in the saved order at the end, sorted by display_order
     const orderedIds = new Set(ordered.map(t => t.id));
     const newTasks = visibleTasks.filter(t => !orderedIds.has(t.id));
+    const sortedNewTasks = sortByDisplayOrder(newTasks);
     
-    return [...ordered, ...newTasks];
+    return [...ordered, ...sortedNewTasks];
   } else {
-    // No saved order, use default order
-    if (visibleTasks.length > 0) {
-      saveTodayTaskOrder(visibleTasks.map(t => t.id));
+    // No saved order, use display_order
+    const sortedTasks = sortByDisplayOrder(visibleTasks);
+    if (sortedTasks.length > 0) {
+      saveTodayTaskOrder(sortedTasks.map(t => t.id));
     }
-    return visibleTasks;
+    return sortedTasks;
   }
 }
 

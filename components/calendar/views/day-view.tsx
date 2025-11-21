@@ -9,6 +9,8 @@ import { WorkModeBadge } from "@/components/calendar/ui/workmode-badge";
 import { TaskSectionPeriodic } from "@/components/calendar/tasks/task-section-periodic";
 import { TaskSectionSpecific } from "@/components/calendar/tasks/task-section-specific";
 import { TaskSectionWhenPossible } from "@/components/calendar/tasks/task-section-when-possible";
+import { DraggableTaskSection } from "@/components/calendar/tasks/draggable-task-section";
+import { TaskItemCompact } from "@/components/tasks/task-item-compact";
 import { HideTaskDialog } from "@/components/calendar/dialogs/hide-task-dialog";
 import { TaskListDraggable } from "@/components/calendar/tasks/task-list-draggable";
 import { isToday, getTodayHiddenTaskIds, hideTodayTask, hideTodayTempTask } from "@/lib/storage/localStorage-tasks";
@@ -259,26 +261,80 @@ export function DayView({
               )}
           </div>
         ) : (
-          // Normal view: separated sections
+          // Normal view: separated sections with edit order
           <div className="space-y-6">
-            <TaskSectionPeriodic
+            <DraggableTaskSection
+              title="Tâches périodiques"
+              icon={(
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  className="text-yellow-700"
+                >
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                  <path d="M12 6v6l4 2" strokeWidth="2" />
+                </svg>
+              )}
+              titleClassName="text-yellow-900"
               tasks={tasks.periodic}
+              taskClassName="bg-yellow-50 border-yellow-400/30"
               onUpdateTask={onUpdateTask}
               onDeleteTask={onDeleteTask}
               onSuccess={onModeSaved}
+              accentColor="yellow"
             />
-            <TaskSectionSpecific
+            <DraggableTaskSection
+              title="Tâches à date précise"
+              icon={(
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  className="text-violet-700"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" />
+                  <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" />
+                  <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" />
+                </svg>
+              )}
+              titleClassName="text-violet-800"
               tasks={tasks.specific}
+              taskClassName="bg-violet-500/10 border-violet-500/20"
               onUpdateTask={onUpdateTask}
               onDeleteTask={onDeleteTask}
               onSuccess={onModeSaved}
+              accentColor="violet"
             />
-            <TaskSectionWhenPossible
-              inProgress={tasks.whenPossible.inProgress}
-              notStarted={tasks.whenPossible.notStarted}
+            <DraggableTaskSection
+              title="Quand je peux"
+              icon={(
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  className="text-orange-700"
+                >
+                  <path
+                    d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z"
+                    strokeWidth="2"
+                  />
+                </svg>
+              )}
+              titleClassName="text-orange-800"
+              tasks={[...tasks.whenPossible.inProgress, ...tasks.whenPossible.notStarted]}
+              taskClassName="bg-orange-50 border-orange-600/25"
               onUpdateTask={onUpdateTask}
               onDeleteTask={onDeleteTask}
               onSuccess={onModeSaved}
+              accentColor="orange"
             />
             {tasks.periodic.length === 0 &&
               tasks.specific.length === 0 &&

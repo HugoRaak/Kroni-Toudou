@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Task, Frequency } from '@/lib/types';
 import { formatDateLocal, normalizeToMidnight } from '@/lib/utils';
 import TaskItem from '@/components/tasks/task-item';
+import { DraggableTaskList } from '@/components/tasks/draggable-task-list';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -14,8 +15,10 @@ import {
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Filter } from 'lucide-react';
+import { Filter, GripVertical, Check, X } from 'lucide-react';
+import { updateTasksDisplayOrderAction } from '@/app/actions/tasks';
 import type { ModeConflictError } from '@/app/actions/tasks';
+import { useRouter } from 'next/navigation';
 
 type PresenceFilter = 'all' | 'presentiel' | 'distanciel';
 type FrequencyFilter = 'all' | Frequency;
@@ -87,8 +90,12 @@ export function SectionWithFilters({
   emptyMessage,
   showDateStatusSplit = false,
 }: SectionWithFiltersProps) {
+  const router = useRouter();
   const [presenceFilter, setPresenceFilter] = useState<PresenceFilter>('all');
   const [frequencyFilter, setFrequencyFilter] = useState<FrequencyFilter>('all');
+  const [isEditOrderMode, setIsEditOrderMode] = useState(false);
+  const [orderedTasks, setOrderedTasks] = useState<Task[]>(tasks);
+  const [isSaving, setIsSaving] = useState(false);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
@@ -128,6 +135,48 @@ export function SectionWithFilters({
 
   const filterColors = useMemo(() => FILTER_BUTTON_CLASSES[accent], [accent]);
 
+  // Update orderedTasks when tasks prop changes (but not in edit mode)
+  useEffect(() => {
+    if (!isEditOrderMode) {
+      setOrderedTasks(filteredTasks);
+    }
+  }, [filteredTasks, isEditOrderMode]);
+
+  const handleStartEditOrder = () => {
+    setOrderedTasks(filteredTasks);
+    setIsEditOrderMode(true);
+  };
+
+  const handleCancelEditOrder = () => {
+    setIsEditOrderMode(false);
+    setOrderedTasks(filteredTasks);
+  };
+
+  const handleSaveOrder = async () => {
+    if (orderedTasks.length === 0) return;
+    
+    setIsSaving(true);
+    try {
+      const taskIds = orderedTasks.map(task => task.id);
+      const success = await updateTasksDisplayOrderAction(taskIds);
+      if (success) {
+        setIsEditOrderMode(false);
+        router.refresh();
+      }
+    } catch (error) {
+      console.error('Error saving order:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleOrderChange = (newOrderedTasks: Task[]) => {
+    setOrderedTasks(newOrderedTasks);
+  };
+
+  // Use orderedTasks when in edit mode, otherwise use filteredTasks
+  const tasksToDisplay = isEditOrderMode ? orderedTasks : filteredTasks;
+
   return (
     <section className="mb-8 group transition-transform">
       <div className={`relative rounded-md border overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
@@ -141,57 +190,101 @@ export function SectionWithFilters({
             <h2 className={`text-base font-semibold ${c.title}`}>{title}</h2>
           </div>
           <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {!isEditOrderMode ? (
+              <>
                 <Button
                   variant="ghost"
-                  size="icon-sm"
-                  className={`h-8 w-8 cursor-pointer transition-colors relative focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-0 data-[state=open]:ring-0 data-[state=open]:ring-offset-0 data-[state=open]:border-0 ${
-                    hasActiveFilters ? filterColors.active : filterColors.hover
-                  }`}
+                  size="sm"
+                  onClick={handleStartEditOrder}
+                  disabled={filteredTasks.length === 0}
+                  className={`h-8 text-xs ${filterColors.hover} cursor-pointer`}
                 >
-                  <Filter className={`h-4 w-4 ${filterColors.icon}`} />
-                  {hasActiveFilters && (
-                    <span className="absolute top-0.5 right-0.5 h-2 w-2 bg-red-500 rounded-full border-2 border-background" />
-                  )}
+                  <GripVertical className={`h-4 w-4 mr-1 ${filterColors.icon}`} />
+                  Ordre
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>Présence</DropdownMenuLabel>
-                <DropdownMenuRadioGroup
-                  value={presenceFilter}
-                  onValueChange={(value) => setPresenceFilter(value as PresenceFilter)}
-                >
-                  <DropdownMenuRadioItem value="all" className="cursor-pointer">Tous</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="presentiel" className="cursor-pointer">Présentiel</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="distanciel" className="cursor-pointer">Distanciel</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-                {showFrequencyFilter && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Fréquence</DropdownMenuLabel>
-                    <DropdownMenuRadioGroup
-                      value={frequencyFilter}
-                      onValueChange={(value) => setFrequencyFilter(value as FrequencyFilter)}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className={`h-8 w-8 cursor-pointer transition-colors relative focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-0 data-[state=open]:ring-0 data-[state=open]:ring-offset-0 data-[state=open]:border-0 ${
+                        hasActiveFilters ? filterColors.active : filterColors.hover
+                      }`}
                     >
-                      <DropdownMenuRadioItem value="all" className="cursor-pointer">Toutes</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="quotidien" className="cursor-pointer">Quotidien</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="hebdomadaire" className="cursor-pointer">Hebdomadaire</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="mensuel">Mensuel</DropdownMenuRadioItem>
+                      <Filter className={`h-4 w-4 ${filterColors.icon}`} />
+                      {hasActiveFilters && (
+                        <span className="absolute top-0.5 right-0.5 h-2 w-2 bg-red-500 rounded-full border-2 border-background" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel>Présence</DropdownMenuLabel>
+                    <DropdownMenuRadioGroup
+                      value={presenceFilter}
+                      onValueChange={(value) => setPresenceFilter(value as PresenceFilter)}
+                    >
+                      <DropdownMenuRadioItem value="all" className="cursor-pointer">Tous</DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="presentiel" className="cursor-pointer">Présentiel</DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="distanciel" className="cursor-pointer">Distanciel</DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    {showFrequencyFilter && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>Fréquence</DropdownMenuLabel>
+                        <DropdownMenuRadioGroup
+                          value={frequencyFilter}
+                          onValueChange={(value) => setFrequencyFilter(value as FrequencyFilter)}
+                        >
+                          <DropdownMenuRadioItem value="all" className="cursor-pointer">Toutes</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="quotidien" className="cursor-pointer">Quotidien</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="hebdomadaire" className="cursor-pointer">Hebdomadaire</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="mensuel">Mensuel</DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSaveOrder}
+                  disabled={isSaving}
+                  className={`h-8 text-xs ${filterColors.hover} cursor-pointer`}
+                >
+                  <Check className={`h-4 w-4 mr-1 ${filterColors.icon}`} />
+                  {isSaving ? '...' : ''}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelEditOrder}
+                  disabled={isSaving}
+                  className={`h-8 text-xs ${filterColors.hover} cursor-pointer`}
+                >
+                  <X className={`h-4 w-4 mr-1 ${filterColors.icon}`} />
+                </Button>
+              </>
+            )}
             <span className={`text-xs px-2 py-1 rounded ${c.chip}`}>
-              {filteredTasks.length} tâche{filteredTasks.length > 1 ? 's' : ''}
+              {tasksToDisplay.length} tâche{tasksToDisplay.length > 1 ? 's' : ''}
             </span>
           </div>
         </div>
         <div className="p-4 pt-0">
           <div className="grid gap-3">
-            {filteredTasks.length === 0 ? (
+            {tasksToDisplay.length === 0 ? (
               <div className="text-sm text-muted-foreground">{emptyMessage}</div>
+            ) : isEditOrderMode ? (
+              <DraggableTaskList
+                tasks={tasksToDisplay}
+                onSubmit={onSubmit}
+                onDelete={onDelete}
+                showProgressStatus={showProgressStatus}
+                onOrderChange={handleOrderChange}
+              />
             ) : showDateStatusSplit ? (
               <div className="space-y-4">
                 <div>
@@ -239,7 +332,7 @@ export function SectionWithFilters({
                 </div>
               </div>
             ) : (
-              filteredTasks.map(task => (
+              tasksToDisplay.map(task => (
                 <TaskItem
                   key={task.id}
                   task={task}
