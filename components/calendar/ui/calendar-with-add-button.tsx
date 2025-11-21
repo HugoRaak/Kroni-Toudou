@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Calendar } from "@/components/calendar/views/calendar";
 import { FloatingAddButton } from "@/components/tasks/floating-add-button";
 import type { CalendarView } from "@/lib/calendar/calendar-navigation";
@@ -23,11 +23,24 @@ export function CalendarWithAddButton({
   const [currentView, setCurrentView] = useState<CalendarView>("day");
   const [dayDate, setDayDate] = useState<Date | undefined>(undefined);
 
-  const handleViewChange = (viewingToday: boolean, view: CalendarView, date?: Date) => {
-    setIsViewingToday(viewingToday);
-    setCurrentView(view);
-    setDayDate(date);
-  };
+  const handleViewChange = useCallback(
+    (viewingToday: boolean, view: CalendarView, date?: Date) => {
+      setIsViewingToday(viewingToday);
+      setCurrentView(view);
+      setDayDate((previous) => {
+        if (!date) {
+          return previous;
+        }
+
+        if (!previous) {
+          return date;
+        }
+
+        return previous.getTime() === date.getTime() ? previous : date;
+      });
+    },
+    [],
+  );
 
   return (
     <>

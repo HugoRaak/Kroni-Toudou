@@ -2,8 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-
-export type CalendarView = "day" | "week" | "month";
+import type { CalendarView } from "@/lib/calendar/calendar-navigation";
 
 export function ViewSwitcher({
   value,
@@ -22,6 +21,14 @@ export function ViewSwitcher({
         className="rounded-md pointer-events-none select-none mr-4"
         loading="eager"
       />
+      <Button
+        variant={value === "today" ? "default" : "outline"}
+        onClick={() => onChange("today")}
+        size="sm"
+        className="cursor-pointer"
+      >
+        Aujourd&apos;hui
+      </Button>
       <Button
         variant={value === "day" ? "default" : "outline"}
         onClick={() => onChange("day")}

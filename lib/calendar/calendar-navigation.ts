@@ -1,6 +1,6 @@
 import { normalizeToMidnight } from "@/lib/utils";
 
-export type CalendarView = 'day' | 'week' | 'month';
+export type CalendarView = 'today' | 'day' | 'week' | 'month';
 
 /**
  * Navigates a calendar date by one unit in the specified direction.
@@ -19,6 +19,7 @@ export function navigateCalendarDate(
   
   // Create dates directly using constructor to guarantee midnight local time
   switch (view) {
+    case 'today':
     case 'day':
       return new Date(normalized.getFullYear(), normalized.getMonth(), normalized.getDate() + multiplier);
     case 'week':

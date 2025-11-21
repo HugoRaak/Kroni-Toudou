@@ -37,6 +37,7 @@ export function DayView({
   onModeSaved,
   onUpdateTask,
   onDeleteTask,
+  showNavigation = true,
 }: {
   date: Date;
   loading: boolean;
@@ -47,6 +48,7 @@ export function DayView({
   onModeSaved?: () => void;
   onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
+  showNavigation?: boolean;
 }) {
   const day = useMemo(() => date.getDate(), [date]);
   const month = useMemo(() => {
@@ -129,21 +131,23 @@ export function DayView({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onPrev}
-          className="cursor-pointer hover:bg-primary/10 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </Button>
+      <div className={`flex items-center ${showNavigation ? "justify-between" : "justify-center"}`}>
+        {showNavigation && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onPrev}
+            className="cursor-pointer hover:bg-primary/10 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </Button>
+        )}
         <div className="text-center">
           {formatDateLocal(normalizeToMidnight(date)) === formatDateLocal(normalizeToMidnight(new Date())) && (
             <span className="inline-block mb-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              Aujourd'hui
+              Aujourd&apos;hui
             </span>
           )}
           <h2 className="text-2xl font-bold text-foreground">{dayName}</h2>
@@ -161,16 +165,18 @@ export function DayView({
             </div>
           )}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onNext}
-          className="cursor-pointer hover:bg-primary/10 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </Button>
+        {showNavigation && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onNext}
+            className="cursor-pointer hover:bg-primary/10 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Button>
+        )}
       </div>
       <div className="min-h-[400px] rounded-lg border border-border bg-card p-6">
         {loading ? (

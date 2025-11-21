@@ -91,6 +91,7 @@ export default async function MesTachesPage() {
               showFrequencyFilter={false}
               onSubmit={updateTaskFromFormAction}
               onDelete={deleteTaskActionWrapper}
+              showDateStatusSplit={true}
               emptyMessage="Aucune tâche avec date précise."
             />
 

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Task, Frequency } from '@/lib/types';
+import { formatDateLocal, normalizeToMidnight } from '@/lib/utils';
 import TaskItem from '@/components/tasks/task-item';
 import {
   DropdownMenu,
@@ -70,6 +71,7 @@ interface SectionWithFiltersProps {
   onDelete: (id: string) => Promise<boolean>;
   showProgressStatus?: boolean;
   emptyMessage: string;
+  showDateStatusSplit?: boolean;
 }
 
 export function SectionWithFilters({
@@ -83,6 +85,7 @@ export function SectionWithFilters({
   onDelete,
   showProgressStatus = false,
   emptyMessage,
+  showDateStatusSplit = false,
 }: SectionWithFiltersProps) {
   const [presenceFilter, setPresenceFilter] = useState<PresenceFilter>('all');
   const [frequencyFilter, setFrequencyFilter] = useState<FrequencyFilter>('all');
@@ -96,6 +99,27 @@ export function SectionWithFilters({
       return true;
     });
   }, [tasks, presenceFilter, frequencyFilter, showFrequencyFilter]);
+
+  const todayIso = formatDateLocal(normalizeToMidnight(new Date()));
+
+  const { upcomingTasks, pastTasks } = useMemo(() => {
+    if (!showDateStatusSplit) {
+      return { upcomingTasks: filteredTasks, pastTasks: [] };
+    }
+
+    return filteredTasks.reduce(
+      (acc, task) => {
+        const dueOn = task.due_on ?? todayIso;
+        if (dueOn >= todayIso) {
+          acc.upcomingTasks.push(task);
+        } else {
+          acc.pastTasks.push(task);
+        }
+        return acc;
+      },
+      { upcomingTasks: [] as Task[], pastTasks: [] as Task[] },
+    );
+  }, [filteredTasks, showDateStatusSplit, todayIso]);
 
   const c = useMemo(() => ACCENT_CLASSES[accent], [accent]);
   const hasActiveFilters = useMemo(() => {
@@ -168,6 +192,52 @@ export function SectionWithFilters({
           <div className="grid gap-3">
             {filteredTasks.length === 0 ? (
               <div className="text-sm text-muted-foreground">{emptyMessage}</div>
+            ) : showDateStatusSplit ? (
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <span>Évènements à venir</span>
+                    <span>{upcomingTasks.length}</span>
+                  </div>
+                  <div className="mt-2 space-y-3">
+                    {upcomingTasks.length === 0 ? (
+                      <div className="text-xs text-muted-foreground/80">Aucun évènement à venir.</div>
+                    ) : (
+                      upcomingTasks.map(task => (
+                        <TaskItem
+                          key={task.id}
+                          task={task}
+                          onSubmit={onSubmit}
+                          onDelete={onDelete}
+                          showProgressStatus={showProgressStatus}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <span>Évènements passés</span>
+                    <span>{pastTasks.length}</span>
+                  </div>
+                  <div className="mt-2 space-y-3">
+                    {pastTasks.length === 0 ? (
+                      <div className="text-xs text-muted-foreground/80">Aucun évènement passé.</div>
+                    ) : (
+                      pastTasks.map(task => (
+                        <TaskItem
+                          key={task.id}
+                          task={task}
+                          onSubmit={onSubmit}
+                          onDelete={onDelete}
+                          showProgressStatus={showProgressStatus}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
             ) : (
               filteredTasks.map(task => (
                 <TaskItem

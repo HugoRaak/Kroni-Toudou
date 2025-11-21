@@ -84,8 +84,9 @@ export function Calendar({
   // Notify parent when viewing today changes
   useEffect(() => {
     if (onViewChange) {
-      const viewingToday = currentView === "day" && isToday(dayDate);
-      onViewChange(viewingToday, currentView, currentView === "day" ? dayDate : undefined);
+      const viewingToday = currentView === "today" || (currentView === "day" && isToday(dayDate));
+      const viewDate = currentView === "today" ? normalizeToMidnight(new Date()) : currentView === "day" ? dayDate : undefined;
+      onViewChange(viewingToday, currentView, viewDate);
     }
   }, [currentView, dayDate, onViewChange]);
 
@@ -98,14 +99,17 @@ export function Calendar({
     isLoadingRef.current = true;
     setLoading(true);
     try {
-      if (currentView === "day") {
+      const isDayLikeView = currentView === "day" || currentView === "today";
+      const activeDayDate = currentView === "today" ? normalizeToMidnight(new Date()) : dayDate;
+
+      if (isDayLikeView) {
         // Check if viewing today and load from localStorage first (unless forcing reload)
-        if (isToday(dayDate) && !forceReload && !reloadTodayTasks.current) {
+        if (isToday(activeDayDate) && !forceReload && !reloadTodayTasks.current) {
           const storedTasks = getTodayTasksFromStorage();
           
           if (storedTasks) {
             // Load from localStorage
-            const mode = await getWorkdayAction(userId, formatDateLocal(dayDate));
+            const mode = await getWorkdayAction(userId, formatDateLocal(activeDayDate));
             // Ignore if a newer request has started
             if (currentRequestId !== loadRequestIdRef.current) {
               isLoadingRef.current = false;
@@ -121,12 +125,12 @@ export function Calendar({
 
         const { dayData, mode } = await getCalendarDayDataAction({
           userId,
-          date: dayDate,
+          date: activeDayDate,
         });
 
         if (currentRequestId !== loadRequestIdRef.current) return;
 
-        if (isToday(dayDate)) {
+        if (isToday(activeDayDate)) {
           saveTodayTasksToStorage(dayData);
           reloadTodayTasks.current = false;
         }
@@ -178,16 +182,19 @@ export function Calendar({
     // Only reload if task was successfully updated (not a mode conflict)
     const success = result === true;
     
+    const isDayLikeView = currentView === "day" || currentView === "today";
+    const activeDayDate = currentView === "today" ? normalizeToMidnight(new Date()) : dayDate;
+
     // If viewing today in day view, reload from DB and update localStorage
-    if (success && currentView === "day" && isToday(dayDate)) {
+    if (success && isDayLikeView && isToday(activeDayDate)) {
       const { dayData, mode } = await getCalendarDayDataAction({
         userId,
-        date: dayDate,
+        date: activeDayDate,
       });
       saveTodayTasksToStorage(dayData);
       setDayTasks(dayData);
       setDayWorkMode(mode);
-    } else if (success && currentView === "day") {
+    } else if (success && isDayLikeView) {
       // Not today, reload normally
       await loadTasks();
     }
@@ -199,15 +206,18 @@ export function Calendar({
     const result = await onDeleteTask(id);
     
     // If viewing today in day view, reload from DB and update localStorage
-    if (result && currentView === "day" && isToday(dayDate)) {
+    const isDayLikeView = currentView === "day" || currentView === "today";
+    const activeDayDate = currentView === "today" ? normalizeToMidnight(new Date()) : dayDate;
+
+    if (result && isDayLikeView && isToday(activeDayDate)) {
       const { dayData, mode } = await getCalendarDayDataAction({
         userId,
-        date: dayDate,
+        date: activeDayDate,
       });
       saveTodayTasksToStorage(dayData);
       setDayTasks(dayData);
       setDayWorkMode(mode);
-    } else if (result && currentView === "day") {
+    } else if (result && isDayLikeView) {
       // Not today, reload normally
       await loadTasks();
     }
@@ -217,6 +227,10 @@ export function Calendar({
 
   // Navigation functions
   const navigate = (direction: 'prev' | 'next') => {
+    if (currentView === "today") {
+      return;
+    }
+
     if (currentView === "day") {
       setDayDate(navigateCalendarDate(dayDate, direction, 'day'));
     } else if (currentView === "week") {
@@ -234,9 +248,9 @@ export function Calendar({
       <ViewSwitcher value={currentView} onChange={setCurrentView} />
 
       <div className="rounded-lg border border-border bg-card p-6">
-        {currentView === "day" && (
+        {(currentView === "day" || currentView === "today") && (
           <DayView
-            date={dayDate}
+            date={currentView === "today" ? normalizeToMidnight(new Date()) : dayDate}
             loading={loading}
             tasks={dayTasks}
             workMode={dayWorkMode}
@@ -245,6 +259,7 @@ export function Calendar({
             onNext={navigateNext}
             onUpdateTask={handleUpdateTask}
             onDeleteTask={handleDeleteTask}
+            showNavigation={currentView !== "today"}
           />
         )}
         {currentView === "week" && (
