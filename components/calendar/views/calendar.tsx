@@ -125,7 +125,7 @@ export function Calendar({
 
         const { dayData, mode } = await getCalendarDayDataAction({
           userId,
-          date: activeDayDate,
+          dateStr: formatDateLocal(activeDayDate),
         });
 
         if (currentRequestId !== loadRequestIdRef.current) return;
@@ -144,8 +144,8 @@ export function Calendar({
 
         const { tasksData, workdays } = await getCalendarRangeDataAction({
           userId,
-          startDate: start,
-          endDate: end,
+          startDateStr: formatDateLocal(start),
+          endDateStr: formatDateLocal(end),
         });
 
         if (currentRequestId !== loadRequestIdRef.current) return;
@@ -189,7 +189,7 @@ export function Calendar({
     if (success && isDayLikeView && isToday(activeDayDate)) {
       const { dayData, mode } = await getCalendarDayDataAction({
         userId,
-        date: activeDayDate,
+        dateStr: formatDateLocal(activeDayDate),
       });
       saveTodayTasksToStorage(dayData);
       setDayTasks(dayData);
@@ -212,7 +212,7 @@ export function Calendar({
     if (result && isDayLikeView && isToday(activeDayDate)) {
       const { dayData, mode } = await getCalendarDayDataAction({
         userId,
-        date: activeDayDate,
+        dateStr: formatDateLocal(activeDayDate),
       });
       saveTodayTasksToStorage(dayData);
       setDayTasks(dayData);

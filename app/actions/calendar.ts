@@ -3,34 +3,40 @@
 import { getTasksForDateRange, getTasksForDay } from "@/lib/calendar/calendar-utils";
 import { supabaseServer } from "@/lib/supabase/supabase-server";
 import { getWorkday, getWorkdaysInRange } from "@/lib/db/workdays";
-import { formatDateLocal } from "@/lib/utils";
+import { parseDateLocal } from "@/lib/utils";
 
 export async function getCalendarDayDataAction(params: {
   userId: string;
-  date: Date;
+  dateStr: string; // YYYY-MM-DD format
 }) {
-  const { userId, date } = params;
+  const { userId, dateStr } = params;
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.id !== userId) throw new Error("Unauthorized");
-  const workMode = await getWorkday(userId, formatDateLocal(date));
+  // Parse date string to Date object using local timezone to avoid UTC shift
+  const date = parseDateLocal(dateStr);
+  const workMode = await getWorkday(userId, dateStr);
   const dayData = await getTasksForDay(userId, date, workMode);
   return { view: "day" as const, dayData, mode: workMode };
 }
 
 export async function getCalendarRangeDataAction(params: {
   userId: string;
-  startDate: Date;
-  endDate: Date;
+  startDateStr: string; // YYYY-MM-DD format
+  endDateStr: string; // YYYY-MM-DD format
 }) {
-  const { userId, startDate, endDate } = params;
+  const { userId, startDateStr, endDateStr } = params;
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.id !== userId) throw new Error("Unauthorized");
 
+  // Parse date strings to Date objects using local timezone to avoid UTC shift
+  const startDate = parseDateLocal(startDateStr);
+  const endDate = parseDateLocal(endDateStr);
+
   const [tasksData, workdays] = await Promise.all([
     getTasksForDateRange(userId, startDate, endDate),
-    getWorkdaysInRange(userId, formatDateLocal(startDate), formatDateLocal(endDate)),
+    getWorkdaysInRange(userId, startDateStr, endDateStr),
   ]);
 
   return { tasksData, workdays };
