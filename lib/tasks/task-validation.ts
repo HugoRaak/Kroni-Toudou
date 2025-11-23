@@ -47,3 +47,13 @@ export function validateDueOn(dueOn: string): boolean {
          date.getDate() === day;
 }
 
+export function validateCustomDays(days: string): boolean {
+  const parsed = Number(days);
+  return Number.isInteger(parsed) && parsed > 0;
+}
+
+export function validateStartDate(startDate: string): boolean {
+  // Same validation as validateDueOn
+  return validateDueOn(startDate);
+}
+

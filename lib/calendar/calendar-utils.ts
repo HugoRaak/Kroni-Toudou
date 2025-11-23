@@ -1,7 +1,7 @@
 import { Task, Frequency, DayOfWeek } from '@/lib/types';
 import { getTasks } from '@/lib/db/tasks';
 import { getWorkday, getWorkdaysInRange, WorkMode } from '@/lib/db/workdays';
-import { formatDateLocal, normalizeToMidnight, addDays } from '@/lib/utils';
+import { formatDateLocal, normalizeToMidnight, addDays, parseDateLocal } from '@/lib/utils';
 
 export interface CalendarTask {
   id: string;
@@ -131,9 +131,9 @@ async function getPeriodicTasksForDateWithShift(
   const normalizedDate = normalizeToMidnight(date);
   const dateStr = formatDateLocal(normalizedDate);
   
-  // Get all periodic tasks (weekly and monthly only, daily don't need shifting)
+  // Get all periodic tasks (weekly, monthly, and custom - daily don't need shifting)
   const periodicTasks = tasks.filter(task => {
-    return task.frequency === 'hebdomadaire' || task.frequency === 'mensuel';
+    return task.frequency === 'hebdomadaire' || task.frequency === 'mensuel' || task.frequency === 'personnalisé';
   });
 
   
@@ -141,9 +141,48 @@ async function getPeriodicTasksForDateWithShift(
   const workdaysMap = await getWorkdaysMap(userId, normalizedDate);
 
   for (const task of periodicTasks) {
-    if (!task.day) continue;
-
     const taskMode = task.mode ?? 'Tous';
+    
+    // Handle custom frequency tasks (personnalisé)
+    if (task.frequency === 'personnalisé') {
+      // Check if task has required fields for custom frequency
+      if (!task.start_date || !task.custom_days) continue;
+      
+      // Parse start_date using timezone-safe parsing
+      const startDate = parseDateLocal(task.start_date);
+      const normalizedStartDate = normalizeToMidnight(startDate);
+      
+      // Calculate days between start date and current date
+      // Use milliseconds for accurate calculation across timezones
+      const daysBetween = Math.floor((normalizedDate.getTime() - normalizedStartDate.getTime()) / 86400000);
+      
+      // Check if task should be shown on this date
+      const shouldShow = daysBetween >= 0 && daysBetween % task.custom_days === 0;
+      
+      if (shouldShow) {
+        // If task mode is "Tous", always show
+        if (taskMode === 'Tous') {
+          result.push(task);
+          continue;
+        }
+        
+        // Check if work mode matches task mode
+        const dateStr = formatDateLocal(normalizedDate);
+        const workMode = workdaysMap[dateStr] ?? 'Présentiel';
+        
+        if (workMode === 'Congé') {
+          continue; // Don't show on holidays
+        }
+        
+        if (workMode === taskMode) {
+          result.push(task);
+        }
+      }
+      continue;
+    }
+    
+    // Handle weekly and monthly tasks (existing logic)
+    if (!task.day) continue;
     
     // Calculate the original scheduled date for this task
     let originalScheduledDate: Date | null = null;

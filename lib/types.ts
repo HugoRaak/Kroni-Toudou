@@ -1,4 +1,4 @@
-export type Frequency = 'quotidien' | 'hebdomadaire' | 'mensuel';
+export type Frequency = 'quotidien' | 'hebdomadaire' | 'mensuel' | 'personnalisé';
 export type DayOfWeek = 'Lundi' | 'Mardi' | 'Mercredi' | 'Jeudi' | 'Vendredi' | 'Samedi' | 'Dimanche';
 
 export interface Task {
@@ -8,6 +8,8 @@ export interface Task {
   description: string;
   frequency?: Frequency;
   day?: DayOfWeek;
+  custom_days?: number;
+  start_date?: string;
   due_on?: string;
   postponed_days?: number;
   in_progress?: boolean;

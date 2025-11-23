@@ -9,6 +9,8 @@ import {
   validateTaskDescription,
   validatePostponedDays,
   validateDueOn,
+  validateCustomDays,
+  validateStartDate,
 } from '@/lib/tasks/task-validation';
 
 export interface ParsedTaskFormData {
@@ -18,6 +20,8 @@ export interface ParsedTaskFormData {
   mode: Task['mode'];
   frequency?: Frequency;
   day?: DayOfWeek;
+  custom_days?: number;
+  start_date?: string;
   due_on?: string;
   postponed_days?: number;
   in_progress?: boolean;
@@ -29,6 +33,8 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
   const taskTypeRaw = String(formData.get('taskType') || '');
   const frequencyRaw = String(formData.get('frequency') || '');
   const dayRaw = String(formData.get('day') || '');
+  const custom_daysRaw = String(formData.get('custom_days') || '');
+  const start_dateRaw = String(formData.get('start_date') || '');
   const due_onRaw = String(formData.get('due_on') || '');
   const postponed_daysRaw = String(formData.get('postponed_days') || '');
   const modeRaw = String(formData.get('mode') || 'Tous');
@@ -61,6 +67,18 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
     if (dayRaw && isValidDayOfWeek(dayRaw)) {
       result.day = dayRaw;
     }
+    // Handle custom frequency fields
+    if (frequencyRaw === 'personnalisé') {
+      // Both custom_days and start_date are required for personnalisé frequency
+      if (!custom_daysRaw || !validateCustomDays(custom_daysRaw)) {
+        return null; // Validation failed: custom_days is missing or invalid
+      }
+      if (!start_dateRaw || !validateStartDate(start_dateRaw)) {
+        return null; // Validation failed: start_date is missing or invalid
+      }
+      result.custom_days = Number(custom_daysRaw);
+      result.start_date = start_dateRaw;
+    }
     result.in_progress = undefined;
   } else if (taskTypeRaw === TASK_TYPES.SPECIFIC) {
     if (due_onRaw && validateDueOn(due_onRaw)) {
@@ -79,13 +97,15 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
 
 export function parsedDataToTaskUpdates(
   parsed: ParsedTaskFormData
-): Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'due_on' | 'postponed_days' | 'in_progress' | 'mode'>> {
+): Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'custom_days' | 'start_date' | 'due_on' | 'postponed_days' | 'in_progress' | 'mode'>> {
   const updates: Partial<Task> = {
     title: parsed.title,
     description: parsed.description,
     mode: parsed.mode,
     frequency: undefined,
     day: undefined,
+    custom_days: undefined,
+    start_date: undefined,
     due_on: undefined,
     postponed_days: undefined,
     in_progress: undefined,
@@ -94,6 +114,11 @@ export function parsedDataToTaskUpdates(
   if (parsed.taskType === TASK_TYPES.PERIODIC) {
     updates.frequency = parsed.frequency;
     updates.day = parsed.day;
+    // Include custom fields if frequency is personnalisé
+    if (parsed.frequency === 'personnalisé') {
+      updates.custom_days = parsed.custom_days;
+      updates.start_date = parsed.start_date;
+    }
   } else if (parsed.taskType === TASK_TYPES.SPECIFIC) {
     updates.due_on = parsed.due_on;
     updates.postponed_days = parsed.postponed_days;
