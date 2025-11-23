@@ -316,25 +316,128 @@ export async function updateTasksDisplayOrderAction(taskIds: string[]): Promise<
     return false;
   }
 
-  // Verify all tasks belong to the user
-  const { data: tasks, error: fetchError } = await supabase
-    .from('tasks')
-    .select('id')
-    .eq('user_id', user.id)
-    .in('id', taskIds);
+  if (taskIds.length === 0) {
+    return true;
+  }
 
-  if (fetchError || !tasks || tasks.length !== taskIds.length) {
-    console.error('Error verifying task ownership:', fetchError);
+  // Get all tasks to determine category and get all tasks in that category
+  const { data: allUserTasks, error: fetchAllError } = await supabase
+    .from('tasks')
+    .select('id, frequency, due_on, display_order')
+    .eq('user_id', user.id)
+    .order('display_order', { ascending: true, nullsFirst: false });
+
+  if (fetchAllError || !allUserTasks) {
+    console.error('Error fetching all tasks:', fetchAllError);
     return false;
   }
 
-  // Update display_order for each task based on its position in the array
-  const updates = taskIds.map((id, index) => ({
+  // Verify all reordered tasks belong to the user
+  const reorderedTasks = allUserTasks.filter(t => taskIds.includes(t.id));
+  if (reorderedTasks.length !== taskIds.length) {
+    console.error('Error: some tasks not found or not owned by user');
+    return false;
+  }
+
+  // Determine category from first reordered task
+  const firstTask = reorderedTasks[0];
+  let categoryFilter: (task: { frequency?: string | null; due_on?: string | null }) => boolean;
+  
+  if (firstTask.frequency) {
+    // Periodic tasks: have frequency
+    categoryFilter = (task) => !!task.frequency;
+  } else if (firstTask.due_on) {
+    // Specific tasks: have due_on but no frequency
+    categoryFilter = (task) => !!task.due_on && !task.frequency;
+  } else {
+    // When possible tasks: no frequency and no due_on
+    categoryFilter = (task) => !task.frequency && !task.due_on;
+  }
+
+  // Get all tasks in the same category, sorted by current display_order
+  const categoryTasks = allUserTasks
+    .filter(categoryFilter)
+    .sort((a, b) => {
+      const aOrder = a.display_order ?? Infinity;
+      const bOrder = b.display_order ?? Infinity;
+      return aOrder - bOrder;
+    });
+
+  // Create maps for positions
+  const reorderedIdsSet = new Set(taskIds);
+  const oldOrderMap = new Map<string, number>(); // taskId -> position in old order (0-based)
+  categoryTasks.forEach((task, index) => {
+    oldOrderMap.set(task.id, index);
+  });
+
+  const newOrderMap = new Map<string, number>(); // taskId -> position in new order (0-based, for reordered tasks)
+  taskIds.forEach((id, index) => {
+    newOrderMap.set(id, index);
+  });
+
+  // Build final order: merge reordered tasks (in new order) with non-reordered tasks (preserving relative order)
+  // Algorithm: for each task, calculate its effective sort key
+  const tasksWithSortKey = categoryTasks.map(task => {
+    if (reorderedIdsSet.has(task.id)) {
+      // Reordered task: use new position as sort key
+      return {
+        id: task.id,
+        sortKey: newOrderMap.get(task.id) ?? Infinity,
+      };
+    } else {
+      // Non-reordered task: calculate sort key based on relative position
+      const oldPos = oldOrderMap.get(task.id) ?? Infinity;
+      
+      // Count reordered tasks that come before this task in old order
+      let reorderedBefore = 0;
+      for (const reorderedId of taskIds) {
+        const reorderedOldPos = oldOrderMap.get(reorderedId) ?? Infinity;
+        if (reorderedOldPos < oldPos) {
+          reorderedBefore++;
+        }
+      }
+      
+      // The sort key is: old position minus reordered tasks that were before,
+      // but we need to account for where reordered tasks are now
+      // Simple approach: use old position, but adjust by counting reordered tasks
+      // that now come before this position
+      let adjustment = 0;
+      for (const reorderedId of taskIds) {
+        const reorderedOldPos = oldOrderMap.get(reorderedId) ?? Infinity;
+        const reorderedNewPos = newOrderMap.get(reorderedId) ?? Infinity;
+        // If a reordered task moved from after to before this position, adjust
+        if (reorderedOldPos > oldPos && reorderedNewPos <= oldPos - reorderedBefore) {
+          adjustment++;
+        }
+      }
+      
+      return {
+        id: task.id,
+        sortKey: oldPos - reorderedBefore + adjustment,
+      };
+    }
+  });
+  
+  // Sort by sort key, using old position as tiebreaker for stability
+  tasksWithSortKey.sort((a, b) => {
+    const aTask = categoryTasks.find(t => t.id === a.id)!;
+    const bTask = categoryTasks.find(t => t.id === b.id)!;
+    if (a.sortKey !== b.sortKey) {
+      return a.sortKey - b.sortKey;
+    }
+    // Tiebreaker: use old position to preserve relative order
+    return (oldOrderMap.get(a.id) ?? Infinity) - (oldOrderMap.get(b.id) ?? Infinity);
+  });
+  
+  const finalOrderIds = tasksWithSortKey.map(t => t.id);
+
+  // Build updates with new display_order (1-based)
+  const updates = finalOrderIds.map((id, index) => ({
     id,
     display_order: index + 1,
   }));
 
-  // Use Promise.all to update all tasks
+  // Update all tasks in the category with new display_order
   const updatePromises = updates.map(({ id, display_order }) =>
     supabase
       .from('tasks')
