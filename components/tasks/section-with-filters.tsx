@@ -243,6 +243,7 @@ export function SectionWithFilters({
                           <DropdownMenuRadioItem value="quotidien" className="cursor-pointer">Quotidien</DropdownMenuRadioItem>
                           <DropdownMenuRadioItem value="hebdomadaire" className="cursor-pointer">Hebdomadaire</DropdownMenuRadioItem>
                           <DropdownMenuRadioItem value="mensuel">Mensuel</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="personnalisé">Personnalisé</DropdownMenuRadioItem>
                         </DropdownMenuRadioGroup>
                       </>
                     )}

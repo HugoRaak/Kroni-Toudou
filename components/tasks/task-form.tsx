@@ -108,6 +108,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
 
   const prefix = formId || (task ? `task-${task.id}` : "new");
   const showDayField = frequency === "hebdomadaire" || frequency === "mensuel";
+  const showCustomFields = frequency === "personnalisé";
 
   return (
     <div className="space-y-4">
@@ -221,6 +222,37 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
                 ))}
               </select>
             </div>
+          )}
+
+          {showCustomFields && (
+            <>
+              <div>
+                <label htmlFor={`custom_days-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
+                  Répéter tous les X jours *
+                </label>
+                <Input
+                  id={`custom_days-${prefix}`}
+                  name="custom_days"
+                  type="number"
+                  defaultValue={typeof task?.custom_days === "number" ? String(task.custom_days) : ""}
+                  placeholder="Ex: 3"
+                  min="1"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor={`start_date-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
+                  Date de début *
+                </label>
+                <Input
+                  id={`start_date-${prefix}`}
+                  name="start_date"
+                  type="date"
+                  defaultValue={task?.start_date ? (task.start_date.includes('T') ? task.start_date.split('T')[0] : task.start_date) : ""}
+                  required
+                />
+              </div>
+            </>
           )}
         </>
       )}

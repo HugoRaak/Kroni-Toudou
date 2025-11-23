@@ -10,7 +10,7 @@ export const TASK_TYPES = {
 export type TaskType = typeof TASK_TYPES[keyof typeof TASK_TYPES];
 
 // Task frequency constants
-export const FREQUENCIES: Frequency[] = ['quotidien', 'hebdomadaire', 'mensuel'];
+export const FREQUENCIES: Frequency[] = ['quotidien', 'hebdomadaire', 'mensuel', 'personnalisé'];
 
 // Day of week constants
 export const DAYS_OF_WEEK: DayOfWeek[] = [
