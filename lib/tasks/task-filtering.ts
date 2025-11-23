@@ -20,14 +20,7 @@ export function groupTasksByType(tasks: Task[]): {
     specificDate: tasks
       .filter(t => !t.frequency && !!t.due_on)
       .sort((a, b) => {
-        // Sort by display_order ascending, then by date ascending
-        if (a.display_order !== undefined && b.display_order !== undefined) {
-          const orderDiff = a.display_order - b.display_order;
-          if (orderDiff !== 0) return orderDiff;
-        }
-        if (a.display_order !== undefined) return -1;
-        if (b.display_order !== undefined) return 1;
-        // Secondary sort: by date ascending (oldest to newest)
+        // Sort by due_on ascending (oldest to newest)
         if (!a.due_on || !b.due_on) return 0;
         return a.due_on.localeCompare(b.due_on);
       }),

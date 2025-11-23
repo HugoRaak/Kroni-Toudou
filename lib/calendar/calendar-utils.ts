@@ -228,15 +228,10 @@ export function getSpecificTasksForDate(tasks: Task[], date: Date): Task[] {
   const normalizedDate = normalizeToMidnight(date);
   const dateString = formatDateLocal(normalizedDate);
   const filtered = tasks.filter(task => task.due_on === dateString);
-  // Sort by display_order, then by due_on (oldest first) as secondary sort
-  return sortByDisplayOrder(filtered).sort((a, b) => {
-    // If display_order is equal or both undefined, sort by date
-    if ((a.display_order === undefined && b.display_order === undefined) ||
-        (a.display_order === b.display_order)) {
-      if (!a.due_on || !b.due_on) return 0;
-      return a.due_on.localeCompare(b.due_on);
-    }
-    return 0; // Already sorted by display_order
+  // Sort by due_on ascending (oldest first)
+  return filtered.sort((a, b) => {
+    if (!a.due_on || !b.due_on) return 0;
+    return a.due_on.localeCompare(b.due_on);
   });
 }
 
@@ -324,7 +319,7 @@ export async function getTasksForDateRange(
     return task.due_on >= startDateStr && task.due_on <= endDateStr;
   });
   
-  // Convert to CalendarTask format and sort by display_order
+  // Convert to CalendarTask format and sort by due_on ascending
   specificForRange.forEach(task => {
     tasks.push({
       id: task.id,
@@ -340,14 +335,10 @@ export async function getTasksForDateRange(
     });
   });
   
-  // Sort by display_order, then by due_on as secondary sort
-  return sortByDisplayOrder(tasks).sort((a, b) => {
-    if ((a.display_order === undefined && b.display_order === undefined) ||
-        (a.display_order === b.display_order)) {
-      if (!a.due_on || !b.due_on) return 0;
-      return a.due_on.localeCompare(b.due_on);
-    }
-    return 0;
+  // Sort by due_on ascending (oldest first)
+  return tasks.sort((a, b) => {
+    if (!a.due_on || !b.due_on) return 0;
+    return a.due_on.localeCompare(b.due_on);
   });
 }
 

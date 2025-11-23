@@ -93,6 +93,7 @@ export default async function MesTachesPage() {
               onDelete={deleteTaskActionWrapper}
               showDateStatusSplit={true}
               emptyMessage="Aucune tâche avec date précise."
+              allowEditOrder={false}
             />
 
             <SectionWithFilters

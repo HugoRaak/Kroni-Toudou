@@ -75,6 +75,7 @@ interface SectionWithFiltersProps {
   showProgressStatus?: boolean;
   emptyMessage: string;
   showDateStatusSplit?: boolean;
+  allowEditOrder?: boolean;
 }
 
 export function SectionWithFilters({
@@ -89,6 +90,7 @@ export function SectionWithFilters({
   showProgressStatus = false,
   emptyMessage,
   showDateStatusSplit = false,
+  allowEditOrder = true,
 }: SectionWithFiltersProps) {
   const router = useRouter();
   const [presenceFilter, setPresenceFilter] = useState<PresenceFilter>('all');
@@ -192,16 +194,18 @@ export function SectionWithFilters({
           <div className="flex items-center gap-2">
             {!isEditOrderMode ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleStartEditOrder}
-                  disabled={filteredTasks.length === 0}
-                  className={`h-8 text-xs ${filterColors.hover} cursor-pointer`}
-                >
-                  <GripVertical className={`h-4 w-4 mr-1 ${filterColors.icon}`} />
-                  Ordre
-                </Button>
+                {allowEditOrder && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleStartEditOrder}
+                    disabled={filteredTasks.length === 0}
+                    className={`h-8 text-xs ${filterColors.hover} cursor-pointer`}
+                  >
+                    <GripVertical className={`h-4 w-4 mr-1 ${filterColors.icon}`} />
+                    Ordre
+                  </Button>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
