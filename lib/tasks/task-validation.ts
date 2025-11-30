@@ -1,5 +1,5 @@
 import type { Task, Frequency, DayOfWeek } from '@/lib/types';
-import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_TITLE_MAX_LENGTH, TASK_DESCRIPTION_MAX_LENGTH } from '@/lib/tasks/task-constants';
+import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_TITLE_MAX_LENGTH, TASK_DESCRIPTION_MAX_LENGTH, MAX_SHIFTING_DAYS_LIMIT } from '@/lib/tasks/task-constants';
 import { parseDateLocal } from '@/lib/utils';
 
 export function isValidTaskType(type: string): type is typeof TASK_TYPES[keyof typeof TASK_TYPES] {
@@ -55,5 +55,10 @@ export function validateCustomDays(days: string): boolean {
 export function validateStartDate(startDate: string): boolean {
   // Same validation as validateDueOn
   return validateDueOn(startDate);
+}
+
+export function validateMaxShiftingDays(days: string): boolean {
+  const parsed = Number(days);
+  return Number.isInteger(parsed) && parsed > 0 && parsed <= MAX_SHIFTING_DAYS_LIMIT;
 }
 

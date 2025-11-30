@@ -11,6 +11,7 @@ import {
   validateDueOn,
   validateCustomDays,
   validateStartDate,
+  validateMaxShiftingDays,
 } from '@/lib/tasks/task-validation';
 
 export interface ParsedTaskFormData {
@@ -81,7 +82,7 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
       result.custom_days = Number(custom_daysRaw);
       result.start_date = start_dateRaw;
       // max_shifting_days is optional, only parse if provided
-      if (max_shifting_daysRaw && validateCustomDays(max_shifting_daysRaw)) {
+      if (max_shifting_daysRaw && validateMaxShiftingDays(max_shifting_daysRaw)) {
         result.max_shifting_days = Number(max_shifting_daysRaw);
       }
     }

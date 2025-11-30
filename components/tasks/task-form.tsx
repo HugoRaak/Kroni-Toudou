@@ -279,6 +279,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
                   defaultValue={typeof task?.max_shifting_days === "number" ? String(task.max_shifting_days) : ""}
                   placeholder="Ex: 5"
                   min="1"
+                  max="45"
                 />
               </div>
             </>
