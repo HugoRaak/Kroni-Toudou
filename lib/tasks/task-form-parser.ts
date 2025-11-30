@@ -21,6 +21,7 @@ export interface ParsedTaskFormData {
   frequency?: Frequency;
   day?: DayOfWeek;
   custom_days?: number;
+  max_shifting_days?: number;
   start_date?: string;
   due_on?: string;
   postponed_days?: number;
@@ -34,6 +35,7 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
   const frequencyRaw = String(formData.get('frequency') || '');
   const dayRaw = String(formData.get('day') || '');
   const custom_daysRaw = String(formData.get('custom_days') || '');
+  const max_shifting_daysRaw = String(formData.get('max_shifting_days') || '');
   const start_dateRaw = String(formData.get('start_date') || '');
   const due_onRaw = String(formData.get('due_on') || '');
   const postponed_daysRaw = String(formData.get('postponed_days') || '');
@@ -78,6 +80,10 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
       }
       result.custom_days = Number(custom_daysRaw);
       result.start_date = start_dateRaw;
+      // max_shifting_days is optional, only parse if provided
+      if (max_shifting_daysRaw && validateCustomDays(max_shifting_daysRaw)) {
+        result.max_shifting_days = Number(max_shifting_daysRaw);
+      }
     }
     // Handle annual frequency fields
     if (frequencyRaw === 'annuel') {
@@ -105,7 +111,7 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
 
 export function parsedDataToTaskUpdates(
   parsed: ParsedTaskFormData
-): Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'custom_days' | 'start_date' | 'due_on' | 'postponed_days' | 'in_progress' | 'mode'>> {
+): Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'custom_days' | 'max_shifting_days' | 'start_date' | 'due_on' | 'postponed_days' | 'in_progress' | 'mode'>> {
   const updates: Partial<Task> = {
     title: parsed.title,
     description: parsed.description,
@@ -113,6 +119,7 @@ export function parsedDataToTaskUpdates(
     frequency: undefined,
     day: undefined,
     custom_days: undefined,
+    max_shifting_days: undefined,
     start_date: undefined,
     due_on: undefined,
     postponed_days: undefined,
@@ -126,6 +133,10 @@ export function parsedDataToTaskUpdates(
     if (parsed.frequency === 'personnalisé') {
       updates.custom_days = parsed.custom_days;
       updates.start_date = parsed.start_date;
+      // Only include max_shifting_days if provided (optional)
+      if (parsed.max_shifting_days !== undefined) {
+        updates.max_shifting_days = parsed.max_shifting_days;
+      }
     }
     // Include start_date if frequency is annuel
     if (parsed.frequency === 'annuel') {

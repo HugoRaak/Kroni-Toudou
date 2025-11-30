@@ -9,6 +9,7 @@ export interface Task {
   frequency?: Frequency;
   day?: DayOfWeek;
   custom_days?: number;
+  max_shifting_days?: number;
   start_date?: string;
   due_on?: string;
   postponed_days?: number;

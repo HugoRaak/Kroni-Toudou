@@ -268,6 +268,19 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
                   required
                 />
               </div>
+              <div>
+                <label htmlFor={`max_shifting_days-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
+                  Nombre de jours maximum de décalage
+                </label>
+                <Input
+                  id={`max_shifting_days-${prefix}`}
+                  name="max_shifting_days"
+                  type="number"
+                  defaultValue={typeof task?.max_shifting_days === "number" ? String(task.max_shifting_days) : ""}
+                  placeholder="Ex: 5"
+                  min="1"
+                />
+              </div>
             </>
           )}
         </>

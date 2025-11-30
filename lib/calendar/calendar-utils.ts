@@ -56,6 +56,15 @@ function getFirstWeekday(year: number, month: number, targetDay: number): Date {
   return addDays(date, offset);
 }
 
+// Get default max shifting days based on frequency and custom_days
+function getDefaultMaxShiftingDays(frequency: Frequency | undefined, customDays?: number): number {
+  if (frequency === 'hebdomadaire') return 7;
+  if (frequency === 'mensuel') return 28;
+  if (frequency === 'annuel') return 45;
+  if (frequency === 'personnalisé') return 7;
+  return 7; // fallback default
+}
+
 // Find the next date that matches the task's mode, starting from the given date
 // Returns null if no match found within the max days
 async function findNextMatchingDate(
@@ -154,12 +163,14 @@ async function getPeriodicTasksForDateWithShift(
     
     // Calculate the original scheduled date for this task
     let originalScheduledDate: Date | null = null;
-    let maxDays = 0;
     const dayName = getDayName(normalizedDate);
     const taskDayIndex = task.day ? getDayIndex(task.day) : null;
     const currentDayIndex = getDayIndex(dayName);
     const startDate = task.start_date ? parseDateLocal(task.start_date) : null;
     const normalizedStartDate = startDate ? normalizeToMidnight(startDate) : null;
+    
+    // Get max shifting days from task or use default
+    const maxDays = task.max_shifting_days ?? getDefaultMaxShiftingDays(task.frequency);
     
     if (task.frequency === 'hebdomadaire') {
       if (!taskDayIndex) continue;
@@ -168,7 +179,6 @@ async function getPeriodicTasksForDateWithShift(
         // Today is the scheduled day
         originalScheduledDate = normalizedDate;
       } else {
-        maxDays = 7;
         if (currentDayIndex > taskDayIndex) {
           originalScheduledDate = addDays(normalizedDate, -(currentDayIndex - taskDayIndex));
         } else {
@@ -187,7 +197,6 @@ async function getPeriodicTasksForDateWithShift(
           continue;
         } else {
           originalScheduledDate = candidateDate;
-          maxDays = 28;
         }
       }
     } else if (task.frequency === 'annuel') {
@@ -199,12 +208,11 @@ async function getPeriodicTasksForDateWithShift(
       const candidateDate = normalizeToMidnight(new Date(currentYear, startMonth, startDay));
       const daysDifference = Math.floor((normalizedDate.getTime() - candidateDate.getTime()) / 86400000);
 
-      // Skip if candidateDate is in the future or more than 45 days before normalizedDate
-      if (candidateDate > normalizedDate || daysDifference > 45) {
+      // Skip if candidateDate is in the future or more than maxShiftingDays days before normalizedDate
+      if (candidateDate > normalizedDate || daysDifference > maxDays) {
         continue;
       } else {
         originalScheduledDate = candidateDate;
-        maxDays = 45;
       }
     } else if (task.frequency === 'personnalisé') {
       if (!startDate || !normalizedStartDate || !task.custom_days) continue;
@@ -223,20 +231,6 @@ async function getPeriodicTasksForDateWithShift(
           continue;
         } else {
           originalScheduledDate = candidateDate;
-          switch (task.custom_days) {
-            case 3:
-              maxDays = 5;
-              break;
-            case 14:
-              maxDays = 7;
-              break;
-            case 30:
-              maxDays = 7;
-              break;
-            default:
-              maxDays = 7;
-              break;
-          }
         }
       }
     }
@@ -558,27 +552,8 @@ export async function checkFutureTaskShifts(
       
       // If work mode doesn't match, try to shift
       if (workMode !== taskMode) {
-        let maxDays = 0;
-        if (task.frequency === 'annuel') {
-          maxDays = 45;
-        } else if (task.frequency === 'personnalisé' && task.custom_days) {
-          switch (task.custom_days) {
-            case 3:
-              maxDays = 5;
-              break;
-            case 14:
-              maxDays = 7;
-              break;
-            case 30:
-              maxDays = 7;
-              break;
-            default:
-              maxDays = 7;
-              break;
-          }
-        }
-
-        const shiftedDate = await findNextMatchingDate(scheduledDate, taskMode, workdaysMap, maxDays);
+        const maxShiftingDays = task.max_shifting_days ?? getDefaultMaxShiftingDays(task.frequency);
+        const shiftedDate = await findNextMatchingDate(scheduledDate, taskMode, workdaysMap, maxShiftingDays);
 
         // If couldn't shift, create alert
         if (shiftedDate === null) {
