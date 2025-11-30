@@ -4,13 +4,11 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Task, TaskWithType } from "@/lib/types";
-import { TaskWithShift } from "@/lib/calendar/calendar-utils";
+import { TaskWithShift, TaskShiftAlert } from "@/lib/calendar/calendar-utils";
 import { WorkModeBadge } from "@/components/calendar/ui/workmode-badge";
-import { TaskSectionPeriodic } from "@/components/calendar/tasks/task-section-periodic";
 import { TaskSectionSpecific } from "@/components/calendar/tasks/task-section-specific";
 import { TaskSectionWhenPossible } from "@/components/calendar/tasks/task-section-when-possible";
 import { DraggableTaskSection } from "@/components/calendar/tasks/draggable-task-section";
-import { TaskItemCompact } from "@/components/tasks/task-item-compact";
 import { HideTaskDialog } from "@/components/calendar/dialogs/hide-task-dialog";
 import { TaskListDraggable } from "@/components/calendar/tasks/task-list-draggable";
 import { isToday, getTodayHiddenTaskIds, hideTodayTask, hideTodayTempTask } from "@/lib/storage/localStorage-tasks";
@@ -27,6 +25,7 @@ export type DayTasksData = {
     inProgress: Task[];
     notStarted: Task[];
   };
+  alerts: TaskShiftAlert[];
 } | null;
 
 export function DayView({

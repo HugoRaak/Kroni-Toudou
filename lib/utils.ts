@@ -35,10 +35,13 @@ export function isPastDate(date: Date): boolean {
 // Helper function to add days to a date
 // Uses milliseconds to avoid timezone and month boundary issues
 export function addDays(date: Date, days: number): Date {
-  const normalized = normalizeToMidnight(date);
-  const result = new Date(normalized.getTime() + days * 24 * 60 * 60 * 1000);
-  return normalizeToMidnight(result);
+  return normalizeToMidnight(new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate() + days
+  ));
 }
+
 
 export function getRangeForView(
   view: "day" | "week" | "month",

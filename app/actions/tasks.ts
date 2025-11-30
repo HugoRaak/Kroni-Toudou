@@ -94,6 +94,7 @@ export async function createTaskAction(
   frequency?: Frequency,
   day?: DayOfWeek,
   custom_days?: number,
+  max_shifting_days?: number,
   start_date?: string,
   due_on?: string,
   postponed_days?: number,
@@ -153,6 +154,7 @@ export async function createTaskAction(
         frequency,
         day,
         custom_days,
+        max_shifting_days,
         start_date,
         due_on,
         in_progress,
@@ -184,7 +186,7 @@ function getTaskCategory(frequency: Frequency | null | undefined, due_on: string
 
 export async function updateTaskAction(
   id: string,
-  updates: Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'custom_days' | 'start_date' | 'due_on' | 'postponed_days' | 'in_progress' | 'mode' | 'display_order'>>
+  updates: Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'custom_days' | 'max_shifting_days' | 'start_date' | 'due_on' | 'postponed_days' | 'in_progress' | 'mode' | 'display_order'>>
 ): Promise<TaskActionResult> {
   const supabase = await supabaseServer();
   
@@ -329,6 +331,7 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
     parsed.frequency,
     parsed.day,
     parsed.custom_days,
+    parsed.max_shifting_days,
     parsed.start_date,
     parsed.due_on,
     parsed.postponed_days,

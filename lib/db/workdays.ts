@@ -1,6 +1,6 @@
 import { supabaseServer, supabaseServerReadOnly } from "@/lib/supabase/supabase-server";
 import { getDefaultWorkMode } from "@/lib/workday-defaults";
-import { formatDateLocal, parseDateLocal } from "@/lib/utils";
+import { addDays, formatDateLocal, normalizeToMidnight, parseDateLocal } from "@/lib/utils";
 
 export type WorkMode = 'Présentiel' | 'Distanciel' | 'Congé';
 
@@ -52,16 +52,15 @@ export async function getWorkdaysInRange(
   const end = parseDateLocal(endDate);
   
   // Iterate through dates using constructor to guarantee midnight local time
-  let current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-  const endDateObj = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  let current = normalizeToMidnight(start);
+  const endDateObj = normalizeToMidnight(end);
   
   while (current <= endDateObj) {
     const dateStr = formatDateLocal(current);
     if (!dbWorkdays.has(dateStr)) {
       map[dateStr] = await getDefaultWorkMode(current);
     }
-    // Create next date using constructor to guarantee midnight local time
-    current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 1);
+    current = addDays(current, 1);
   }
 
   return map;

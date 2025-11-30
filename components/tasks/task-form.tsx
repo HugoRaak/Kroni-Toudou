@@ -108,6 +108,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
 
   const prefix = formId || (task ? `task-${task.id}` : "new");
   const showDayField = frequency === "hebdomadaire" || frequency === "mensuel";
+  const showStartDateField = frequency === "annuel";
   const showCustomFields = frequency === "personnalisé";
 
   return (
@@ -224,6 +225,21 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
             </div>
           )}
 
+          {showStartDateField && (
+            <div>
+              <label htmlFor={`start_date-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
+                Date de début *
+              </label>
+              <Input
+                id={`start_date-${prefix}`}
+                name="start_date"
+                type="date"
+                defaultValue={task?.start_date ? (task.start_date.includes('T') ? task.start_date.split('T')[0] : task.start_date) : ""}
+                required
+              />
+            </div>
+          )}
+
           {showCustomFields && (
             <>
               <div>
@@ -250,6 +266,19 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
                   type="date"
                   defaultValue={task?.start_date ? (task.start_date.includes('T') ? task.start_date.split('T')[0] : task.start_date) : ""}
                   required
+                />
+              </div>
+              <div>
+                <label htmlFor={`max_shifting_days-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
+                  Nombre de jours maximum de décalage
+                </label>
+                <Input
+                  id={`max_shifting_days-${prefix}`}
+                  name="max_shifting_days"
+                  type="number"
+                  defaultValue={typeof task?.max_shifting_days === "number" ? String(task.max_shifting_days) : ""}
+                  placeholder="Ex: 5"
+                  min="1"
                 />
               </div>
             </>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ModeConflictError } from "@/app/actions/tasks";
-import { formatDateLocal, parseDateLocal } from "@/lib/utils";
+import { formatDateLocal, parseDateLocal, addDays } from "@/lib/utils";
 import { getWorkdayAction } from "@/app/actions/workdays";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -94,8 +94,7 @@ export function WorkModeConflictDialog({
     try {
       // Find next matching date (up to 10 days ahead)
       const conflictDate = parseDateLocal(conflict.taskDate);
-      let nextDate = new Date(conflictDate);
-      nextDate.setDate(nextDate.getDate() + 1);
+      let nextDate = addDays(conflictDate, 1);
       
       let foundDate: string | null = null;
       for (let i = 0; i < 10; i++) {
