@@ -79,6 +79,14 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
       result.custom_days = Number(custom_daysRaw);
       result.start_date = start_dateRaw;
     }
+    // Handle annual frequency fields
+    if (frequencyRaw === 'annuel') {
+      // start_date is required for annuel frequency
+      if (!start_dateRaw || !validateStartDate(start_dateRaw)) {
+        return null; // Validation failed: start_date is missing or invalid
+      }
+      result.start_date = start_dateRaw;
+    }
     result.in_progress = undefined;
   } else if (taskTypeRaw === TASK_TYPES.SPECIFIC) {
     if (due_onRaw && validateDueOn(due_onRaw)) {
@@ -117,6 +125,10 @@ export function parsedDataToTaskUpdates(
     // Include custom fields if frequency is personnalisé
     if (parsed.frequency === 'personnalisé') {
       updates.custom_days = parsed.custom_days;
+      updates.start_date = parsed.start_date;
+    }
+    // Include start_date if frequency is annuel
+    if (parsed.frequency === 'annuel') {
       updates.start_date = parsed.start_date;
     }
   } else if (parsed.taskType === TASK_TYPES.SPECIFIC) {

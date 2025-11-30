@@ -9,9 +9,11 @@ import MonthView from "@/components/calendar/views/month-view";
 import { getWorkdayAction } from "@/app/actions/workdays";
 import { getTodayTasksFromStorage, saveTodayTasksToStorage, isToday } from "@/lib/storage/localStorage-tasks";
 import { navigateCalendarDate, type CalendarView } from "@/lib/calendar/calendar-navigation";
-import { formatDateLocal, getRangeForView, normalizeToMidnight } from "@/lib/utils";
+import { formatDateLocal, getRangeForView, normalizeToMidnight, parseDateLocal } from "@/lib/utils";
 import type { ModeConflictError } from "@/app/actions/tasks";
-import { getCalendarDayDataAction, getCalendarRangeDataAction } from "@/app/actions/calendar";
+import { getCalendarDayDataAction, getCalendarRangeDataAction, checkFutureTaskShiftsAction } from "@/app/actions/calendar";
+import { toast } from "sonner";
+import type { TaskShiftAlert } from "@/lib/calendar/calendar-utils";
 
 export function Calendar({ 
   userId, 
@@ -42,6 +44,66 @@ export function Calendar({
 
   // Track if today tasks should be reloaded
   const reloadTodayTasks = useRef(true);
+
+  // Helper function to show alerts for tasks that couldn't be shifted
+  const showTaskShiftAlerts = (alerts: TaskShiftAlert[]) => {
+    if (alerts.length === 0) return;
+    
+    // Group alerts by taskId
+    const alertsByTask = new Map<string, TaskShiftAlert[]>();
+    alerts.forEach(alert => {
+      if (!alertsByTask.has(alert.taskId)) {
+        alertsByTask.set(alert.taskId, []);
+      }
+      alertsByTask.get(alert.taskId)!.push(alert);
+    });
+    
+    // Sort tasks by first alert date (descending for display order)
+    const sortedTasks = Array.from(alertsByTask.entries()).sort((a, b) => {
+      const aFirstDate = a[1][0].originalDate;
+      const bFirstDate = b[1][0].originalDate;
+      return bFirstDate.localeCompare(aFirstDate);
+    });
+
+    // Show one toast per task with all dates
+    sortedTasks.forEach(([_, taskAlerts]) => {
+      const firstAlert = taskAlerts[0];
+      const frequencyLabel = firstAlert.frequency === 'annuel' ? 'annuelle' : 'personnalisée';
+      
+      // Sort dates for this task (ascending)
+      const sortedDates = taskAlerts
+        .map(alert => ({
+          date: alert.originalDate,
+          isFuture: alert.isFutureShift ?? false
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+      
+      // Format dates
+      const formattedDates = sortedDates.map(({ date, isFuture }) => {
+        const dateStr = parseDateLocal(date).toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+        return isFuture ? dateStr : `${dateStr} (passée)`;
+      });
+      
+      const datesList = formattedDates.length === 1
+        ? formattedDates[0]
+        : formattedDates.join(', ');
+      
+      const datesCount = formattedDates.length;
+      const datesText = datesCount === 1 ? 'date' : 'dates';
+      
+      toast.warning(
+        `Tâche "${firstAlert.taskTitle}" non décalable`,
+        {
+          description: `La tâche ${frequencyLabel} prévue ${datesCount > 1 ? `aux ${datesText}` : `à la ${datesText}`} ${datesList} ${firstAlert.taskMode === "Tous" ? "pour tous les modes" : `en ${firstAlert.taskMode}`} n'a pas pu être décalée à une date compatible.`,
+          duration: Infinity,
+        }
+      );
+    });
+  };
 
   useEffect(() => {
     // Clear any pending timeout - this ensures only the last change triggers a load
@@ -94,7 +156,7 @@ export function Calendar({
     // Increment request ID to mark this as the latest request
     loadRequestIdRef.current += 1;
     const currentRequestId = loadRequestIdRef.current;
-    
+
     // Mark as loading
     isLoadingRef.current = true;
     setLoading(true);
@@ -131,12 +193,30 @@ export function Calendar({
         if (currentRequestId !== loadRequestIdRef.current) return;
 
         if (isToday(activeDayDate)) {
+          // Check if this is the first load of the day (no data in localStorage)
+          if (getTodayTasksFromStorage() === null) {
+            // Check for future task shifts and show alerts
+            checkFutureTaskShiftsAction({ userId })
+              .then(({ alerts }) => {
+                if (alerts.length > 0) {
+                  showTaskShiftAlerts(alerts);
+                }
+              })
+              .catch((error) => {
+                console.error('Error checking future task shifts:', error);
+              });
+          }
           saveTodayTasksToStorage(dayData);
           reloadTodayTasks.current = false;
         }
 
         setDayTasks(dayData);
         setDayWorkMode(mode);
+
+        // Show non-invasive alerts for tasks that couldn't be shifted
+        if (dayData?.alerts) {
+          showTaskShiftAlerts(dayData.alerts);
+        }
 
       } else {
         const anchor = normalizeToMidnight(currentView === "week" ? weekDate : monthDate);
@@ -194,6 +274,11 @@ export function Calendar({
       saveTodayTasksToStorage(dayData);
       setDayTasks(dayData);
       setDayWorkMode(mode);
+      
+      // Show non-invasive alerts for tasks that couldn't be shifted
+      if (dayData?.alerts) {
+        showTaskShiftAlerts(dayData.alerts);
+      }
     } else if (success && isDayLikeView) {
       // Not today, reload normally
       await loadTasks();

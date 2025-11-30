@@ -1,9 +1,9 @@
 "use server";
 
-import { getTasksForDateRange, getTasksForDay } from "@/lib/calendar/calendar-utils";
+import { getTasksForDateRange, getTasksForDay, checkFutureTaskShifts } from "@/lib/calendar/calendar-utils";
 import { supabaseServer } from "@/lib/supabase/supabase-server";
 import { getWorkday, getWorkdaysInRange } from "@/lib/db/workdays";
-import { parseDateLocal } from "@/lib/utils";
+import { parseDateLocal, normalizeToMidnight } from "@/lib/utils";
 
 export async function getCalendarDayDataAction(params: {
   userId: string;
@@ -40,4 +40,17 @@ export async function getCalendarRangeDataAction(params: {
   ]);
 
   return { tasksData, workdays };
+}
+
+export async function checkFutureTaskShiftsAction(params: {
+  userId: string;
+}) {
+  const { userId } = params;
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.id !== userId) throw new Error("Unauthorized");
+  
+  const today = normalizeToMidnight(new Date());
+  const alerts = await checkFutureTaskShifts(userId, today);
+  return { alerts };
 }
