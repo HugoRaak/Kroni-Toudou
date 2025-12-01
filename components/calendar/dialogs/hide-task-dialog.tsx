@@ -57,7 +57,7 @@ export function HideTaskDialog({
             className="w-full sm:w-auto cursor-pointer bg-green-600 hover:bg-green-700 text-white"
             onClick={onConfirm}
           >
-            Finis !
+            Fini !
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -29,6 +29,7 @@ export const TASK_MODES: Task['mode'][] = ['Tous', 'Présentiel', 'Distanciel'];
 // Validation constants
 export const TASK_TITLE_MAX_LENGTH = 100;
 export const TASK_DESCRIPTION_MAX_LENGTH = 3000;
+export const MAX_SHIFTING_DAYS_LIMIT = 45;
 
 // Task type styling constants
 export const TASK_TYPE_STYLES = {

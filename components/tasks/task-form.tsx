@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Task, Frequency, DayOfWeek } from "@/lib/types";
 import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_MODES, type TaskType } from "@/lib/tasks/task-constants";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { TaskDescriptionEditor } from "./task-description-editor";
 import type { CalendarView } from "@/lib/calendar/calendar-navigation";
 
 type TaskFormProps = {
@@ -134,13 +134,11 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
         <label htmlFor={`description-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
           Description
         </label>
-        <Textarea
+        <TaskDescriptionEditor
           id={`description-${prefix}`}
           name="description"
-          defaultValue={task?.description || ""}
+          value={task?.description || ""}
           placeholder="Description de la tâche"
-          maxLength={3000}
-          rows={3}
         />
       </div>
 
@@ -279,6 +277,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
                   defaultValue={typeof task?.max_shifting_days === "number" ? String(task.max_shifting_days) : ""}
                   placeholder="Ex: 5"
                   min="1"
+                  max="45"
                 />
               </div>
             </>

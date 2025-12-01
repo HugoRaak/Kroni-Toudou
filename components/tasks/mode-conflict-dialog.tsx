@@ -72,7 +72,8 @@ export function ModeConflictDialog({
           break;
         }
         
-        nextDate.setDate(nextDate.getDate() + 1);
+        // Use addDays consistently to maintain timezone handling
+        nextDate = addDays(nextDate, 1);
       }
       
       if (foundDate) {
