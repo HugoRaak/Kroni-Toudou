@@ -1,6 +1,6 @@
 "use client";
 
-import { sanitizeTaskDescription } from "@/lib/utils/html-sanitizer";
+import { sanitizeClient } from "@/lib/sanitize-client";
 
 type TaskDescriptionViewProps = {
   description?: string | null;
@@ -16,7 +16,7 @@ export function TaskDescriptionView({
   }
 
   // Sanitize HTML before rendering (defense in depth)
-  const sanitizedHTML = sanitizeTaskDescription(description);
+  const sanitizedHTML = sanitizeClient(description);
 
   return (
     <div
