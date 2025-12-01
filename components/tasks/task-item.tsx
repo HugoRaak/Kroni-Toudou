@@ -2,6 +2,7 @@
 
 import { Task } from "@/lib/types";
 import { TaskEditDialog } from "./task-edit-dialog";
+import { TaskDescriptionView } from "./task-description-view";
 import { useMemo } from "react";
 import { parseDateLocal } from "@/lib/utils";
 import type { ModeConflictError } from "@/app/actions/tasks";
@@ -54,7 +55,7 @@ export default function TaskItem({ task, onSubmit, onDelete, showProgressStatus 
             <div>
               <h3 className="font-medium text-foreground">{task.title}</h3>
               {task.description ? (
-                <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
+                <TaskDescriptionView description={task.description} className="mt-1" />
               ) : null}
             </div>
           </div>

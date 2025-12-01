@@ -9,6 +9,7 @@ import { verifyTaskOwnership, verifyAuthenticated } from "@/lib/auth/auth-helper
 import { parseDateLocal } from "@/lib/utils";
 import { getWorkday } from "@/lib/db/workdays";
 import { TASK_TYPES } from "@/lib/tasks/task-constants";
+import { sanitizeTaskDescription } from "@/lib/utils/html-sanitizer";
 
 export type ModeConflictError = {
   type: 'MODE_CONFLICT';
@@ -145,12 +146,15 @@ export async function createTaskAction(
   
   const display_order = maxDisplayOrder + 1;
   
+  // Sanitize description HTML before saving
+  const sanitizedDescription = sanitizeTaskDescription(description);
+  
   const { data, error } = await supabase
     .from('tasks')
     .insert({
         user_id: userId,
         title,
-        description,
+        description: sanitizedDescription,
         frequency,
         day,
         custom_days,
@@ -264,9 +268,14 @@ export async function updateTaskAction(
   }
   
   // Convert undefined to null for Supabase (undefined is ignored, null removes fields)
+  // Sanitize description if it's being updated
   const cleanedUpdates: any = {};
   for (const [key, value] of Object.entries(updates)) {
-    cleanedUpdates[key] = value === undefined ? null : value;
+    if (key === 'description' && value !== undefined && value !== null) {
+      cleanedUpdates[key] = sanitizeTaskDescription(String(value));
+    } else {
+      cleanedUpdates[key] = value === undefined ? null : value;
+    }
   }
   
   const { data, error } = await supabase

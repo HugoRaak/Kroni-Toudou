@@ -3,6 +3,7 @@
 import { Task } from "@/lib/types";
 import { TaskWithShift } from "@/lib/calendar/calendar-utils";
 import { TaskEditDialog } from "./task-edit-dialog";
+import { TaskDescriptionView } from "./task-description-view";
 import { parseDateLocal } from "@/lib/utils";
 import type { ModeConflictError } from "@/app/actions/tasks";
 
@@ -38,7 +39,7 @@ export function TaskItemCompact({
         <div className={`rounded-lg border p-3 cursor-pointer hover:opacity-80 transition-opacity ${className || ''}`}>
           <div className="font-medium text-foreground">{task.title}</div>
           {task.description && (
-            <div className="text-sm text-muted-foreground max-w-[90%]">{task.description}</div>
+            <TaskDescriptionView description={task.description} className="text-sm max-w-[90%]" />
           )}
           {shiftInfo && shiftInfo.originalDate && (
             <div className="text-xs text-amber-600 dark:text-amber-500 italic mt-1">
