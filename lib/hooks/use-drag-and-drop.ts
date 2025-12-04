@@ -79,8 +79,9 @@ export function useDragAndDrop<T extends { id: string }>(
     const newItems = reorderItems(items, draggedIndex, targetIndex, position);
     updateItems(newItems);
     
-    // Save to localStorage if items have id
-    if (newItems.length > 0) {
+    // Save to localStorage if items have id and no custom onOrderChange handler
+    // (if onOrderChange is provided, it should handle saving)
+    if (newItems.length > 0 && !onOrderChange) {
       saveTodayTaskOrder(newItems.map(item => item.id));
       // Trigger event to notify that order was saved
       if (typeof window !== 'undefined') {
@@ -124,8 +125,9 @@ export function useDragAndDrop<T extends { id: string }>(
     const newItems = reorderItems(items, draggedIndex, dropIndex, dropPosition);
     updateItems(newItems);
     
-    // Save to localStorage
-    if (newItems.length > 0) {
+    // Save to localStorage if no custom onOrderChange handler
+    // (if onOrderChange is provided, it should handle saving)
+    if (newItems.length > 0 && !onOrderChange) {
       saveTodayTaskOrder(newItems.map(item => item.id));
       // Trigger event to notify that order was saved
       if (typeof window !== 'undefined') {

@@ -225,11 +225,11 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
 
           {showStartDateField && (
             <div>
-              <label htmlFor={`start_date-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor={`start_date-annuel-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
                 Date de début *
               </label>
               <Input
-                id={`start_date-${prefix}`}
+                id={`start_date-annuel-${prefix}`}
                 name="start_date"
                 type="date"
                 defaultValue={task?.start_date ? (task.start_date.includes('T') ? task.start_date.split('T')[0] : task.start_date) : ""}
@@ -255,11 +255,11 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
                 />
               </div>
               <div>
-                <label htmlFor={`start_date-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
+                <label htmlFor={`start_date-custom-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
                   Date de début *
                 </label>
                 <Input
-                  id={`start_date-${prefix}`}
+                  id={`start_date-custom-${prefix}`}
                   name="start_date"
                   type="date"
                   defaultValue={task?.start_date ? (task.start_date.includes('T') ? task.start_date.split('T')[0] : task.start_date) : ""}
