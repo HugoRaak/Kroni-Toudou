@@ -54,6 +54,15 @@ export function ModeConflictDialog({
     }
   };
 
+  // Get the workday mode to use based on task mode
+  // For "Tous", default to "Distanciel" (workdays don't have "Tous" mode)
+  const getWorkdayMode = (taskMode: 'Tous' | 'Présentiel' | 'Distanciel'): 'Présentiel' | 'Distanciel' => {
+    if (taskMode === 'Présentiel') return 'Présentiel';
+    if (taskMode === 'Distanciel') return 'Distanciel';
+    // For "Tous", default to "Présentiel"
+    return 'Présentiel';
+  };
+
   const handleSearchDate = async () => {
     setIsSearchingDate(true);
     try {
@@ -108,7 +117,7 @@ export function ModeConflictDialog({
   const handleChangeWorkMode = async () => {
     setIsResolving(true);
     try {
-      const workMode = conflict.taskMode === 'Présentiel' ? 'Présentiel' : 'Distanciel';
+      const workMode = getWorkdayMode(conflict.taskMode);
       const success = await setWorkdayAction(userId, conflict.taskDate, workMode);
       
       if (success) {
@@ -219,10 +228,10 @@ export function ModeConflictDialog({
             <Button
                 variant="outline"
                 onClick={handleChangeWorkMode}
-                disabled={isResolving || conflict.workMode === 'Congé' || isSearchingDate}
+                disabled={isResolving || isSearchingDate}
                 className="flex-1 text-sm cursor-pointer"
             >
-                Définir {formatDateShort(conflict.taskDate)} en {getModeLabel(conflict.taskMode)}
+                Définir {formatDateShort(conflict.taskDate)} en {getModeLabel(getWorkdayMode(conflict.taskMode))}
             </Button>
           <div className="flex gap-2 w-full">
             <Button
