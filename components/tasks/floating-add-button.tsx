@@ -77,7 +77,6 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
           // Notify calendar to reload tasks from DB
           window.dispatchEvent(new Event('task-created'));
         }
-        router.refresh();
       } else {
         toast.error("Erreur lors de la création de la tâche");
       }
