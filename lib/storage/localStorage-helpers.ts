@@ -129,5 +129,16 @@ export const storage = {
       }
     },
   },
+  dayViewLayout: {
+    get: (): 'single' | 'three-column' => {
+      const key = 'kroni-day-view-layout';
+      const result = getStorageItem<'single' | 'three-column'>(key);
+      return result || 'single';
+    },
+    set: (layout: 'single' | 'three-column'): void => {
+      const key = 'kroni-day-view-layout';
+      setStorageItem(key, layout);
+    },
+  },
 };
 

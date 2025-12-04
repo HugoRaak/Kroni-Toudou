@@ -173,7 +173,7 @@ async function getPeriodicTasksForDateWithShift(
     const maxDays = task.max_shifting_days ?? getDefaultMaxShiftingDays(task.frequency);
     
     if (task.frequency === 'hebdomadaire') {
-      if (!taskDayIndex) continue;
+      if (taskDayIndex === null) continue;
       // For weekly tasks, find this week's occurrence of the task day
       if (task.day === dayName) {
         // Today is the scheduled day
@@ -186,7 +186,7 @@ async function getPeriodicTasksForDateWithShift(
         }
       }
     } else if (task.frequency === 'mensuel') {
-      if (!taskDayIndex) continue;
+      if (taskDayIndex === null) continue;
       // For monthly tasks, find the first occurrence of the task day in this month
       if (task.day === dayName && normalizedDate.getDate() <= 7) {
         // Today is the scheduled day (first occurrence in month)

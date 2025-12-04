@@ -16,8 +16,6 @@ export function TaskSectionSpecific({
   onDeleteTask,
   onSuccess,
 }: TaskSectionSpecificProps) {
-  if (tasks.length === 0) return null;
-
   return (
     <div>
       <h3 className="mb-3 text-lg font-semibold text-violet-800 flex items-center gap-2">
@@ -36,18 +34,22 @@ export function TaskSectionSpecific({
         </svg>
         Tâches à date précise
       </h3>
-      <div className="space-y-2">
-        {tasks.map((task) => (
-          <TaskItemCompact
-            key={task.id}
-            task={task}
-            className={TASK_TYPE_STYLES.specific}
-            onSubmit={onUpdateTask}
-            onDelete={onDeleteTask}
-            onSuccess={onSuccess}
-          />
-        ))}
-      </div>
+      {tasks.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucune tâche à date précise.</p>
+      ) : (
+        <div className="space-y-2">
+          {tasks.map((task) => (
+            <TaskItemCompact
+              key={task.id}
+              task={task}
+              className={TASK_TYPE_STYLES.specific}
+              onSubmit={onUpdateTask}
+              onDelete={onDeleteTask}
+              onSuccess={onSuccess}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

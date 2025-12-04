@@ -9,6 +9,7 @@ type TaskSectionWhenPossibleProps = {
   onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
   onSuccess?: () => void;
+  hideTitle?: boolean;
 };
 
 export function TaskSectionWhenPossible({
@@ -17,27 +18,30 @@ export function TaskSectionWhenPossible({
   onUpdateTask,
   onDeleteTask,
   onSuccess,
+  hideTitle = false,
 }: TaskSectionWhenPossibleProps) {
   if (inProgress.length === 0 && notStarted.length === 0) return null;
 
   return (
     <div>
-      <h3 className="mb-3 text-lg font-semibold text-orange-800 flex items-center gap-2">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          className="text-orange-700"
-        >
-          <path
-            d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z"
-            strokeWidth="2"
-          />
-        </svg>
-        Quand je peux
-      </h3>
+      {!hideTitle && (
+        <h3 className="mb-3 text-lg font-semibold text-orange-800 flex items-center gap-2">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            className="text-orange-700"
+          >
+            <path
+              d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z"
+              strokeWidth="2"
+            />
+          </svg>
+          Quand je peux
+        </h3>
+      )}
 
       {inProgress.length > 0 && (
         <div className="mb-4">
