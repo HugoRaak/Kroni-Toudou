@@ -89,12 +89,12 @@ export function TaskColumnDraggable({
     handleDragEnd,
   } = useDragAndDrop<TaskWithType>(columnTasks, handleOrderChange);
 
-  // Update items when columnTasks change (only if task IDs differ, not just order)
+  // Update items when columnTasks change (if task IDs differ or order changed externally)
   useEffect(() => {
     const currentIds = new Set(orderedTasks.map(t => t.id));
     const newIds = new Set(columnTasks.map(t => t.id));
     
-    // Only reset if task IDs have changed (added/removed), not just reordered
+    // Check if task IDs have changed (added/removed)
     const idsChanged = 
       currentIds.size !== newIds.size ||
       [...newIds].some(id => !currentIds.has(id)) ||
@@ -102,8 +102,18 @@ export function TaskColumnDraggable({
     
     if (idsChanged) {
       setOrderedTasks(columnTasks);
+      return;
     }
-  }, [columnTasks, orderedTasks, setOrderedTasks]);
+    
+    // Check if order has changed (compare order of IDs)
+    const currentOrder = orderedTasks.map(t => t.id).join(',');
+    const newOrder = columnTasks.map(t => t.id).join(',');
+    
+    // Update if order changed and there's no ongoing drag operation
+    if (currentOrder !== newOrder && draggedIndex === null) {
+      setOrderedTasks(columnTasks);
+    }
+  }, [columnTasks, orderedTasks, setOrderedTasks, draggedIndex]);
 
   if (orderedTasks.length === 0) {
     return null;
