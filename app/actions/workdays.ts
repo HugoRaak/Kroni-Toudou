@@ -1,6 +1,6 @@
 "use server";
 
-import { getWorkday, getWorkdaysInRange, upsertWorkday, WorkMode } from "@/lib/db/workdays";
+import { getWorkday, getWorkdaysInRange, getWorkdaysMap, upsertWorkday, upsertWorkdaysBatch, WorkMode } from "@/lib/db/workdays";
 import { supabaseServer } from "@/lib/supabase/supabase-server";
 import { verifyAuthenticated } from "@/lib/auth/auth-helpers";
 import { getTasks } from "@/lib/db/tasks";
@@ -29,6 +29,20 @@ export async function getWorkdaysForRangeAction(
     return {};
   }
   return await getWorkdaysInRange(userId, startDateStr, endDateStr);
+}
+
+export async function getWorkdaysMapAction(
+  userId: string,
+  startDate: Date,
+  maxDays: number = 45
+): Promise<Record<string, WorkMode>> {
+  const supabase = await supabaseServer();
+  const user = await verifyAuthenticated(supabase);
+  if (!user || user.id !== userId) {
+    console.warn('Security: userId mismatch or user not authenticated');
+    return {};
+  }
+  return await getWorkdaysMap(userId, startDate, maxDays);
 }
 
 export async function setWorkdayAction(userId: string, dateStr: string, mode: WorkMode): Promise<boolean> {
@@ -112,12 +126,98 @@ export async function checkWorkdayConflictForUserAction(dateStr: string, mode: W
   return await checkTasksForWorkModeConflict(user.id, dateStr, mode);
 }
 
+// Check multiple workday changes for conflicts in a single batch (optimized)
+export async function checkWorkdayConflictsBatchForUserAction(
+  changes: Array<{ dateStr: string; newMode: WorkMode }>
+): Promise<Record<string, ModeConflictError[]>> {
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return {};
+  
+  if (changes.length === 0) return {};
+  
+  // Get all tasks for the user once
+  const allTasks = await getTasks(user.id);
+  
+  // Group tasks by date for efficient lookup
+  const tasksByDate = new Map<string, typeof allTasks>();
+  for (const task of allTasks) {
+    if (task.due_on) {
+      const existing = tasksByDate.get(task.due_on);
+      if (existing) {
+        existing.push(task);
+      } else {
+        tasksByDate.set(task.due_on, [task]);
+      }
+    }
+  }
+
+  // Check conflicts for each change
+  const result: Record<string, ModeConflictError[]> = {};
+  
+  for (const change of changes) {
+    const conflicts: ModeConflictError[] = [];
+    const specificTasksForDate = tasksByDate.get(change.dateStr) || [];
+    
+    // Check each task for conflicts
+    for (const task of specificTasksForDate) {
+      const taskMode = task.mode ?? 'Tous';
+      
+      // If new work mode is Congé, all tasks conflict (including "Tous")
+      if (change.newMode === 'Congé') {
+        conflicts.push({
+          type: 'MODE_CONFLICT',
+          taskDate: change.dateStr,
+          taskMode: taskMode,
+          workMode: 'Congé'
+        });
+        continue;
+      }
+      
+      // Task mode "Tous" is compatible with Présentiel and Distanciel, but not Congé (already handled above)
+      if (taskMode === 'Tous') continue;
+      
+      // Check if task mode doesn't match new work mode
+      if (taskMode !== change.newMode) {
+        conflicts.push({
+          type: 'MODE_CONFLICT',
+          taskDate: change.dateStr,
+          taskMode: taskMode,
+          workMode: change.newMode
+        });
+      }
+    }
+    
+    if (conflicts.length > 0) {
+      result[change.dateStr] = conflicts;
+    }
+  }
+  
+  return result;
+}
+
 // Force set workday without checking conflicts (used when user confirms anyway)
 export async function setWorkdayForUserActionForce(dateStr: string, mode: WorkMode): Promise<boolean> {
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
   return await upsertWorkday(user.id, dateStr, mode);
+}
+
+// Force set multiple workdays without checking conflicts (batch operation)
+export async function setWorkdaysForUserActionForceBatch(
+  changes: Array<{ dateStr: string; newMode: WorkMode }>
+): Promise<boolean> {
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  
+  if (changes.length === 0) return true;
+  
+  return await upsertWorkdaysBatch(
+    user.id,
+    changes.map(change => ({ workDate: change.dateStr, workMode: change.newMode }))
+  );
 }
 
 

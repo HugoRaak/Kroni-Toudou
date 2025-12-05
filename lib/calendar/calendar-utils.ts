@@ -1,6 +1,6 @@
 import { Task, Frequency, DayOfWeek } from '@/lib/types';
 import { getTasks } from '@/lib/db/tasks';
-import { getWorkday, getWorkdaysInRange, WorkMode } from '@/lib/db/workdays';
+import { getWorkday, getWorkdaysInRange, getWorkdaysMap, WorkMode } from '@/lib/db/workdays';
 import { formatDateLocal, normalizeToMidnight, addDays, parseDateLocal } from '@/lib/utils';
 
 export interface CalendarTask {
@@ -99,14 +99,6 @@ async function findNextMatchingDate(
   }
 
   return null; // No match found within the limit
-}
-
-async function getWorkdaysMap(userId: string, startDate: Date, maxDays: number = 45): Promise<Record<string, WorkMode>> {
-  const current = normalizeToMidnight(startDate);
-  const endDate = addDays(current, maxDays);
-  const startDateStr = formatDateLocal(current);
-  const endDateStr = formatDateLocal(endDate);
-  return await getWorkdaysInRange(userId, startDateStr, endDateStr);
 }
 
 // Sort tasks by display_order (ascending), with tasks without display_order at the end

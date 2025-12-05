@@ -42,7 +42,19 @@ export async function getWorkdaysInRange(
   
   // Fill with database values
   for (const row of data ?? []) {
-    const dateStr = row.work_date as string;
+    // Normalize date format to YYYY-MM-DD to ensure consistency
+    // Supabase may return dates in different formats, so we parse and reformat
+    let dateStr: string;
+    if (typeof row.work_date === 'string') {
+      // If it's already a string, parse and reformat to ensure YYYY-MM-DD format
+      dateStr = formatDateLocal(parseDateLocal(row.work_date));
+    } else if (row.work_date instanceof Date) {
+      // If it's a Date object, format it
+      dateStr = formatDateLocal(row.work_date);
+    } else {
+      // Fallback: try to convert to string and parse
+      dateStr = formatDateLocal(parseDateLocal(String(row.work_date)));
+    }
     map[dateStr] = row.work_mode as WorkMode;
     dbWorkdays.add(dateStr);
   }
@@ -89,6 +101,41 @@ export async function upsertWorkday(
     return false;
   }
   return true;
+}
+
+export async function upsertWorkdaysBatch(
+  userId: string,
+  workdays: Array<{ workDate: string; workMode: WorkMode }>
+): Promise<boolean> {
+  if (workdays.length === 0) return true;
+  
+  const supabase = await supabaseServer();
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from('workdays')
+    .upsert(
+      workdays.map(({ workDate, workMode }) => ({
+        user_id: userId,
+        work_date: workDate,
+        work_mode: workMode,
+        updated_at: now,
+      })),
+      { onConflict: 'user_id,work_date' }
+    );
+
+  if (error) {
+    console.error('Error upserting workdays batch:', error);
+    return false;
+  }
+  return true;
+}
+
+export async function getWorkdaysMap(userId: string, startDate: Date, maxDays: number = 45): Promise<Record<string, WorkMode>> {
+  const current = normalizeToMidnight(startDate);
+  const endDate = addDays(current, maxDays);
+  const startDateStr = formatDateLocal(current);
+  const endDateStr = formatDateLocal(endDate);
+  return await getWorkdaysInRange(userId, startDateStr, endDateStr);
 }
 
 

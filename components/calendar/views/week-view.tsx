@@ -114,6 +114,7 @@ export function WeekView({
     handleCancel,
     handleSave,
     modeConflict,
+    modeConflicts,
     currentConflictIndex,
     totalConflicts,
     userId,
@@ -207,6 +208,7 @@ export function WeekView({
           open={!!modeConflict}
           onOpenChange={(open) => !open && handleCancelConflict()}
           conflict={modeConflict.conflict}
+          modeConflicts={modeConflicts}
           userId={userId}
           onDateChange={handleDateChange}
           onCancel={handleCancelConflict}
