@@ -182,7 +182,6 @@ export function Calendar({
             return;
           }
         }
-        console.log('isInitialMountRef.current', isInitialMountRef.current);
 
         const { dayData, mode } = await getCalendarDayDataAction({
           userId,

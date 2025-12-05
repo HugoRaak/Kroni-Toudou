@@ -34,6 +34,7 @@ export function TaskEditDialog({
   const [isDeleting, setIsDeleting] = useState(false);
   const [shouldRenderContent, setShouldRenderContent] = useState(false);
   const [modeConflict, setModeConflict] = useState<ModeConflictError | null>(null);
+  const [conflictFormData, setConflictFormData] = useState<FormData | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
   
@@ -62,6 +63,7 @@ export function TaskEditDialog({
     // Check for mode conflict
     if (result && typeof result === 'object' && 'type' in result && result.type === 'MODE_CONFLICT') {
       setModeConflict(result as ModeConflictError);
+      setConflictFormData(formData);
       return;
     }
     
@@ -78,11 +80,35 @@ export function TaskEditDialog({
 
   const handleConflictResolve = () => {
     setModeConflict(null);
+    setConflictFormData(null);
     // Re-submit the form after resolving conflict
     const form = document.querySelector('form');
     if (form) {
       form.requestSubmit();
     }
+  };
+
+  const handleConfirmAnyway = async () => {
+    if (!conflictFormData || !userId) return;
+    
+    setModeConflict(null);
+    
+    startTransition(async () => {
+      // Import updateTaskFromFormAction dynamically to avoid circular dependencies
+      const { updateTaskFromFormAction } = await import('@/app/actions/tasks');
+      const result = await updateTaskFromFormAction(conflictFormData, true);
+      
+      if (result === true) {
+        toast.success("Tâche modifiée avec succès");
+        setOpen(false);
+        window.dispatchEvent(new Event('task-updated'));
+        onSuccess?.();
+      } else {
+        toast.error("Erreur lors de la modification de la tâche");
+      }
+      
+      setConflictFormData(null);
+    });
   };
 
   const handleDateChange = (newDate: string) => {
@@ -271,6 +297,7 @@ export function TaskEditDialog({
           onDateChange={handleDateChange}
           onModeChange={handleModeChange}
           onResolve={handleConflictResolve}
+          onConfirmAnyway={handleConfirmAnyway}
         />
       )}
     </>
