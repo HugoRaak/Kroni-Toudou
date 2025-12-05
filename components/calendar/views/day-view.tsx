@@ -124,9 +124,9 @@ export function DayView({
     if (!isTodayView || layout !== 'three-column') return null;
     
     return {
-      periodic: preparedTasks.filter(t => t.taskType === 'periodic'),
+      periodic: preparedTasks.filter(t => t.taskType === 'periodic' || t.taskType === 'temp'),
       specific: preparedTasks.filter(t => t.taskType === 'specific'),
-      temp: preparedTasks.filter(t => t.taskType === 'temp'),
+      temp: [], // Temp tasks are now shown with periodic tasks
     };
   }, [preparedTasks, isTodayView, layout]);
 
@@ -372,30 +372,15 @@ export function DayView({
                     </svg>
                     Quand je peux
                   </h3>
-                  {(groupedPreparedTasks && groupedPreparedTasks.temp.length > 0) || tasks.whenPossible.inProgress.length > 0 || tasks.whenPossible.notStarted.length > 0 ? (
-                    <div className="space-y-2">
-                      {groupedPreparedTasks && groupedPreparedTasks.temp.length > 0 && (
-                        <TaskColumnDraggable
-                          columnTasks={groupedPreparedTasks.temp}
-                          allTasks={preparedTasks}
-                          onUpdate={handleUpdateTaskUnified}
-                          onDelete={handleDeleteTaskUnified}
-                          onHide={handleHideTaskClick}
-                          onSuccess={() => {
-                            loadTempTasks();
-                            onModeSaved?.();
-                          }}
-                        />
-                      )}
-                      <TaskSectionWhenPossible
-                        inProgress={tasks.whenPossible.inProgress}
-                        notStarted={tasks.whenPossible.notStarted}
-                        onUpdateTask={onUpdateTask}
-                        onDeleteTask={onDeleteTask}
-                        onSuccess={onModeSaved}
-                        hideTitle={true}
-                      />
-                    </div>
+                  {tasks.whenPossible.inProgress.length > 0 || tasks.whenPossible.notStarted.length > 0 ? (
+                    <TaskSectionWhenPossible
+                      inProgress={tasks.whenPossible.inProgress}
+                      notStarted={tasks.whenPossible.notStarted}
+                      onUpdateTask={onUpdateTask}
+                      onDeleteTask={onDeleteTask}
+                      onSuccess={onModeSaved}
+                      hideTitle={true}
+                    />
                   ) : (
                     <p className="text-sm text-muted-foreground">Aucune tâche libre.</p>
                   )}

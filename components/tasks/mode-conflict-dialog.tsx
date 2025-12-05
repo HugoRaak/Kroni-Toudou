@@ -55,7 +55,7 @@ export function ModeConflictDialog({
   };
 
   // Get the workday mode to use based on task mode
-  // For "Tous", default to "Distanciel" (workdays don't have "Tous" mode)
+  // For "Tous", default to "Présenttiel" (workdays don't have "Tous" mode)
   const getWorkdayMode = (taskMode: 'Tous' | 'Présentiel' | 'Distanciel'): 'Présentiel' | 'Distanciel' => {
     if (taskMode === 'Présentiel') return 'Présentiel';
     if (taskMode === 'Distanciel') return 'Distanciel';

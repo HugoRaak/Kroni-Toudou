@@ -550,8 +550,13 @@ export async function checkFutureTaskShifts(
       const dateStr = formatDateLocal(scheduledDate);
       const workMode = workdaysMap[dateStr];
       
-      // If work mode doesn't match, try to shift
-      if (workMode !== taskMode) {
+      // For "Tous" mode tasks, only shift if it's a holiday
+      // For specific mode tasks, shift if work mode doesn't match task mode
+      const needsShift = taskMode === 'Tous'
+        ? workMode === 'Congé'
+        : workMode !== taskMode;
+      
+      if (needsShift) {
         const maxShiftingDays = task.max_shifting_days ?? getDefaultMaxShiftingDays(task.frequency);
         const shiftedDate = await findNextMatchingDate(scheduledDate, taskMode, workdaysMap, maxShiftingDays);
 
