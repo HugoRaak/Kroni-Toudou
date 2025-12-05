@@ -41,6 +41,7 @@ export function Calendar({
   const loadRequestIdRef = useRef(0);
   const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isLoadingRef = useRef(false);
+  const isInitialMountRef = useRef(true);
 
   // Helper function to show alerts for tasks that couldn't be shifted
   const showTaskShiftAlerts = (alerts: TaskShiftAlert[]) => {
@@ -162,8 +163,8 @@ export function Calendar({
       const activeDayDate = currentView === "today" ? normalizeToMidnight(new Date()) : dayDate;
 
       if (isDayLikeView) {
-        // Check if viewing today and load from localStorage first (unless forcing reload)
-        if (isToday(activeDayDate) && !forceReload) {
+        // Check if viewing today and load from localStorage first (unless forcing reload or page reload)
+        if (isToday(activeDayDate) && !forceReload && !isInitialMountRef.current) {
           const storedTasks = getTodayTasksFromStorage();
           
           if (storedTasks) {
@@ -188,6 +189,9 @@ export function Calendar({
         });
 
         if (currentRequestId !== loadRequestIdRef.current) return;
+
+        // Mark initial mount as complete after successful DB load
+        isInitialMountRef.current = false;
 
         if (isToday(activeDayDate)) {
           // Check if this is the first load of the day (no data in localStorage)

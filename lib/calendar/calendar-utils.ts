@@ -239,9 +239,13 @@ async function getPeriodicTasksForDateWithShift(
       }
       continue;
     }
-    
+
+    const needsShift = taskMode === 'Tous' 
+      ? originalWorkMode === 'Congé'
+      : originalWorkMode !== taskMode;
+
     // If original day doesn't match, shift to next matching day
-    if (originalWorkMode !== taskMode) {
+    if (needsShift) {
       const shiftedDate = await findNextMatchingDate(originalScheduledDate, taskMode, workdaysMap, maxDays);
 
       if (shiftedDate && formatDateLocal(shiftedDate) === dateStr) {

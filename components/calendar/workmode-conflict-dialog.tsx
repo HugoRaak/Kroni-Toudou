@@ -234,7 +234,7 @@ export function WorkModeConflictDialog({
 
           <DialogFooter className="flex-col gap-2 w-full">
           <Button
-                variant="default"
+                variant="outline"
                 onClick={handleAcceptProposedDate}
                 disabled={isResolving}
                 className="flex-1 text-sm cursor-pointer w-full"
@@ -320,7 +320,7 @@ export function WorkModeConflictDialog({
 
         <DialogFooter className="flex-col gap-2 sm:gap-2">
           <Button
-            variant="default"
+            variant="outline"
             onClick={handleSearchDate}
             disabled={isResolving || isSearchingDate || isLoadingTasks}
             className="flex-1 text-sm cursor-pointer w-full"
@@ -346,7 +346,7 @@ export function WorkModeConflictDialog({
               Confirmer quand même
             </Button>
             <Button
-              variant="outline"
+              variant="default"
               onClick={handleCancel}
               disabled={isResolving || isSearchingDate || isLoadingTasks}
               className="flex-1 text-sm cursor-pointer"

@@ -101,6 +101,7 @@ export async function createTaskAction(
   postponed_days?: number,
   in_progress?: boolean,
   mode?: 'Tous' | 'Présentiel' | 'Distanciel',
+  ignoreConflict?: boolean,
 ): Promise<TaskActionResult> {
   const supabase = await supabaseServer();
   
@@ -111,10 +112,12 @@ export async function createTaskAction(
     return null;
   }
   
-  // Check mode conflict for specific date tasks
-  const modeConflict = await checkModeConflict(userId, due_on, mode);
-  if (modeConflict) {
-    return modeConflict;
+  // Check mode conflict for specific date tasks (unless ignored)
+  if (!ignoreConflict) {
+    const modeConflict = await checkModeConflict(userId, due_on, mode);
+    if (modeConflict) {
+      return modeConflict;
+    }
   }
   
   // Determine task category and calculate display_order
@@ -210,8 +213,9 @@ export async function updateTaskAction(
     return null;
   }
   
-  // Check mode conflict if due_on or mode is being updated
-  if (updates.due_on !== undefined || updates.mode !== undefined) {
+  // Check mode conflict if due_on or mode is being updated (unless ignored)
+  const ignoreConflict = (updates as any).ignoreConflict === true;
+  if (!ignoreConflict && (updates.due_on !== undefined || updates.mode !== undefined)) {
     const due_on = updates.due_on ?? currentTask.due_on;
     const mode = updates.mode ?? currentTask.mode;
     
@@ -267,10 +271,13 @@ export async function updateTaskAction(
     updates.display_order = maxDisplayOrder + 1;
   }
   
+  // Remove ignoreConflict from updates before saving
+  const { ignoreConflict: _, ...cleanUpdates } = updates as any;
+  
   // Convert undefined to null for Supabase (undefined is ignored, null removes fields)
   // Sanitize description if it's being updated
   const cleanedUpdates: any = {};
-  for (const [key, value] of Object.entries(updates)) {
+  for (const [key, value] of Object.entries(cleanUpdates)) {
     if (key === 'description' && value !== undefined && value !== null) {
       cleanedUpdates[key] = sanitizeServer(String(value));
     } else {
@@ -319,7 +326,7 @@ export async function deleteTaskAction(id: string): Promise<boolean> {
   return true;
 }
 
-export async function createTaskFromForm(userId: string, formData: FormData): Promise<TaskActionResult> {
+export async function createTaskFromForm(userId: string, formData: FormData, ignoreConflict?: boolean): Promise<TaskActionResult> {
   const supabase = await supabaseServer();
   const user = await verifyAuthenticated(supabase);
   
@@ -345,12 +352,13 @@ export async function createTaskFromForm(userId: string, formData: FormData): Pr
     parsed.due_on,
     parsed.postponed_days,
     parsed.in_progress,
-    parsed.mode
+    parsed.mode,
+    ignoreConflict
   );
 }
 
 // Centralized server actions for form handling (with revalidation)
-export async function updateTaskFromFormAction(formData: FormData): Promise<boolean | ModeConflictError> {
+export async function updateTaskFromFormAction(formData: FormData, ignoreConflict?: boolean): Promise<boolean | ModeConflictError> {
   'use server';
   const id = String(formData.get('id') || '');
   const parsed = parseTaskFormData(formData);
@@ -360,6 +368,9 @@ export async function updateTaskFromFormAction(formData: FormData): Promise<bool
   }
 
   const updates = parsedDataToTaskUpdates(parsed);
+  if (ignoreConflict) {
+    (updates as any).ignoreConflict = true;
+  }
   const result = await updateTaskAction(id, updates);
   
   // Return mode conflict error if present

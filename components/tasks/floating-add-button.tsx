@@ -27,6 +27,7 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
   const [isTempTask, setIsTempTask] = useState(false);
   const [modeConflict, setModeConflict] = useState<ModeConflictError | null>(null);
   const [conflictTaskTitle, setConflictTaskTitle] = useState("");
+  const [conflictFormData, setConflictFormData] = useState<FormData | null>(null);
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -63,6 +64,7 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
       if (result && typeof result === 'object' && 'type' in result && result.type === 'MODE_CONFLICT') {
         setModeConflict(result as ModeConflictError);
         setConflictTaskTitle(taskTitle);
+        setConflictFormData(formData);
         return;
       }
       
@@ -86,11 +88,47 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
   const handleConflictResolve = () => {
     setModeConflict(null);
     setConflictTaskTitle("");
+    setConflictFormData(null);
     // Re-submit the form after resolving conflict
     const form = document.querySelector('form');
     if (form) {
       form.requestSubmit();
     }
+  };
+
+  const handleConfirmAnyway = async () => {
+    if (!conflictFormData) return;
+    
+    setModeConflict(null);
+    setConflictTaskTitle("");
+    
+    startTransition(async () => {
+      let result: any;
+      const isTemp = conflictFormData.get('is_temp_task') === 'true';
+      
+      if (isTemp) {
+        // Temp tasks don't have mode conflicts, so this shouldn't happen
+        toast.error("Erreur: les tâches temporaires ne peuvent pas avoir de conflit de mode");
+        return;
+      } else if (onSubmit) {
+        // For custom onSubmit, we need to create a new formData with ignoreConflict flag
+        // Since we can't modify the onSubmit signature, we'll call createTaskFromForm directly
+        result = await createTaskFromForm(userId, conflictFormData, true);
+      } else {
+        result = await createTaskFromForm(userId, conflictFormData, true);
+      }
+      
+      if (result && !(typeof result === 'object' && 'type' in result && result.type === 'MODE_CONFLICT')) {
+        toast.success("Tâche créée avec succès");
+        setIsOpen(false);
+        setIsTempTask(false);
+        window.dispatchEvent(new Event('task-created'));
+      } else {
+        toast.error("Erreur lors de la création de la tâche");
+      }
+      
+      setConflictFormData(null);
+    });
   };
 
   const handleDateChange = (newDate: string) => {
@@ -191,6 +229,7 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
         onDateChange={handleDateChange}
         onModeChange={handleModeChange}
         onResolve={handleConflictResolve}
+        onConfirmAnyway={handleConfirmAnyway}
       />
     )}
   </>

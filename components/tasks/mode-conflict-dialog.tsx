@@ -19,6 +19,7 @@ type ModeConflictDialogProps = {
   onDateChange: (newDate: string) => void;
   onModeChange: (newMode: 'Présentiel' | 'Distanciel') => void;
   onResolve: () => void;
+  onConfirmAnyway?: () => void;
 };
 
 export function ModeConflictDialog({
@@ -30,6 +31,7 @@ export function ModeConflictDialog({
   onDateChange,
   onModeChange,
   onResolve,
+  onConfirmAnyway,
 }: ModeConflictDialogProps) {
   const [isResolving, setIsResolving] = useState(false);
   const [proposedDate, setProposedDate] = useState<string | null>(null);
@@ -141,6 +143,15 @@ export function ModeConflictDialog({
     onOpenChange(false);
   };
 
+  const handleConfirmAnyway = () => {
+    if (onConfirmAnyway) {
+      onConfirmAnyway();
+    } else {
+      onResolve();
+    }
+    onOpenChange(false);
+  };
+
   // Si une date est proposée, afficher la vue de proposition
   if (proposedDate) {
     return (
@@ -224,40 +235,53 @@ export function ModeConflictDialog({
           </p>
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:gap-2">
-            <Button
-                variant="outline"
-                onClick={handleChangeWorkMode}
-                disabled={isResolving || isSearchingDate}
-                className="flex-1 text-sm cursor-pointer"
-            >
-                Définir {formatDateShort(conflict.taskDate)} en {getModeLabel(getWorkdayMode(conflict.taskMode))}
-            </Button>
-          <div className="flex gap-2 w-full">
-            <Button
-                variant="outline"
-                onClick={handleSearchDate}
-                disabled={isResolving || isSearchingDate}
-                className="flex-1 text-sm cursor-pointer"
-            >
-                {isSearchingDate ? (
-                <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Recherche...
-                </>
-                ) : (
-                "Proposer une date"
-                )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isResolving || isSearchingDate}
-              className="flex-1 text-sm cursor-pointer"
-            >
-              Annuler
-            </Button>
-          </div>
+        <DialogFooter className="flex flex-col gap-2 sm:flex-col sm:gap-2">
+          {/* Bouton principal en haut */}
+          <Button 
+            variant="outline" 
+            onClick={handleConfirmAnyway} 
+            disabled={isResolving || isSearchingDate} 
+            className="w-full text-sm cursor-pointer" 
+          > 
+            Confirmer quand même 
+          </Button>
+          
+          {/* Bouton secondaire */}
+          <Button 
+            variant="outline" 
+            onClick={handleChangeWorkMode} 
+            disabled={isResolving || isSearchingDate} 
+            className="w-full text-sm cursor-pointer" 
+          > 
+            Définir {formatDateShort(conflict.taskDate)} en {getModeLabel(getWorkdayMode(conflict.taskMode))} 
+          </Button>
+          
+          {/* Deux boutons côte à côte en bas */}
+          <div className="flex gap-2 w-full"> 
+            <Button 
+              variant="outline" 
+              onClick={handleSearchDate} 
+              disabled={isResolving || isSearchingDate} 
+              className="flex-1 text-sm cursor-pointer" 
+            > 
+              {isSearchingDate ? ( 
+                <> 
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" /> 
+                  Recherche... 
+                </> 
+              ) : ( 
+                "Proposer une date" 
+              )} 
+            </Button> 
+            <Button 
+              variant="default" 
+              onClick={handleCancel} 
+              disabled={isResolving || isSearchingDate} 
+              className="flex-1 text-sm cursor-pointer" 
+            > 
+              Annuler 
+            </Button> 
+          </div> 
         </DialogFooter>
       </DialogContent>
     </Dialog>
