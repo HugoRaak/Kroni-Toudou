@@ -5,15 +5,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { ModeConflictError } from "@/app/actions/tasks";
 import { formatDateLocal, parseDateLocal, addDays } from "@/lib/utils";
-import { getWorkdayAction } from "@/app/actions/workdays";
+import { getWorkdayAction, getWorkdaysMapAction } from "@/app/actions/workdays";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { getTasksForDayAction } from "@/app/actions/tasks";
+import { WorkMode } from "@/lib/db/workdays";
 
 type WorkModeConflictDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   conflict: ModeConflictError;
+  modeConflicts: Array<{ conflict: ModeConflictError; dateStr: string; newMode: WorkMode }>;
   userId: string;
   onDateChange: (taskId: string, newDate: string) => void;
   onCancel: () => void;
@@ -27,6 +29,7 @@ export function WorkModeConflictDialog({
   open,
   onOpenChange,
   conflict,
+  modeConflicts,
   userId,
   onDateChange,
   onCancel,
@@ -94,15 +97,24 @@ export function WorkModeConflictDialog({
     try {
       // Find next matching date (up to 10 days ahead)
       const conflictDate = parseDateLocal(conflict.taskDate);
+      const workdaysMap = await getWorkdaysMapAction(userId, conflictDate, 10);
+
+      if (modeConflicts.length > 1) {
+        // Update workdaysMap with newMode from modeConflicts to account for pending changes
+        for (const modeConflict of modeConflicts) {
+          workdaysMap[modeConflict.dateStr] = modeConflict.newMode;
+        }
+      }
+
       let nextDate = addDays(conflictDate, 1);
       
       let foundDate: string | null = null;
       for (let i = 0; i < 10; i++) {
         const dateStr = formatDateLocal(nextDate);
-        const workMode = await getWorkdayAction(userId, dateStr);
-        
+        const workMode = workdaysMap[dateStr];
+
         // Check if work mode matches task mode (or is "Tous")
-        if (workMode !== 'Congé' && workMode === conflict.taskMode) {
+        if (workMode !== 'Congé' && (workMode === conflict.taskMode || conflict.taskMode === 'Tous')) {
           foundDate = dateStr;
           break;
         }

@@ -5,7 +5,6 @@ import StarterKit from "@tiptap/starter-kit";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
-import Underline from "@tiptap/extension-underline";
 import { Button } from "@/components/ui/button";
 import { Bold, Italic, Underline as UnderlineIcon, Palette, Highlighter } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -67,7 +66,6 @@ export function TaskDescriptionEditor({
       Highlight.configure({
         multicolor: true,
       }),
-      Underline,
     ],
     content: value || "",
     immediatelyRender: false,

@@ -42,9 +42,6 @@ export function Calendar({
   const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isLoadingRef = useRef(false);
 
-  // Track if today tasks should be reloaded
-  const reloadTodayTasks = useRef(true);
-
   // Helper function to show alerts for tasks that couldn't be shifted
   const showTaskShiftAlerts = (alerts: TaskShiftAlert[]) => {
     if (alerts.length === 0) return;
@@ -131,7 +128,7 @@ export function Calendar({
   useEffect(() => {
     const handler = () => {
       // Force reload to bypass localStorage cache for today
-      reloadTodayTasks.current = true;
+      loadTasks(true);
     };
     window.addEventListener('task-created', handler);
     window.addEventListener('task-updated', handler);
@@ -166,7 +163,7 @@ export function Calendar({
 
       if (isDayLikeView) {
         // Check if viewing today and load from localStorage first (unless forcing reload)
-        if (isToday(activeDayDate) && !forceReload && !reloadTodayTasks.current) {
+        if (isToday(activeDayDate) && !forceReload) {
           const storedTasks = getTodayTasksFromStorage();
           
           if (storedTasks) {
@@ -207,7 +204,6 @@ export function Calendar({
               });
           }
           saveTodayTasksToStorage(dayData);
-          reloadTodayTasks.current = false;
         }
 
         setDayTasks(dayData);

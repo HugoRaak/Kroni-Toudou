@@ -224,6 +224,11 @@ export function WorkModeBadge({
             }
           }}
           conflict={modeConflicts[currentConflictIndex]}
+          modeConflicts={modeConflicts.map(conflict => ({
+            conflict,
+            dateStr: conflict.taskDate,
+            newMode: conflict.workMode
+          }))}
           userId={userId}
           onDateChange={handleDateChange}
           onCancel={handleCancel}
