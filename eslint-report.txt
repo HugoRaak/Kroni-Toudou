@@ -1,0 +1,270 @@
+
+> kroni-toudou@0.1.0 lint
+> eslint
+
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\app\actions\auth.ts
+   7:1  warning  Function 'translateError' has a complexity of 13. Maximum allowed is 12  complexity
+  53:8  warning  Async function 'signUp' has too many lines (54). Maximum allowed is 50   max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\app\actions\workdays.ts
+  110:8  warning  Async function 'checkWorkdayConflictsBatchForUserAction' has too many lines (68). Maximum allowed is 50  max-lines-per-function
+  110:8  warning  Async function 'checkWorkdayConflictsBatchForUserAction' has a complexity of 14. Maximum allowed is 12   complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\app\login\page.tsx
+  5:16  warning  Async function 'LoginPage' has too many lines (51). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\app\mes-taches\page.tsx
+  16:16  warning  Async function 'MesTachesPage' has too many lines (106). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\auth\auth-dialog.tsx
+   3:20  warning  'useEffect' is defined but never used                                                  unused-imports/no-unused-imports
+   8:8   warning  Function 'AuthDialog' has too many lines (62). Maximum allowed is 50                   max-lines-per-function
+  11:19  warning  'setMounted' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\auth\auth-form.tsx
+   14:8   warning  Function 'AuthForm' has too many lines (296). Maximum allowed is 50  max-lines-per-function
+   14:8   warning  Function 'AuthForm' has a complexity of 22. Maximum allowed is 12    complexity
+   72:24  warning  Async arrow function has too many lines (52). Maximum allowed is 50  max-lines-per-function
+   72:51  warning  Async arrow function has a complexity of 13. Maximum allowed is 12   complexity
+  118:14  warning  'err' is defined but never used                                      unused-imports/no-unused-vars
+  301:1   warning  File has too many lines (310). Maximum allowed is 300                max-lines
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\dialogs\day-tasks-dialog.tsx
+  20:8  warning  Function 'DayTasksDialog' has too many lines (66). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\tasks\draggable-task-section.tsx
+   24:8   warning  Function 'DraggableTaskSection' has too many lines (132). Maximum allowed is 50             max-lines-per-function
+  157:1   warning  Function 'DraggableTaskList' has too many lines (253). Maximum allowed is 50                max-lines-per-function
+  200:9   warning  'handleDragLeave' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  298:25  warning  Arrow function has too many lines (85). Maximum allowed is 50                               max-lines-per-function
+  298:39  warning  Arrow function has a complexity of 18. Maximum allowed is 12                                complexity
+  301:1   warning  File has too many lines (410). Maximum allowed is 300                                       max-lines
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\tasks\task-column-draggable.tsx
+   21:8   warning  Function 'TaskColumnDraggable' has too many lines (255). Maximum allowed is 50              max-lines-per-function
+   87:5   warning  'handleDragLeave' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  145:25  warning  Arrow function has too many lines (105). Maximum allowed is 50                              max-lines-per-function
+  145:39  warning  Arrow function has a complexity of 19. Maximum allowed is 12                                complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\tasks\task-list-draggable.tsx
+  19:8   warning  Function 'TaskListDraggable' has too many lines (196). Maximum allowed is 50                max-lines-per-function
+  36:5   warning  'handleDragLeave' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  82:25  warning  Arrow function has too many lines (105). Maximum allowed is 50                              max-lines-per-function
+  82:39  warning  Arrow function has a complexity of 19. Maximum allowed is 12                                complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\tasks\task-section-when-possible.tsx
+  15:8  warning  Function 'TaskSectionWhenPossible' has too many lines (73). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\ui\calendar-dialogs.tsx
+  30:8  warning  Function 'CalendarDialogs' has too many lines (51). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\ui\calendar-header.tsx
+  6:1  warning  Function 'CalendarHeader' has too many lines (63). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\ui\day-cell.tsx
+  8:1  warning  Function 'DayCell' has too many lines (100). Maximum allowed is 50  max-lines-per-function
+  8:1  warning  Function 'DayCell' has a complexity of 17. Maximum allowed is 12    complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\ui\view-switcher.tsx
+  7:1  warning  Function 'ViewSwitcher' has too many lines (59). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\ui\workmode-badge.tsx
+  27:8  warning  Function 'WorkModeBadge' has too many lines (215). Maximum allowed is 50  max-lines-per-function
+  27:8  warning  Function 'WorkModeBadge' has a complexity of 14. Maximum allowed is 12    complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\views\calendar.tsx
+  15:8  warning  Function 'Calendar' has too many lines (121). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\views\day-view-layouts\single-column-layout.tsx
+  25:8  warning  Function 'SingleColumnLayout' has too many lines (150). Maximum allowed is 50  max-lines-per-function
+  25:8  warning  Function 'SingleColumnLayout' has a complexity of 16. Maximum allowed is 12    complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\views\day-view-layouts\three-column-layout.tsx
+  30:8  warning  Function 'ThreeColumnLayout' has too many lines (215). Maximum allowed is 50  max-lines-per-function
+  30:8  warning  Function 'ThreeColumnLayout' has a complexity of 23. Maximum allowed is 12    complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\views\day-view.tsx
+  30:1  warning  Function 'DayView' has too many lines (245). Maximum allowed is 50  max-lines-per-function
+  30:1  warning  Function 'DayView' has a complexity of 21. Maximum allowed is 12    complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\views\month-view.tsx
+   18:29  warning  Arrow function has too many lines (62). Maximum allowed is 50                               max-lines-per-function
+   83:1   warning  Function 'MonthView' has too many lines (109). Maximum allowed is 50                        max-lines-per-function
+  112:5   warning  'setSelectedDate' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  156:32  warning  'index' is defined but never used. Allowed unused args must match /^_/u                     unused-imports/no-unused-vars
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\views\week-view.tsx
+   15:33  warning  Arrow function has too many lines (65). Maximum allowed is 50                               max-lines-per-function
+   83:1   warning  Function 'WeekView' has too many lines (127). Maximum allowed is 50                         max-lines-per-function
+  110:5   warning  'setSelectedDate' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  171:30  warning  'index' is defined but never used. Allowed unused args must match /^_/u                     unused-imports/no-unused-vars
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\calendar\workmode-conflict-dialog.tsx
+   27:8  warning  Function 'WorkModeConflictDialog' has too many lines (334). Maximum allowed is 50           max-lines-per-function
+   27:8  warning  Function 'WorkModeConflictDialog' has a complexity of 28. Maximum allowed is 12             complexity
+   51:9  warning  'formatDateShort' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  301:1  warning  File has too many lines (361). Maximum allowed is 300                                       max-lines
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\navbar.tsx
+  24:8  warning  Function 'Navbar' has too many lines (94). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\description\highlight-color-picker.tsx
+  22:8  warning  Function 'HighlightColorPicker' has too many lines (70). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\description\task-description-editor.tsx
+  16:8  warning  Function 'TaskDescriptionEditor' has too many lines (63). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\description\task-description-toolbar.tsx
+  23:8  warning  Function 'TaskDescriptionToolbar' has too many lines (80). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\description\text-color-picker.tsx
+  20:8  warning  Function 'TextColorPicker' has too many lines (53). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\dialogs\mode-conflict-dialog.tsx
+   9:1  warning  '@/app/actions/workdays' import is duplicated                                  no-duplicate-imports
+  25:8  warning  Function 'ModeConflictDialog' has too many lines (265). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\dialogs\task-edit-dialog.tsx
+   23:8  warning  Function 'TaskEditDialog' has too many lines (282). Maximum allowed is 50  max-lines-per-function
+   23:8  warning  Function 'TaskEditDialog' has a complexity of 13. Maximum allowed is 12    complexity
+  301:1  warning  File has too many lines (305). Maximum allowed is 300                      max-lines
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\forms\task-form.tsx
+   20:8  warning  Function 'TaskForm' has too many lines (349). Maximum allowed is 50  max-lines-per-function
+   20:8  warning  Function 'TaskForm' has a complexity of 49. Maximum allowed is 12    complexity
+  301:1  warning  File has too many lines (368). Maximum allowed is 300                max-lines
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\items\task-item.tsx
+  37:16  warning  Function 'TaskItem' has too many lines (53). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\ui\draggable-task-list.tsx
+   16:8   warning  Function 'DraggableTaskList' has too many lines (276). Maximum allowed is 50                max-lines-per-function
+   54:9   warning  'handleDragLeave' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  157:25  warning  Arrow function has too many lines (107). Maximum allowed is 50                              max-lines-per-function
+  157:39  warning  Arrow function has a complexity of 18. Maximum allowed is 12                                complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\ui\floating-add-button.tsx
+  24:8   warning  Function 'FloatingAddButton' has too many lines (214). Maximum allowed is 50           max-lines-per-function
+  27:10  warning  'isTempTask' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  33:24  warning  Arrow function has too many lines (54). Maximum allowed is 50                          max-lines-per-function
+  39:30  warning  Async arrow function has a complexity of 15. Maximum allowed is 12                     complexity
+  40:19  warning  Unexpected any. Specify a different type                                               @typescript-eslint/no-explicit-any
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\tasks\ui\section-with-filters.tsx
+   80:8  warning  Function 'SectionWithFilters' has too many lines (275). Maximum allowed is 50  max-lines-per-function
+   80:8  warning  Function 'SectionWithFilters' has a complexity of 18. Maximum allowed is 12    complexity
+   82:3  warning  'count' is defined but never used. Allowed unused args must match /^_/u        unused-imports/no-unused-vars
+  301:1  warning  File has too many lines (355). Maximum allowed is 300                          max-lines
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\components\ui\dropdown-menu.tsx
+   15:10  warning  'DropdownMenuPortal' is defined but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+   54:10  warning  'DropdownMenuGroup' is defined but never used. Allowed unused vars must match /^_/u         unused-imports/no-unused-vars
+   85:10  warning  'DropdownMenuCheckboxItem' is defined but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  179:10  warning  'DropdownMenuShortcut' is defined but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+  195:10  warning  'DropdownMenuSub' is defined but never used. Allowed unused vars must match /^_/u           unused-imports/no-unused-vars
+  201:10  warning  'DropdownMenuSubTrigger' is defined but never used. Allowed unused vars must match /^_/u    unused-imports/no-unused-vars
+  225:10  warning  'DropdownMenuSubContent' is defined but never used. Allowed unused vars must match /^_/u    unused-imports/no-unused-vars
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\calendar\calendar-utils.ts
+    3:22  warning  'getWorkdaysInRange' is defined but never used                                          unused-imports/no-unused-imports
+  235:8   warning  Async function 'checkFutureTaskShifts' has too many lines (119). Maximum allowed is 50  max-lines-per-function
+  235:8   warning  Async function 'checkFutureTaskShifts' has a complexity of 25. Maximum allowed is 12    complexity
+  301:1   warning  File has too many lines (353). Maximum allowed is 300                                   max-lines
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\calendar\task-shift-alerts.ts
+  5:8  warning  Function 'showTaskShiftAlerts' has too many lines (58). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\calendar\task-shifting-service.ts
+  59:8  warning  Async function 'getPeriodicTasksForDateWithShift' has too many lines (83). Maximum allowed is 50  max-lines-per-function
+  59:8  warning  Async function 'getPeriodicTasksForDateWithShift' has a complexity of 18. Maximum allowed is 12   complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\db\workdays.ts
+  23:8  warning  Async function 'getWorkdaysInRange' has too many lines (57). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\calendar\use-calendar-data.ts
+   32:8   warning  Function 'useCalendarData' has too many lines (142). Maximum allowed is 50                                    max-lines-per-function
+   49:21  warning  Async arrow function has too many lines (87). Maximum allowed is 50                                           max-lines-per-function
+   49:49  warning  Async arrow function has a complexity of 20. Maximum allowed is 12                                            complexity
+   67:13  warning  Blocks are nested too deeply (5). Maximum allowed is 4                                                        max-depth
+  146:6   warning  React Hook useEffect has a missing dependency: 'loadTasks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  161:6   warning  React Hook useEffect has a missing dependency: 'loadTasks'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\calendar\use-calendar-handlers.ts
+  29:8  warning  Function 'useCalendarHandlers' has too many lines (67). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\calendar\use-day-tasks-preparation.ts
+  30:6  warning  React Hook useMemo has an unnecessary dependency: 'orderVersion'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\calendar\use-day-view-state.ts
+  5:8  warning  Function 'useDayViewState' has too many lines (52). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\tasks\use-task-description-editor.ts
+   25:8  warning  Function 'useTaskDescriptionEditor' has too many lines (203). Maximum allowed is 50                                max-lines-per-function
+   25:8  warning  Function 'useTaskDescriptionEditor' has a complexity of 31. Maximum allowed is 12                                  complexity
+   95:6  warning  React Hook useEffect has a missing dependency: 'hiddenInputRef'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  114:6  warning  React Hook useEffect has a missing dependency: 'hiddenInputRef'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\tasks\use-temp-tasks.ts
+   9:8  warning  Function 'useTempTasks' has too many lines (52). Maximum allowed is 50                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            max-lines-per-function
+  28:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\tasks\use-temp-tasks.ts:28:5
+  26 |   // Load tasks on mount and when dependencies change
+  27 |   useEffect(() => {
+> 28 |     loadTempTasks();
+     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  29 |   }, [loadTempTasks]);
+  30 |
+  31 |   // Listen for temp task updates  react-hooks/set-state-in-effect
+  34:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\tasks\use-temp-tasks.ts:34:7
+  32 |   useEffect(() => {
+  33 |     if (!isTodayView) {
+> 34 |       setTempTasks([]);
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  35 |       return;
+  36 |     }
+  37 |                                                                 react-hooks/set-state-in-effect
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\ui\use-drag-and-drop.ts
+  4:8  warning  Function 'useDragAndDrop' has too many lines (191). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\hooks\workdays\use-workdays-editor.ts
+    9:8   warning  Function 'useWorkdaysEditor' has too many lines (306). Maximum allowed is 50  max-lines-per-function
+   68:22  warning  Async arrow function has too many lines (72). Maximum allowed is 50           max-lines-per-function
+   68:31  warning  Async arrow function has a complexity of 15. Maximum allowed is 12            complexity
+  151:34  warning  Async arrow function has too many lines (52). Maximum allowed is 50           max-lines-per-function
+  151:43  warning  Async arrow function has a complexity of 13. Maximum allowed is 12            complexity
+  301:1   warning  File has too many lines (316). Maximum allowed is 300                         max-lines
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\services\task-service.ts
+  90:8  warning  Async function 'updateTask' has too many lines (64). Maximum allowed is 50  max-lines-per-function
+  90:8  warning  Async function 'updateTask' has a complexity of 21. Maximum allowed is 12   complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\tasks\processing\task-form-parser.ts
+  32:8  warning  Function 'parseTaskFormData' has too many lines (80). Maximum allowed is 50  max-lines-per-function
+  32:8  warning  Function 'parseTaskFormData' has a complexity of 37. Maximum allowed is 12   complexity
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\lib\tasks\sorting\task-sorting.ts
+  9:8  warning  Async function 'updateTasksDisplayOrder' has too many lines (117). Maximum allowed is 50  max-lines-per-function
+
+C:\Users\rathl\OneDrive\Documents\Codes\Automatisation_aude\kroni-toudou\proxy.ts
+  4:8  warning  Async function 'proxy' has too many lines (52). Maximum allowed is 50  max-lines-per-function
+
+Ô£û 128 problems (2 errors, 126 warnings)
+  0 errors and 2 warnings potentially fixable with the `--fix` option.
+

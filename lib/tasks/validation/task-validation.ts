@@ -1,9 +1,9 @@
 import type { Task, Frequency, DayOfWeek } from '@/lib/types';
-import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_TITLE_MAX_LENGTH, TASK_DESCRIPTION_MAX_LENGTH, MAX_SHIFTING_DAYS_LIMIT } from '@/lib/tasks/task-constants';
+import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_TITLE_MAX_LENGTH, TASK_DESCRIPTION_MAX_LENGTH, MAX_SHIFTING_DAYS_LIMIT } from '@/lib/tasks/constants/task-constants';
 import { parseDateLocal } from '@/lib/utils';
 
 export function isValidTaskType(type: string): type is typeof TASK_TYPES[keyof typeof TASK_TYPES] {
-  return Object.values(TASK_TYPES).includes(type as any);
+  return Object.values(TASK_TYPES).includes(type as typeof TASK_TYPES[keyof typeof TASK_TYPES]);
 }
 
 export function isValidFrequency(frequency: string): frequency is Frequency {

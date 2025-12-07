@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import type { CalendarView } from "@/lib/calendar/calendar-navigation";
 
-export function ViewSwitcher({
+function ViewSwitcher({
   value,
   onChange,
 }: {

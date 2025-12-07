@@ -128,14 +128,14 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
         <>
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">
-              Nom d'utilisateur
+              Nom d&apos;utilisateur
             </label>
             <Input
               id="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Votre nom d'utilisateur"
+              placeholder="Votre nom d&apos;utilisateur"
               autoComplete="username"
               required
               maxLength={20}
@@ -290,7 +290,7 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
           className="w-full cursor-pointer" 
           disabled={loading || emailSent}
         >
-          {loading ? "Chargement..." : mode === "login" ? "Se connecter" : "S'inscrire"}
+          {loading ? "Chargement..." : mode === "login" ? "Se connecter" : "S&apos;inscrire"}
         </Button>
         
         {emailSent && (

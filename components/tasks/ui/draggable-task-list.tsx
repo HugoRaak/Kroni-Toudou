@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Task } from '@/lib/types';
-import TaskItem from '@/components/tasks/task-item';
+import TaskItem from '@/components/tasks/items/task-item';
 import type { ModeConflictError } from '@/app/actions/tasks';
 
 interface DraggableTaskListProps {

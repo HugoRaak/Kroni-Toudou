@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { setWorkdayForUserAction, setWorkdayForUserActionForce, setWorkdaysForUserActionForceBatch, checkWorkdayConflictsBatchForUserAction } from '@/app/actions/workdays';
-import { ModeConflictError } from '@/app/actions/tasks';
-import { formatDateLocal, parseDateLocal, isPastDate } from '@/lib/utils';
-import { getCurrentUserIdAction } from '@/app/actions/tasks';
-import { updateTaskAction } from '@/app/actions/tasks';
+import { formatDateLocal, isPastDate } from '@/lib/utils';
+import { getCurrentUserIdAction, updateTaskAction } from '@/app/actions/tasks';
 import { toast } from 'sonner';
-
-type WorkMode = 'Présentiel' | 'Distanciel' | 'Congé';
+import { useModeConflicts, type ModeConflict } from './use-mode-conflicts';
+import type { WorkMode } from '@/lib/db/workdays';
 
 export function useWorkdaysEditor(
   workdays: Record<string, WorkMode>,
@@ -18,11 +16,10 @@ export function useWorkdaysEditor(
   const [saving, setSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [modeConflicts, setModeConflicts] = useState<Array<{ conflict: ModeConflictError; dateStr: string; newMode: WorkMode }>>([]);
-  const [currentConflictIndex, setCurrentConflictIndex] = useState<number>(0);
-  const [confirmedConflicts, setConfirmedConflicts] = useState<Set<number>>(new Set());
   const [hasSavedChanges, setHasSavedChanges] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);
+
+  const conflicts = useModeConflicts();
 
   useEffect(() => {
     if (!editing) setLocalWorkdays(workdays);
@@ -97,7 +94,7 @@ export function useWorkdaysEditor(
       // First, check all changes for conflicts without saving (optimized: single batch call)
       const conflictsByDate = await checkWorkdayConflictsBatchForUserAction(changes);
       
-      const conflicts: Array<{ conflict: ModeConflictError; dateStr: string; newMode: WorkMode }> = [];
+      const conflictList: ModeConflict[] = [];
       const nonConflictChanges: Array<{ dateStr: string; newMode: WorkMode }> = [];
       
       for (const change of changes) {
@@ -106,7 +103,7 @@ export function useWorkdaysEditor(
         if (conflictArray.length > 0) {
           // Add all conflicts for this date
           for (const conflict of conflictArray) {
-            conflicts.push({ conflict, dateStr: change.dateStr, newMode: change.newMode });
+            conflictList.push({ conflict, dateStr: change.dateStr, newMode: change.newMode });
           }
         } else {
           // No conflict, add to non-conflict list
@@ -124,10 +121,10 @@ export function useWorkdaysEditor(
       setHasSavedChanges(hasNonConflictChanges);
       
       // If there are conflicts, show them one by one
-      if (conflicts.length > 0) {
-        setModeConflicts(conflicts);
-        setCurrentConflictIndex(0);
-        setConfirmedConflicts(new Set());
+      if (conflictList.length > 0) {
+        conflicts.setModeConflicts(conflictList);
+        conflicts.setCurrentConflictIndex(0);
+        conflicts.setConfirmedConflicts(new Set());
         // Don't close editing mode yet, wait for user to resolve conflicts
         return;
       }
@@ -153,9 +150,9 @@ export function useWorkdaysEditor(
 
   const handleConflictResolved = async () => {
     // When tasks are moved, the conflict is resolved, so we can save normally
-    if (modeConflicts.length === 0 || currentConflictIndex >= modeConflicts.length) return;
+    if (conflicts.modeConflicts.length === 0 || conflicts.currentConflictIndex >= conflicts.modeConflicts.length) return;
     
-    const currentConflict = modeConflicts[currentConflictIndex];
+    const currentConflict = conflicts.modeConflicts[conflicts.currentConflictIndex];
     
     // Try to save normally (should work now that tasks are moved)
     const result = await setWorkdayForUserAction(currentConflict.dateStr, currentConflict.newMode);
@@ -163,18 +160,16 @@ export function useWorkdaysEditor(
     if (result === true) {
       // Successfully saved
       // Move to next conflict or finish
-      if (currentConflictIndex < modeConflicts.length - 1) {
-        setCurrentConflictIndex(currentConflictIndex + 1);
+      if (conflicts.currentConflictIndex < conflicts.modeConflicts.length - 1) {
+        conflicts.setCurrentConflictIndex(conflicts.currentConflictIndex + 1);
       } else {
         // This is the last conflict, check if there are confirmed conflicts to save
-        if (confirmedConflicts.size > 0) {
+        if (conflicts.confirmedConflicts.size > 0) {
           // Save all confirmed conflicts that haven't been saved yet
-          await saveAllConfirmedConflicts(confirmedConflicts);
+          await saveAllConfirmedConflicts(conflicts.confirmedConflicts);
         } else {
           // All conflicts resolved
-          setModeConflicts([]);
-          setCurrentConflictIndex(0);
-          setConfirmedConflicts(new Set());
+          conflicts.resetConflicts();
           setHasSavedChanges(false);
           onSaved();
           setEditing(false);
@@ -184,17 +179,15 @@ export function useWorkdaysEditor(
       // Still a conflict (maybe user didn't move all tasks), use force
       const success = await setWorkdayForUserActionForce(currentConflict.dateStr, currentConflict.newMode);
       if (success) {
-        if (currentConflictIndex < modeConflicts.length - 1) {
-          setCurrentConflictIndex(currentConflictIndex + 1);
+        if (conflicts.currentConflictIndex < conflicts.modeConflicts.length - 1) {
+          conflicts.setCurrentConflictIndex(conflicts.currentConflictIndex + 1);
         } else {
           // This is the last conflict, check if there are confirmed conflicts to save
-          if (confirmedConflicts.size > 0) {
+          if (conflicts.confirmedConflicts.size > 0) {
             // Save all confirmed conflicts that haven't been saved yet
-            await saveAllConfirmedConflicts(confirmedConflicts);
+            await saveAllConfirmedConflicts(conflicts.confirmedConflicts);
           } else {
-            setModeConflicts([]);
-            setCurrentConflictIndex(0);
-            setConfirmedConflicts(new Set());
+            conflicts.resetConflicts();
             setHasSavedChanges(false);
             onSaved();
             setEditing(false);
@@ -209,33 +202,33 @@ export function useWorkdaysEditor(
   };
 
   const handleConfirmAnyway = () => {
-    if (modeConflicts.length === 0 || currentConflictIndex >= modeConflicts.length) return;
+    if (conflicts.modeConflicts.length === 0 || conflicts.currentConflictIndex >= conflicts.modeConflicts.length) return;
     
     // Mark current conflict as confirmed
-    const newConfirmed = new Set(confirmedConflicts);
-    newConfirmed.add(currentConflictIndex);
-    setConfirmedConflicts(newConfirmed);
+    const newConfirmed = new Set(conflicts.confirmedConflicts);
+    newConfirmed.add(conflicts.currentConflictIndex);
+    conflicts.setConfirmedConflicts(newConfirmed);
     
     // Move to next conflict or save all if all are confirmed
-    if (currentConflictIndex < modeConflicts.length - 1) {
+    if (conflicts.currentConflictIndex < conflicts.modeConflicts.length - 1) {
       // There are more conflicts, move to next
-      setCurrentConflictIndex(currentConflictIndex + 1);
+      conflicts.setCurrentConflictIndex(conflicts.currentConflictIndex + 1);
     } else {
       // This is the last conflict, check if all are confirmed before saving
-      const allConfirmed = newConfirmed.size === modeConflicts.length;
+      const allConfirmed = newConfirmed.size === conflicts.modeConflicts.length;
       if (allConfirmed) {
         // All conflicts confirmed, save all changes at once
         saveAllConfirmedConflicts(newConfirmed);
       } else {
         // Not all conflicts confirmed yet, just move to next (shouldn't happen but safety check)
-        setCurrentConflictIndex(currentConflictIndex + 1);
+        conflicts.setCurrentConflictIndex(conflicts.currentConflictIndex + 1);
       }
     }
   };
 
   const saveAllConfirmedConflicts = async (confirmed: Set<number>) => {
     // Save all confirmed conflicts using force (batch operation)
-    const conflictsToSave = modeConflicts.filter((_, index) => confirmed.has(index));
+    const conflictsToSave = conflicts.modeConflicts.filter((_, index) => confirmed.has(index));
     
     try {
       if (conflictsToSave.length > 0) {
@@ -249,9 +242,7 @@ export function useWorkdaysEditor(
       }
       
       // All conflicts saved successfully
-      setModeConflicts([]);
-      setCurrentConflictIndex(0);
-      setConfirmedConflicts(new Set());
+      conflicts.resetConflicts();
       setHasSavedChanges(false);
       onSaved();
       setEditing(false);
@@ -262,10 +253,10 @@ export function useWorkdaysEditor(
   };
 
   const handleCancelConflict = () => {
-    if (modeConflicts.length === 0) return;
+    if (conflicts.modeConflicts.length === 0) return;
     
     // Revert all conflicted changes in local state
-    for (const conflict of modeConflicts) {
+    for (const conflict of conflicts.modeConflicts) {
       const originalMode = workdays[conflict.dateStr] ?? 'Présentiel';
       setLocalWorkdays(prev => ({ ...prev, [conflict.dateStr]: originalMode }));
     }
@@ -274,9 +265,7 @@ export function useWorkdaysEditor(
     const shouldRefetch = hasSavedChanges;
     
     // Cancel all conflicts and stop editing
-    setModeConflicts([]);
-    setCurrentConflictIndex(0);
-    setConfirmedConflicts(new Set());
+    conflicts.resetConflicts();
     setHasSavedChanges(false);
     setEditing(false);
     
@@ -288,21 +277,16 @@ export function useWorkdaysEditor(
 
   const handleSkipConflict = () => {
     // Skip this conflict and move to next, or finish if last
-    if (currentConflictIndex < modeConflicts.length - 1) {
-      setCurrentConflictIndex(currentConflictIndex + 1);
+    if (conflicts.currentConflictIndex < conflicts.modeConflicts.length - 1) {
+      conflicts.setCurrentConflictIndex(conflicts.currentConflictIndex + 1);
     } else {
       // All conflicts processed (some skipped)
-      setModeConflicts([]);
-      setCurrentConflictIndex(0);
+      conflicts.resetConflicts();
       setHasSavedChanges(false);
       onSaved();
       setEditing(false);
     }
   };
-
-  const currentConflict = modeConflicts.length > 0 && currentConflictIndex < modeConflicts.length 
-    ? modeConflicts[currentConflictIndex] 
-    : null;
 
   return {
     editing,
@@ -316,10 +300,10 @@ export function useWorkdaysEditor(
     handleStartEdit,
     handleCancel,
     handleSave,
-    modeConflict: currentConflict,
-    modeConflicts,
-    currentConflictIndex,
-    totalConflicts: modeConflicts.length,
+    modeConflict: conflicts.currentConflict,
+    modeConflicts: conflicts.modeConflicts,
+    currentConflictIndex: conflicts.currentConflictIndex,
+    totalConflicts: conflicts.totalConflicts,
     userId,
     handleDateChange,
     handleConfirmAnyway,

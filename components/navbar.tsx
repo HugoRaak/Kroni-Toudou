@@ -3,9 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "@/app/actions/auth";
-import { getCurrentUser } from "@/app/actions/auth";
-import { useEffect, useState, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
+import { useCallback } from "react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,

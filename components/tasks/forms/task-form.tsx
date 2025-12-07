@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Task, Frequency, DayOfWeek } from "@/lib/types";
-import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_MODES, type TaskType } from "@/lib/tasks/task-constants";
+import { Task, Frequency } from "@/lib/types";
+import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_MODES, type TaskType } from "@/lib/tasks/constants/task-constants";
 import { Input } from "@/components/ui/input";
-import { TaskDescriptionEditor } from "./task-description-editor";
+import { TaskDescriptionEditor } from "../description/task-description-editor";
 import type { CalendarView } from "@/lib/calendar/calendar-navigation";
 
 type TaskFormProps = {
@@ -74,16 +74,6 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
       onTempTaskChange(isTempTask);
     }
   }, [isTempTask, onTempTaskChange]);
-
-  // Synchroniser la date avec les props pour les nouvelles tâches
-  useEffect(() => {
-    if (!task && taskType === TASK_TYPES.SPECIFIC && currentView === "day" && dayDate && !isViewingToday) {
-      const year = dayDate.getFullYear();
-      const month = String(dayDate.getMonth() + 1).padStart(2, '0');
-      const day = String(dayDate.getDate()).padStart(2, '0');
-      setDueDate(`${year}-${month}-${day}`);
-    }
-  }, [task, taskType, currentView, dayDate, isViewingToday]);
 
   const handleTaskTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newType = e.target.value as typeof TASK_TYPES[keyof typeof TASK_TYPES];
@@ -168,7 +158,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
         <>
           <div className="flex items-center space-x-2 border-t pt-4">
             <span className="text-sm font-medium text-blue-600">
-              Tâche temporaire (uniquement pour aujourd'hui)
+              Tâche temporaire (uniquement pour aujourd&apos;hui)
             </span>
           </div>
           <div className="text-xs text-muted-foreground">
@@ -365,7 +355,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
               className="rounded cursor-pointer"
             />
             <span className="text-sm font-medium text-foreground">
-              Uniquement pour aujourd'hui (tâche temporaire)
+              Uniquement pour aujourd&apos;hui (tâche temporaire)
             </span>
           </label>
         </div>

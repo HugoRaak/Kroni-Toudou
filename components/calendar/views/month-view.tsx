@@ -3,13 +3,13 @@
 import DayCell from "@/components/calendar/ui/day-cell";
 import CalendarHeader from "@/components/calendar/ui/calendar-header";
 import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar/calendar-utils";
-import { DayTasksDialog } from "@/components/calendar/dialogs/day-tasks-dialog";
 import { formatDateLocal, normalizeToMidnight, isPastDate } from "@/lib/utils";
-import { useWorkdaysEditor } from "@/lib/hooks/use-workdays-editor";
+import { useWorkdaysEditor } from "@/lib/hooks/workdays/use-workdays-editor";
 import { getMonthGridDates, getMonthGridDatesArray } from "@/lib/calendar/calendar-date-utils";
 import { useMemo, useCallback, memo } from "react";
-import { WorkModeConflictDialog } from "@/components/calendar/workmode-conflict-dialog";
 import type { ModeConflictError } from "@/app/actions/tasks";
+import { WorkModeLegend } from "@/components/calendar/ui/workmode-legend";
+import { CalendarDialogs } from "@/components/calendar/ui/calendar-dialogs";
 
 // Constants extracted outside component
 const WEEK_DAYS = ["L", "M", "M", "J", "V", "S", "D"] as const;
@@ -80,7 +80,7 @@ const DayCellWrapper = memo(({
 
 DayCellWrapper.displayName = "DayCellWrapper";
 
-export function MonthView({
+function MonthView({
   anchorDate,
   tasks,
   workdays,
@@ -166,38 +166,26 @@ export function MonthView({
           />
         ))}
       </div>
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-pink-300" /> Présentiel</div>
-        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-blue-500" /> Distanciel</div>
-        <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Congé</div>
-      </div>
-      {selectedDate && (
-        <DayTasksDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          date={selectedDate}
-          tasks={filterTasksByWorkMode(getTasksForDate(tasks, selectedDate), workdays[formatDateLocal(selectedDate)] ?? 'Présentiel')}
-          workMode={workdays[formatDateLocal(selectedDate)] ?? 'Présentiel'}
-          onUpdateTask={onUpdateTask}
-          onDeleteTask={onDeleteTask}
-          onSaved={onSaved}
-        />
-      )}
-      {modeConflict && userId && (
-        <WorkModeConflictDialog
-          open={!!modeConflict}
-          onOpenChange={(open) => !open && handleCancelConflict()}
-          conflict={modeConflict.conflict}
-          modeConflicts={modeConflicts}
-          userId={userId}
-          onDateChange={handleDateChange}
-          onCancel={handleCancelConflict}
-          onConfirm={handleConfirmAnyway}
-          onConflictResolved={handleConflictResolved}
-          conflictIndex={currentConflictIndex}
-          totalConflicts={totalConflicts}
-        />
-      )}
+      <WorkModeLegend loading={loading} />
+      <CalendarDialogs
+        selectedDate={selectedDate}
+        dialogOpen={dialogOpen}
+        setDialogOpen={setDialogOpen}
+        tasks={tasks}
+        workdays={workdays}
+        onUpdateTask={onUpdateTask}
+        onDeleteTask={onDeleteTask}
+        onSaved={onSaved}
+        modeConflict={modeConflict}
+        modeConflicts={modeConflicts}
+        userId={userId}
+        currentConflictIndex={currentConflictIndex}
+        totalConflicts={totalConflicts}
+        handleDateChange={handleDateChange}
+        handleCancelConflict={handleCancelConflict}
+        handleConfirmAnyway={handleConfirmAnyway}
+        handleConflictResolved={handleConflictResolved}
+      />
     </div>
   );
 }

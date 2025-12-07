@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getTodayTaskOrder, saveTodayTaskOrder } from '@/lib/storage/localStorage-tasks';
+import { saveTodayTaskOrder } from '@/lib/storage/localStorage-tasks';
 
 export function useDragAndDrop<T extends { id: string }>(
   initialItems: T[],

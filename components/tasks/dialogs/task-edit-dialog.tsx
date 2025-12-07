@@ -4,13 +4,12 @@ import { useState, useTransition, useEffect, useDeferredValue } from "react";
 import { Task } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { TaskForm } from "@/components/tasks/task-form";
+import { TaskForm } from "@/components/tasks/forms/task-form";
 import { toast } from "sonner";
 import { Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { ModeConflictError } from "@/app/actions/tasks";
-import { ModeConflictDialog } from "@/components/tasks/mode-conflict-dialog";
-import { getCurrentUserIdAction } from "@/app/actions/tasks";
+import { ModeConflictError, getCurrentUserIdAction } from "@/app/actions/tasks";
+import { ModeConflictDialog } from "@/components/tasks/dialogs/mode-conflict-dialog";
 import { useRouter } from "next/navigation";
 
 type TaskEditDialogProps = {
@@ -246,7 +245,7 @@ export function TaskEditDialog({
                     priority={false}
                   />
                   <DialogDescription className="text-center">
-                    Êtes-vous sûr de vouloir supprimer la tâche <strong>"{task.title}"</strong> ?<br />
+                    Êtes-vous sûr de vouloir supprimer la tâche <strong>&quot;{task.title}&quot;</strong> ?<br />
                     Cette action est irréversible.
                   </DialogDescription>
                 </div>

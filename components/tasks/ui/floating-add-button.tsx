@@ -3,19 +3,19 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { TaskForm } from "@/components/tasks/task-form";
-import { createTaskFromForm, ModeConflictError, TaskActionResult } from "@/app/actions/tasks";
+import { TaskForm } from "@/components/tasks/forms/task-form";
+import { createTaskFromForm, ModeConflictError, type TaskActionResult } from "@/app/actions/tasks";
 import { createTodayTempTask } from "@/lib/storage/localStorage-tasks";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { CalendarView } from "@/lib/calendar/calendar-navigation";
-import { ModeConflictDialog } from "@/components/tasks/mode-conflict-dialog";
+import { ModeConflictDialog } from "@/components/tasks/dialogs/mode-conflict-dialog";
 
 interface FloatingAddButtonProps {
   userId: string;
-  onSubmit?: (formData: FormData) => Promise<any>;
+  onSubmit?: (formData: FormData) => Promise<TaskActionResult>;
   isViewingToday?: boolean;
   currentView?: CalendarView;
   dayDate?: Date;
@@ -103,7 +103,7 @@ export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, cu
     setConflictTaskTitle("");
     
     startTransition(async () => {
-      let result: any;
+      let result: TaskActionResult | null = null;
       const isTemp = conflictFormData.get('is_temp_task') === 'true';
       
       if (isTemp) {

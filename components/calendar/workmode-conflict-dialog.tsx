@@ -3,12 +3,11 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ModeConflictError } from "@/app/actions/tasks";
+import { ModeConflictError, getTasksForDayAction } from "@/app/actions/tasks";
 import { formatDateLocal, parseDateLocal, addDays } from "@/lib/utils";
-import { getWorkdayAction, getWorkdaysMapAction } from "@/app/actions/workdays";
+import { getWorkdaysMapAction } from "@/app/actions/workdays";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { getTasksForDayAction } from "@/app/actions/tasks";
 import { WorkMode } from "@/lib/db/workdays";
 
 type WorkModeConflictDialogProps = {
@@ -70,7 +69,7 @@ export function WorkModeConflictDialog({
       getTasksForDayAction(userId, conflict.taskDate).then(dayTasks => {
         if (dayTasks && dayTasks.specific) {
           const allConflictingTasks = dayTasks.specific
-            .filter(task => task.mode === conflict.taskMode)
+            .filter(task => (task.mode ?? 'Tous') === conflict.taskMode)
             .map(task => ({ id: task.id, title: task.title }));
           
           // If there are multiple conflicts, show only one task at a time based on conflictIndex

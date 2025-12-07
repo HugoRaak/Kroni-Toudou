@@ -4,7 +4,7 @@
 
 import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
 
-export interface MonthGridDate {
+interface MonthGridDate {
   date: number;
   month: number;
   year: number;

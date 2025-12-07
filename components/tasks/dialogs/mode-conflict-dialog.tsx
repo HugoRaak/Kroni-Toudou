@@ -160,7 +160,7 @@ export function ModeConflictDialog({
           <DialogHeader className="space-y-2">
             <DialogTitle className="text-base sm:text-lg">Date proposée</DialogTitle>
             <DialogDescription className="text-xs sm:text-sm break-words leading-relaxed">
-              Nous avons trouvé une date compatible pour votre tâche "{taskTitle}".
+              Nous avons trouvé une date compatible pour votre tâche &quot;{taskTitle}&quot;.
             </DialogDescription>
           </DialogHeader>
           
@@ -212,7 +212,7 @@ export function ModeConflictDialog({
         <DialogHeader className="space-y-2">
           <DialogTitle className="text-base sm:text-lg">Conflit de mode</DialogTitle>
           <DialogDescription className="text-xs sm:text-sm break-words leading-relaxed">
-            Le mode de la tâche "{taskTitle}" ne correspond pas au mode de travail prévu pour le {formatDate(conflict.taskDate)}.
+            Le mode de la tâche &quot;{taskTitle}&quot; ne correspond pas au mode de travail prévu pour le {formatDate(conflict.taskDate)}.
           </DialogDescription>
         </DialogHeader>
         

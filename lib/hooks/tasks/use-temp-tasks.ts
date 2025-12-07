@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   getTodayTempTasks,
   getTodayHiddenTempTaskIds,
@@ -12,7 +12,7 @@ export function useTempTasks(
 ) {
   const [tempTasks, setTempTasks] = useState<TempTask[]>([]);
 
-  const loadTempTasks = () => {
+  const loadTempTasks = useCallback(() => {
     if (!isTodayView) {
       setTempTasks([]);
       return;
@@ -21,15 +21,18 @@ export function useTempTasks(
     const allTempTasks = getTodayTempTasks();
     const filtered = filterTasksByWorkMode(allTempTasks, workMode);
     setTempTasks(filtered);
-  };
-
-  useEffect(() => {
-    loadTempTasks();
   }, [isTodayView, workMode]);
+
+  // Load tasks on mount and when dependencies change
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadTempTasks();
+  }, [loadTempTasks]);
 
   // Listen for temp task updates
   useEffect(() => {
     if (!isTodayView) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTempTasks([]);
       return;
     }

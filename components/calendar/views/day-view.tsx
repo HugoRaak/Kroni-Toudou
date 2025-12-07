@@ -1,25 +1,19 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Task, TaskWithType } from "@/lib/types";
+import { Task } from "@/lib/types";
 import { TaskWithShift, TaskShiftAlert } from "@/lib/calendar/calendar-utils";
 import { WorkModeBadge } from "@/components/calendar/ui/workmode-badge";
-import { TaskSectionSpecific } from "@/components/calendar/tasks/task-section-specific";
-import { TaskSectionWhenPossible } from "@/components/calendar/tasks/task-section-when-possible";
-import { DraggableTaskSection } from "@/components/calendar/tasks/draggable-task-section";
 import { HideTaskDialog } from "@/components/calendar/dialogs/hide-task-dialog";
-import { TaskListDraggable } from "@/components/calendar/tasks/task-list-draggable";
-import { TaskColumnDraggable } from "@/components/calendar/tasks/task-column-draggable";
-import { TaskItemCompact } from "@/components/tasks/task-item-compact";
-import { taskWithTypeToTaskLike } from "@/lib/tasks/task-conversion";
-import { getTaskTypeClassName } from "@/lib/tasks/task-constants";
-import { isToday, getTodayHiddenTaskIds, hideTodayTask, hideTodayTempTask } from "@/lib/storage/localStorage-tasks";
-import { storage } from "@/lib/storage/localStorage-helpers";
-import { useTempTasks } from "@/lib/hooks/use-temp-tasks";
-import { useUnifiedTaskHandlers } from "@/lib/hooks/use-unified-task-handlers";
-import { prepareTasksForToday } from "@/lib/tasks/task-preparation";
+import { SingleColumnLayout } from "./day-view-layouts/single-column-layout";
+import { ThreeColumnLayout } from "./day-view-layouts/three-column-layout";
+import { isToday, hideTodayTask, hideTodayTempTask } from "@/lib/storage/localStorage-tasks";
+import { useTempTasks } from "@/lib/hooks/tasks/use-temp-tasks";
+import { useUnifiedTaskHandlers } from "@/lib/hooks/tasks/use-unified-task-handlers";
+import { useDayViewState } from "@/lib/hooks/calendar/use-day-view-state";
+import { useDayTasksPreparation } from "@/lib/hooks/calendar/use-day-tasks-preparation";
 import { formatDateLocal, normalizeToMidnight, isPastDate } from "@/lib/utils";
 import type { ModeConflictError } from "@/app/actions/tasks";
 
@@ -33,7 +27,7 @@ export type DayTasksData = {
   alerts: TaskShiftAlert[];
 } | null;
 
-export function DayView({
+function DayView({
   date,
   loading,
   tasks,
@@ -67,15 +61,10 @@ export function DayView({
     return dayNameStr.charAt(0).toUpperCase() + dayNameStr.slice(1);
   }, [date]);
   const isTodayView = useMemo(() => isToday(date), [date]);
-  const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
-  const [taskToHide, setTaskToHide] = useState<TaskWithType | null>(null);
-  const [layout, setLayout] = useState<'single' | 'three-column'>('single');
-
-  // Load layout from localStorage after hydration to avoid SSR mismatch
-  useEffect(() => {
-    setLayout(storage.dayViewLayout.get());
-  }, []);
-
+  
+  // Use day view state hook
+  const state = useDayViewState(isTodayView);
+  
   // Use temp tasks hook
   const { tempTasks, loadTempTasks, getHiddenTempTaskIds } = useTempTasks(isTodayView, workMode);
 
@@ -91,59 +80,20 @@ export function DayView({
     loadTempTasks: loadTempTasksMemo,
   });
 
-  // Track order updates to force recalculation
-  const [orderVersion, setOrderVersion] = useState(0);
-
-  // Listen for order updates from drag & drop
-  useEffect(() => {
-    if (!isTodayView) return;
-    
-    const handler = () => {
-      setOrderVersion(v => v + 1);
-    };
-    window.addEventListener('task-order-updated', handler);
-    return () => window.removeEventListener('task-order-updated', handler);
-  }, [isTodayView]);
-
-  // Prepare ordered tasks for today view (including temp tasks)
-  const preparedTasks = useMemo(() => {
-    const hiddenIds = getTodayHiddenTaskIds();
-    const hiddenTempTaskIds = getHiddenTempTaskIds();
-    return prepareTasksForToday(
-      tasks,
-      tempTasks,
-      hiddenIds,
-      hiddenTempTaskIds,
-      isTodayView,
-      loading
-    );
-  }, [tasks, tempTasks, loading, isTodayView, orderVersion]);
-
-  // Group preparedTasks by type for 3-column layout
-  const groupedPreparedTasks = useMemo(() => {
-    if (!isTodayView || layout !== 'three-column') return null;
-    
-    return {
-      periodic: preparedTasks.filter(t => t.taskType === 'periodic' || t.taskType === 'temp'),
-      specific: preparedTasks.filter(t => t.taskType === 'specific'),
-      temp: [], // Temp tasks are now shown with periodic tasks
-    };
-  }, [preparedTasks, isTodayView, layout]);
-
-  // Toggle layout
-  const handleToggleLayout = () => {
-    const newLayout = layout === 'single' ? 'three-column' : 'single';
-    setLayout(newLayout);
-    storage.dayViewLayout.set(newLayout);
-  };
+  // Use day tasks preparation hook
+  const { preparedTasks, groupedPreparedTasks } = useDayTasksPreparation(
+    tasks,
+    tempTasks,
+    isTodayView,
+    loading,
+    state.orderVersion,
+    getHiddenTempTaskIds,
+    state.layout
+  );
 
   // Handler for hiding/finishing tasks (regular or temp)
-  const handleHideTaskClick = (task: TaskWithType) => {
-    setTaskToHide(task);
-    setHideConfirmOpen(true);
-  };
-
-  const handleConfirmHide = () => {
+  const handleConfirmHide = useCallback(() => {
+    const { taskToHide, handleConfirmHide: confirmHide } = state;
     if (taskToHide) {
       if (taskToHide.id.startsWith('temp-')) {
         // Hide temp task
@@ -153,11 +103,10 @@ export function DayView({
         // Hide regular task
         hideTodayTask(taskToHide.id);
       }
-      setHideConfirmOpen(false);
-      setTaskToHide(null);
+      confirmHide();
       onModeSaved?.();
     }
-  };
+  }, [state, loadTempTasks, onModeSaved]);
 
   return (
     <div className="space-y-4">
@@ -202,11 +151,11 @@ export function DayView({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleToggleLayout}
+                onClick={state.handleToggleLayout}
                 className="h-8 text-xs cursor-pointer"
-                title={layout === 'single' ? 'Afficher en 3 colonnes' : 'Afficher en une colonne'}
+                title={state.layout === 'single' ? 'Afficher en 3 colonnes' : 'Afficher en une colonne'}
               >
-                {layout === 'single' ? (
+                {state.layout === 'single' ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
@@ -282,332 +231,43 @@ export function DayView({
           </div>
         ) : !tasks ? (
           <p className="text-center text-muted-foreground">{workMode === 'Congé' ? "Là c'est repos !" : 'Aucune tâche pour ce jour'}</p>
-        ) : layout === 'three-column' ? (
-          // 3-column layout
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {isTodayView ? (
-              // Today view: grouped by type
-              <>
-                <div>
-                  <h3 className="mb-3 text-lg font-semibold text-yellow-900 flex items-center gap-2">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      className="text-yellow-700"
-                    >
-                      <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                      <path d="M12 6v6l4 2" strokeWidth="2" />
-                    </svg>
-                    Périodiques
-                  </h3>
-                  {groupedPreparedTasks && groupedPreparedTasks.periodic.length > 0 ? (
-                    <TaskColumnDraggable
-                      columnTasks={groupedPreparedTasks.periodic}
-                      allTasks={preparedTasks}
-                      onUpdate={handleUpdateTaskUnified}
-                      onDelete={handleDeleteTaskUnified}
-                      onHide={handleHideTaskClick}
-                      onSuccess={() => {
-                        loadTempTasks();
-                        onModeSaved?.();
-                      }}
-                    />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Aucune tâche périodique.</p>
-                  )}
-                </div>
-                <div>
-                  {workMode === 'Congé' && (
-                    <p className="mb-3 text-center text-muted-foreground">Là c&apos;est repos !</p>
-                  )}
-                  <h3 className="mb-3 text-lg font-semibold text-violet-800 flex items-center gap-2">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      className="text-violet-700"
-                    >
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" />
-                      <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" />
-                      <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" />
-                    </svg>
-                    À date précise
-                  </h3>
-                  {groupedPreparedTasks && groupedPreparedTasks.specific.length > 0 ? (
-                    <TaskColumnDraggable
-                      columnTasks={groupedPreparedTasks.specific}
-                      allTasks={preparedTasks}
-                      onUpdate={handleUpdateTaskUnified}
-                      onDelete={handleDeleteTaskUnified}
-                      onHide={handleHideTaskClick}
-                      onSuccess={() => {
-                        loadTempTasks();
-                        onModeSaved?.();
-                      }}
-                    />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Aucune tâche à date précise.</p>
-                  )}
-                </div>
-                <div>
-                  <h3 className="mb-3 text-lg font-semibold text-orange-800 flex items-center gap-2">
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      className="text-orange-700"
-                    >
-                      <path
-                        d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z"
-                        strokeWidth="2"
-                      />
-                    </svg>
-                    Quand je peux
-                  </h3>
-                  {tasks.whenPossible.inProgress.length > 0 || tasks.whenPossible.notStarted.length > 0 ? (
-                    <TaskSectionWhenPossible
-                      inProgress={tasks.whenPossible.inProgress}
-                      notStarted={tasks.whenPossible.notStarted}
-                      onUpdateTask={onUpdateTask}
-                      onDeleteTask={onDeleteTask}
-                      onSuccess={onModeSaved}
-                      hideTitle={true}
-                    />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Aucune tâche libre.</p>
-                  )}
-                </div>
-              </>
-            ) : (
-              // Normal day view: separated sections
-              <>
-                <div>
-                  <DraggableTaskSection
-                    title="Périodiques"
-                    icon={(
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        className="text-yellow-700"
-                      >
-                        <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                        <path d="M12 6v6l4 2" strokeWidth="2" />
-                      </svg>
-                    )}
-                    titleClassName="text-yellow-900"
-                    tasks={tasks.periodic}
-                    taskClassName="bg-yellow-50 border-yellow-400/30"
-                    onUpdateTask={onUpdateTask}
-                    onDeleteTask={onDeleteTask}
-                    onSuccess={onModeSaved}
-                    accentColor="yellow"
-                  />
-                </div>
-                <div>
-                  {workMode === 'Congé' && (
-                    <p className="mb-3 text-center text-muted-foreground">Là c&apos;est repos !</p>
-                  )}
-                  <TaskSectionSpecific
-                    tasks={tasks.specific}
-                    onUpdateTask={onUpdateTask}
-                    onDeleteTask={onDeleteTask}
-                    onSuccess={onModeSaved}
-                  />
-                </div>
-                <div>
-                  <DraggableTaskSection
-                    title="Quand je peux"
-                    icon={(
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        className="text-orange-700"
-                      >
-                        <path
-                          d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                    )}
-                    titleClassName="text-orange-800"
-                    tasks={[...tasks.whenPossible.inProgress, ...tasks.whenPossible.notStarted]}
-                    taskClassName="bg-orange-50 border-orange-600/25"
-                    onUpdateTask={onUpdateTask}
-                    onDeleteTask={onDeleteTask}
-                    onSuccess={onModeSaved}
-                    accentColor="orange"
-                  />
-                </div>
-              </>
-            )}
-            {isTodayView && 
-              workMode !== 'Congé' &&
-              preparedTasks.length === 0 &&
-              tasks.whenPossible.inProgress.length === 0 &&
-              tasks.whenPossible.notStarted.length === 0 && (
-                <div className="col-span-3">
-                  <p className="text-center text-muted-foreground">Aucune tâche pour ce jour</p>
-                </div>
-              )}
-            {!isTodayView &&
-              workMode !== 'Congé' &&
-              tasks.periodic.length === 0 &&
-              tasks.specific.length === 0 &&
-              tasks.whenPossible.inProgress.length === 0 &&
-              tasks.whenPossible.notStarted.length === 0 && (
-                <div className="col-span-3">
-                  <p className="text-center text-muted-foreground">Aucune tâche pour ce jour</p>
-                </div>
-              )}
-          </div>
-        ) : isTodayView ? (
-          // Today view: merged list with drag & drop (including temp tasks) - single column
-          <div className="space-y-6">
-            {workMode === 'Congé' && (
-              <p className="text-center text-muted-foreground">Là c&apos;est repos !</p>
-            )}
-            {preparedTasks.length > 0 && (
-              <div>
-                <h2 className="mb-3 text-xl font-bold text-foreground flex items-center gap-2">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    className="text-yellow-500"
-                  >
-                    <path
-                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  Tâches du jour
-                </h2>
-                <TaskListDraggable
-                  tasks={preparedTasks}
-                  onUpdate={handleUpdateTaskUnified}
-                  onDelete={handleDeleteTaskUnified}
-                  onHide={handleHideTaskClick}
-                  onSuccess={() => {
-                    loadTempTasks();
-                    onModeSaved?.();
-                  }}
-                />
-              </div>
-            )}
-
-            <TaskSectionWhenPossible
-              inProgress={tasks.whenPossible.inProgress}
-              notStarted={tasks.whenPossible.notStarted}
-              onUpdateTask={onUpdateTask}
-              onDeleteTask={onDeleteTask}
-              onSuccess={onModeSaved}
-            />
-
-            {workMode !== 'Congé' &&
-              preparedTasks.length === 0 &&
-              tasks.whenPossible.inProgress.length === 0 &&
-              tasks.whenPossible.notStarted.length === 0 && (
-                <p className="text-center text-muted-foreground">Aucune tâche pour ce jour</p>
-              )}
-          </div>
+        ) : state.layout === 'three-column' ? (
+          <ThreeColumnLayout
+            isTodayView={isTodayView}
+            workMode={workMode}
+            tasks={tasks}
+            preparedTasks={preparedTasks}
+            groupedPreparedTasks={groupedPreparedTasks}
+            onUpdateTask={onUpdateTask}
+            onDeleteTask={onDeleteTask}
+            onModeSaved={onModeSaved}
+            handleUpdateTaskUnified={handleUpdateTaskUnified}
+            handleDeleteTaskUnified={handleDeleteTaskUnified}
+            onHideTaskClick={state.handleHideTaskClick}
+            loadTempTasks={loadTempTasks}
+          />
         ) : (
-          // Normal view: separated sections with edit order - single column
-          <div className="space-y-6">
-            <DraggableTaskSection
-              title="Tâches périodiques"
-              icon={(
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  className="text-yellow-700"
-                >
-                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                  <path d="M12 6v6l4 2" strokeWidth="2" />
-                </svg>
-              )}
-              titleClassName="text-yellow-900"
-              tasks={tasks.periodic}
-              taskClassName="bg-yellow-50 border-yellow-400/30"
-              onUpdateTask={onUpdateTask}
-              onDeleteTask={onDeleteTask}
-              onSuccess={onModeSaved}
-              accentColor="yellow"
-            />
-            {workMode === 'Congé' && (
-              <p className="mb-3 text-center text-muted-foreground">Là c&apos;est repos !</p>
-            )}
-            <TaskSectionSpecific
-              tasks={tasks.specific}
-              onUpdateTask={onUpdateTask}
-              onDeleteTask={onDeleteTask}
-              onSuccess={onModeSaved}
-            />
-            <DraggableTaskSection
-              title="Quand je peux"
-              icon={(
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  className="text-orange-700"
-                >
-                  <path
-                    d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z"
-                    strokeWidth="2"
-                  />
-                </svg>
-              )}
-              titleClassName="text-orange-800"
-              tasks={[...tasks.whenPossible.inProgress, ...tasks.whenPossible.notStarted]}
-              taskClassName="bg-orange-50 border-orange-600/25"
-              onUpdateTask={onUpdateTask}
-              onDeleteTask={onDeleteTask}
-              onSuccess={onModeSaved}
-              accentColor="orange"
-            />
-            {workMode !== 'Congé' &&
-              tasks.periodic.length === 0 &&
-              tasks.specific.length === 0 &&
-              tasks.whenPossible.inProgress.length === 0 &&
-              tasks.whenPossible.notStarted.length === 0 && (
-                <p className="text-center text-muted-foreground">Aucune tâche pour ce jour</p>
-              )}
-          </div>
+          <SingleColumnLayout
+            isTodayView={isTodayView}
+            workMode={workMode}
+            tasks={tasks}
+            preparedTasks={preparedTasks}
+            onUpdateTask={onUpdateTask}
+            onDeleteTask={onDeleteTask}
+            onModeSaved={onModeSaved}
+            handleUpdateTaskUnified={handleUpdateTaskUnified}
+            handleDeleteTaskUnified={handleDeleteTaskUnified}
+            onHideTaskClick={state.handleHideTaskClick}
+            loadTempTasks={loadTempTasks}
+          />
         )}
       </div>
 
       <HideTaskDialog
-        open={hideConfirmOpen}
-        task={taskToHide}
+        open={state.hideConfirmOpen}
+        task={state.taskToHide}
         onConfirm={handleConfirmHide}
-        onCancel={() => {
-          setHideConfirmOpen(false);
-          setTaskToHide(null);
-        }}
+        onCancel={state.handleCancelHide}
       />
     </div>
   );

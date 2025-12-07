@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Task, Frequency } from '@/lib/types';
 import { formatDateLocal, normalizeToMidnight } from '@/lib/utils';
-import TaskItem from '@/components/tasks/task-item';
-import { DraggableTaskList } from '@/components/tasks/draggable-task-list';
+import TaskItem from '@/components/tasks/items/task-item';
+import { DraggableTaskList } from '@/components/tasks/ui/draggable-task-list';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -16,8 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Filter, GripVertical, Check, X } from 'lucide-react';
-import { updateTasksDisplayOrderAction } from '@/app/actions/tasks';
-import type { ModeConflictError } from '@/app/actions/tasks';
+import { updateTasksDisplayOrderAction, type ModeConflictError } from '@/app/actions/tasks';
 import { useRouter } from 'next/navigation';
 
 type PresenceFilter = 'all' | 'presentiel' | 'distanciel';

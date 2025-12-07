@@ -3,11 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Task } from '@/lib/types';
 import { TaskWithShift } from '@/lib/calendar/calendar-utils';
-import { TaskItemCompact } from '@/components/tasks/task-item-compact';
+import { TaskItemCompact } from '@/components/tasks/items/task-item-compact';
 import { Button } from '@/components/ui/button';
 import { GripVertical, Check, X } from 'lucide-react';
-import { updateTasksDisplayOrderAction } from '@/app/actions/tasks';
-import type { ModeConflictError } from '@/app/actions/tasks';
+import { updateTasksDisplayOrderAction, type ModeConflictError } from '@/app/actions/tasks';
 import { useRouter } from 'next/navigation';
 
 interface DraggableTaskSectionProps {

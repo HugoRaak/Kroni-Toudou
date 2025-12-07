@@ -1,5 +1,5 @@
 import type { Task, Frequency, DayOfWeek } from '@/lib/types';
-import { TASK_TYPES } from '@/lib/tasks/task-constants';
+import { TASK_TYPES } from '@/lib/tasks/constants/task-constants';
 import {
   isValidTaskType,
   isValidFrequency,
@@ -12,9 +12,9 @@ import {
   validateCustomDays,
   validateStartDate,
   validateMaxShiftingDays,
-} from '@/lib/tasks/task-validation';
+} from '@/lib/tasks/validation/task-validation';
 
-export interface ParsedTaskFormData {
+interface ParsedTaskFormData {
   title: string;
   description: string;
   taskType: typeof TASK_TYPES[keyof typeof TASK_TYPES];
@@ -53,7 +53,7 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
     return null;
   }
 
-  const mode: Task['mode'] = isValidMode(modeRaw) ? modeRaw : 'Tous';
+  const mode: Task['mode'] = isValidMode(modeRaw) ? (modeRaw as Task['mode']) : 'Tous';
 
   const result: ParsedTaskFormData = {
     title,
@@ -65,10 +65,10 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
   // Parse task type specific fields
   if (taskTypeRaw === TASK_TYPES.PERIODIC) {
     if (frequencyRaw && isValidFrequency(frequencyRaw)) {
-      result.frequency = frequencyRaw;
+      result.frequency = frequencyRaw as Frequency;
     }
     if (dayRaw && isValidDayOfWeek(dayRaw)) {
-      result.day = dayRaw;
+      result.day = dayRaw as DayOfWeek;
     }
     // Handle custom frequency fields
     if (frequencyRaw === 'personnalisé') {

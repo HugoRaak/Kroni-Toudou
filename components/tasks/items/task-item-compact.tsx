@@ -2,8 +2,8 @@
 
 import { Task } from "@/lib/types";
 import { TaskWithShift } from "@/lib/calendar/calendar-utils";
-import { TaskEditDialog } from "./task-edit-dialog";
-import { TaskDescriptionView } from "./task-description-view";
+import { TaskEditDialog } from "../dialogs/task-edit-dialog";
+import { TaskDescriptionView } from "../description/task-description-view";
 import { parseDateLocal } from "@/lib/utils";
 import type { ModeConflictError } from "@/app/actions/tasks";
 

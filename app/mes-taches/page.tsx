@@ -3,15 +3,15 @@ import { supabaseServerReadOnly } from '@/lib/supabase/supabase-server';
 import { redirect } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
 import { getTasks } from '@/lib/db/tasks';
-import { groupTasksByType } from '@/lib/tasks/task-filtering';
+import { groupTasksByType } from '@/lib/tasks/processing/task-filtering';
 import Image from 'next/image';
 import { 
   updateTaskFromFormAction, 
   deleteTaskActionWrapper, 
   createTaskFromFormAction 
 } from '@/app/actions/tasks';
-import { FloatingAddButton } from '@/components/tasks/floating-add-button';
-import { SectionWithFilters } from '@/components/tasks/section-with-filters';
+import { FloatingAddButton } from '@/components/tasks/ui/floating-add-button';
+import { SectionWithFilters } from '@/components/tasks/ui/section-with-filters';
 
 export default async function MesTachesPage() {
   const supabase = await supabaseServerReadOnly();
