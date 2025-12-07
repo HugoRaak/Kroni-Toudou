@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Hook pre-push pour vérifier que le build fonctionne avant de push
+# Si le build échoue, le push sera annulé
+
+echo "🔨 Vérification du build avant push..."
+
+# Exécuter le build
+npm run build
+
+# Si le build échoue, annuler le push
+if [ $? -ne 0 ]; then
+  echo "❌ Le build a échoué. Le push est annulé."
+  echo "   Corrigez les erreurs avant de push."
+  exit 1
+fi
+
+echo "✅ Build réussi. Push autorisé."
+exit 0
+

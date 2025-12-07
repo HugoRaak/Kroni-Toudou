@@ -8,7 +8,7 @@ import { AuthForm } from "./auth-form";
 export function AuthDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const [mounted, setMounted] = useState(() => typeof window !== 'undefined');
+  const mounted = typeof window !== 'undefined';
 
   const handleSuccess = () => {
     setIsOpen(false);
