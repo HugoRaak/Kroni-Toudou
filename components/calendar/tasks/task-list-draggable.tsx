@@ -33,7 +33,6 @@ export function TaskListDraggable({
     handleDropZoneDragOver,
     handleDropZoneDrop,
     handleTaskDragOver,
-    handleDragLeave,
     handleDrop,
     handleDragEnd,
   } = useDragAndDrop<TaskWithType>(tasks);

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Hook pre-commit pour vérifier que le build fonctionne avant de commit
+# Si le build échoue, le commit sera annulé
+
+echo "🔨 Vérification du build avant commit..."
+
+# Exécuter le build
+npm run build
+
+# Si le build échoue, annuler le commit
+if [ $? -ne 0 ]; then
+  echo "❌ Le build a échoué. Le commit est annulé."
+  echo "   Corrigez les erreurs avant de commit."
+  exit 1
+fi
+
+echo "✅ Build réussi. Commit autorisé."
+exit 0
+

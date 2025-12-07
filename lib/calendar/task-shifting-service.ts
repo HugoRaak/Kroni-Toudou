@@ -9,7 +9,7 @@ import { sortByDisplayOrder } from '@/lib/tasks/sorting/sort-by-display-order';
  * Détermine si une tâche doit être décalée
  */
 function needsShift(
-  originalDate: Date,
+  _originalDate: Date,
   taskMode: 'Tous' | 'Présentiel' | 'Distanciel',
   workMode: WorkMode
 ): boolean {

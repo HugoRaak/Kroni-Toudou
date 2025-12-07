@@ -109,7 +109,6 @@ function MonthView({
     saving,
     selectedDate,
     dialogOpen,
-    setSelectedDate,
     setDialogOpen,
     handleDayClick,
     handleStartEdit,
@@ -153,7 +152,7 @@ function MonthView({
             {loading ? <div className="mx-auto h-3 w-6 rounded bg-accent animate-pulse" /> : day}
           </div>
         ))}
-        {monthDates.map((date, index) => (
+        {monthDates.map((date) => (
           <DayCellWrapper
             key={`${date.year}-${date.month}-${date.date}`}
             date={date}

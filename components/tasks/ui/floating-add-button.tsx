@@ -24,7 +24,7 @@ interface FloatingAddButtonProps {
 export function FloatingAddButton({ userId, onSubmit, isViewingToday = false, currentView = "day", dayDate }: FloatingAddButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [isTempTask, setIsTempTask] = useState(false);
+  const [_isTempTask, setIsTempTask] = useState(false);
   const [modeConflict, setModeConflict] = useState<ModeConflictError | null>(null);
   const [conflictTaskTitle, setConflictTaskTitle] = useState("");
   const [conflictFormData, setConflictFormData] = useState<FormData | null>(null);

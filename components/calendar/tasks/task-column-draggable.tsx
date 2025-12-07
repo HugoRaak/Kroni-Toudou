@@ -84,7 +84,6 @@ export function TaskColumnDraggable({
     handleDropZoneDragOver,
     handleDropZoneDrop,
     handleTaskDragOver,
-    handleDragLeave,
     handleDrop,
     handleDragEnd,
   } = useDragAndDrop<TaskWithType>(columnTasks, handleOrderChange);

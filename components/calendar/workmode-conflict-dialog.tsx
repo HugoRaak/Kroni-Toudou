@@ -48,11 +48,6 @@ export function WorkModeConflictDialog({
     return date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const formatDateShort = (dateStr: string): string => {
-    const date = parseDateLocal(dateStr);
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-  };
-
   const getModeLabel = (mode: string): string => {
     switch (mode) {
       case 'Présentiel': return 'Présentiel';

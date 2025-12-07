@@ -107,7 +107,6 @@ function WeekView({
     saving,
     selectedDate,
     dialogOpen,
-    setSelectedDate,
     setDialogOpen,
     handleDayClick,
     handleStartEdit,
@@ -168,7 +167,7 @@ function WeekView({
         onSave={handleSave}
       />
       <div className="grid grid-cols-7 gap-2">
-        {weekDates.map((day, index) => (
+        {weekDates.map((day) => (
           <WeekDayCellWrapper
             key={`${day.dateObj.getTime()}`}
             dayDate={day.dateObj}

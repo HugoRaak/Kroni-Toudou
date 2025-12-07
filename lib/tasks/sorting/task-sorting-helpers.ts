@@ -12,7 +12,7 @@ export function calculateReorderedSortKey(
  */
 export function calculateNonReorderedSortKey(
   oldPosition: number,
-  reorderedBeforeCount: number,
+  _reorderedBeforeCount: number,
   maxReorderedBeforeNewPos: number,
   totalTasks: number
 ): number {

@@ -197,11 +197,6 @@ function DraggableTaskList({
     }
   };
 
-  const handleDragLeave = () => {
-    setDragOverIndex(null);
-    setDropPosition(null);
-  };
-
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
     

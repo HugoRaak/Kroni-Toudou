@@ -79,7 +79,7 @@ interface SectionWithFiltersProps {
 
 export function SectionWithFilters({
   title,
-  count,
+  count: _count,
   accent,
   icon,
   tasks,
