@@ -111,6 +111,7 @@ function calculateYearlyOriginalDate(
   normalizedStartDate: Date | null
 ): Date | null {
   if (!normalizedStartDate) return null;
+  if (normalizedDate < normalizedStartDate) return null;
   
   const currentYear = normalizedDate.getFullYear();
   const startMonth = normalizedStartDate.getMonth();
@@ -132,6 +133,7 @@ function calculateCustomOriginalDate(
   normalizedStartDate: Date | null
 ): Date | null {
   if (!normalizedStartDate || !task.custom_days) return null;
+  if (normalizedDate < normalizedStartDate) return null;
   
   const daysBetween = Math.floor(
     (normalizedDate.getTime() - normalizedStartDate.getTime()) / 86400000

@@ -1,6 +1,3 @@
-# Script d'installation des hooks Git
-# Copie les hooks versionnés depuis hooks/ vers .git/hooks/
-
 $sourceDir = "hooks"
 $targetDir = ".git/hooks"
 

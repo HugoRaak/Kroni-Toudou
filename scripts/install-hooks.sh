@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# Script d'installation des hooks Git (compatible Unix/Mac/Git Bash)
-# Copie les hooks versionnés depuis hooks/ vers .git/hooks/
-
 SOURCE_DIR="hooks"
 TARGET_DIR=".git/hooks"
 

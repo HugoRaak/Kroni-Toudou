@@ -25,9 +25,25 @@ export function navigateCalendarDate(
     case 'week':
       return new Date(normalized.getFullYear(), normalized.getMonth(), normalized.getDate() + (multiplier * 7));
     case 'month':
-      return new Date(normalized.getFullYear(), normalized.getMonth() + multiplier, normalized.getDate());
+      return addMonthsClamped(normalized, multiplier);
     default:
       return normalized;
   }
+}
+
+
+function addMonthsClamped(anchor: Date, offset: number): Date {
+  const year = anchor.getFullYear();
+  const month = anchor.getMonth();
+  const day = anchor.getDate();
+
+  const targetMonth = month + offset;
+  const targetYear = year + Math.floor(targetMonth / 12);
+  const normalizedMonth = ((targetMonth % 12) + 12) % 12;
+
+  const lastDayOfTargetMonth = new Date(targetYear, normalizedMonth + 1, 0).getDate();
+  const clampedDay = Math.min(day, lastDayOfTargetMonth);
+
+  return new Date(targetYear, normalizedMonth, clampedDay);
 }
 
