@@ -6,6 +6,10 @@ import { formatDateLocal } from "@/lib/utils";
 // Cache for public holidays by year
 const holidaysCache = new Map<number, Set<string>>();
 
+export function __clearHolidaysCacheForTests() {
+  holidaysCache.clear();
+}
+
 /**
  * Fetches French public holidays for a given year from the official API
  * Returns a Set of date strings in YYYY-MM-DD format

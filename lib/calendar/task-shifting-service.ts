@@ -8,7 +8,7 @@ import { sortByDisplayOrder } from '@/lib/tasks/sorting/sort-by-display-order';
 /**
  * Détermine si une tâche doit être décalée
  */
-function needsShift(
+export function needsShift(
   _originalDate: Date,
   taskMode: 'Tous' | 'Présentiel' | 'Distanciel',
   workMode: WorkMode
@@ -99,8 +99,8 @@ export async function getPeriodicTasksForDateWithShift(
     if (originalDateStr === dateStr) {
       if (workdaysMap[dateStr] === taskMode || taskMode === 'Tous') {
         result.push(task);
+        continue;
       }
-      continue;
     }
     
     if (needsShift(originalScheduledDate, taskMode, originalWorkMode)) {

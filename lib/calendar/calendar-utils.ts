@@ -2,7 +2,7 @@ import { Task, Frequency, DayOfWeek } from '@/lib/types';
 import { getTasks } from '@/lib/db/tasks';
 import { getWorkday, getWorkdaysMap, WorkMode } from '@/lib/db/workdays';
 import { formatDateLocal, normalizeToMidnight, addDays, parseDateLocal } from '@/lib/utils';
-import { getPeriodicTasksForDateWithShift, findNextMatchingDate } from './task-shifting-service';
+import { getPeriodicTasksForDateWithShift, findNextMatchingDate, needsShift } from './task-shifting-service';
 import { getDayName, getDefaultMaxShiftingDays } from './periodic-dates';
 import { sortByDisplayOrder } from '@/lib/tasks/sorting/sort-by-display-order';
 
@@ -109,7 +109,7 @@ export async function getTasksForDay(userId: string, date?: Date, workModeValue?
   if (workMode === 'Congé') {
     return {
       periodic: [],
-      specific: filterByMode(getSpecificTasksForDate(specific, today)),
+      specific: getSpecificTasksForDate(specific, today),
       whenPossible: {
         inProgress: [],
         notStarted: [],
@@ -182,24 +182,11 @@ export async function getTasksForDateRange(
 // Get tasks for a specific date (legacy function for compatibility)
 export function getTasksForDate(tasks: CalendarTask[], date: Date): CalendarTask[] {
   const normalizedDate = normalizeToMidnight(date);
-  const dayName = getDayName(normalizedDate);
   
   return tasks.filter(task => {
     if (task.type === 'specific') {
       return task.due_on === formatDateLocal(normalizedDate);
     }
-    
-    if (task.type === 'periodic' && task.frequency && task.day) {
-      switch (task.frequency) {
-        case 'hebdomadaire':
-          return task.day === dayName;
-        case 'mensuel':
-          return task.day === dayName && normalizedDate.getDate() <= 7;
-        default:
-          return false;
-      }
-    }
-    
     return false;
   });
 }
@@ -264,6 +251,7 @@ export async function checkFutureTaskShifts(
     const normalizedStartDateTask = startDateTask ? normalizeToMidnight(startDateTask) : null;
     
     if (!normalizedStartDateTask) continue;
+    if (normalizedStartDateTask > endDate) continue;
     
     // Calculate scheduled dates in the next 45 days
     const scheduledDates: Date[] = [];
@@ -287,12 +275,6 @@ export async function checkFutureTaskShifts(
       }
     } else if (task.frequency === 'personnalisé' && task.custom_days) {
       // For custom tasks, calculate all occurrences in the next 45 days
-      // Only consider dates that are >= start date of the task
-      if (normalizedStartDateTask > endDate) {
-        // Task starts after the range, skip it
-        continue;
-      }
-      
       const startCheckDate = normalizedStartDateTask > normalizedStartDate ? normalizedStartDateTask : normalizedStartDate;
       const daysFromStart = Math.floor((startCheckDate.getTime() - normalizedStartDateTask.getTime()) / 86400000);
       
@@ -317,14 +299,8 @@ export async function checkFutureTaskShifts(
     for (const scheduledDate of scheduledDates) {
       const dateStr = formatDateLocal(scheduledDate);
       const workMode = workdaysMap[dateStr];
-      
-      // For "Tous" mode tasks, only shift if it's a holiday
-      // For specific mode tasks, shift if work mode doesn't match task mode
-      const needsShift = taskMode === 'Tous'
-        ? workMode === 'Congé'
-        : workMode !== taskMode;
-      
-      if (needsShift) {
+
+      if (needsShift(scheduledDate, taskMode, workMode)) {
         const maxShiftingDays = task.max_shifting_days ?? getDefaultMaxShiftingDays(task.frequency);
         const shiftedDate = await findNextMatchingDate(scheduledDate, taskMode, workdaysMap, maxShiftingDays);
 
