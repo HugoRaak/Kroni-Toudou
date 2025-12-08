@@ -8,7 +8,7 @@ import {
 } from '../calendar-utils';
 import { getTasks } from '@/lib/db/tasks';
 import { getWorkday, getWorkdaysMap, type WorkMode } from '@/lib/db/workdays';
-import { getPeriodicTasksForDateWithShift, findNextMatchingDate } from '../task-shifting-service';
+import { getPeriodicTasksForDateWithShift } from '../task-shifting-service';
 import type { Task } from '@/lib/types';
 import { normalizeToMidnight, formatDateLocal, addDays } from '@/lib/utils';
 

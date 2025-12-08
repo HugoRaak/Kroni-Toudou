@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { setWorkdayForUserAction, setWorkdayForUserActionForce, setWorkdaysForUserActionForceBatch, checkWorkdayConflictsBatchForUserAction } from '@/app/actions/workdays';
 import { formatDateLocal, isPastDate } from '@/lib/utils';
 import { getCurrentUserIdAction, updateTaskAction } from '@/app/actions/tasks';
@@ -16,7 +16,7 @@ export function useWorkdaysEditor(
   const [saving, setSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [hasSavedChanges, setHasSavedChanges] = useState<boolean>(false);
+  const hasSavedChangesRef = useRef<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   const conflicts = useModeConflicts();
@@ -55,13 +55,13 @@ export function useWorkdaysEditor(
 
   const handleStartEdit = () => {
     setLocalWorkdays(workdays);
-    setHasSavedChanges(false);
+    hasSavedChangesRef.current = false;
     setEditing(true);
   };
 
   const handleCancel = () => {
     setLocalWorkdays(workdays);
-    setHasSavedChanges(false);
+    hasSavedChangesRef.current = false;
     setEditing(false);
   };
 
@@ -118,7 +118,7 @@ export function useWorkdaysEditor(
       
       // Track if any changes were saved (needed for refetch on cancel)
       const hasNonConflictChanges = nonConflictChanges.length > 0;
-      setHasSavedChanges(hasNonConflictChanges);
+      hasSavedChangesRef.current = hasNonConflictChanges;
       
       // If there are conflicts, show them one by one
       if (conflictList.length > 0) {
@@ -130,7 +130,7 @@ export function useWorkdaysEditor(
       }
       
       // All changes saved successfully
-      setHasSavedChanges(false);
+      hasSavedChangesRef.current = false;
       onSaved();
       setEditing(false);
     } finally {
@@ -170,7 +170,7 @@ export function useWorkdaysEditor(
         } else {
           // All conflicts resolved
           conflicts.resetConflicts();
-          setHasSavedChanges(false);
+          hasSavedChangesRef.current = false;
           onSaved();
           setEditing(false);
         }
@@ -188,7 +188,7 @@ export function useWorkdaysEditor(
             await saveAllConfirmedConflicts(conflicts.confirmedConflicts);
           } else {
             conflicts.resetConflicts();
-            setHasSavedChanges(false);
+            hasSavedChangesRef.current = false;
             onSaved();
             setEditing(false);
           }
@@ -243,7 +243,7 @@ export function useWorkdaysEditor(
       
       // All conflicts saved successfully
       conflicts.resetConflicts();
-      setHasSavedChanges(false);
+      hasSavedChangesRef.current = false;
       onSaved();
       setEditing(false);
     } catch (error) {
@@ -262,11 +262,11 @@ export function useWorkdaysEditor(
     }
     
     // If there were changes saved before conflicts were detected, refetch to show them
-    const shouldRefetch = hasSavedChanges;
+    const shouldRefetch = hasSavedChangesRef.current;
     
     // Cancel all conflicts and stop editing
     conflicts.resetConflicts();
-    setHasSavedChanges(false);
+    hasSavedChangesRef.current = false;
     setEditing(false);
     
     // Refetch if there were saved changes
@@ -282,7 +282,7 @@ export function useWorkdaysEditor(
     } else {
       // All conflicts processed (some skipped)
       conflicts.resetConflicts();
-      setHasSavedChanges(false);
+      hasSavedChangesRef.current = false;
       onSaved();
       setEditing(false);
     }
