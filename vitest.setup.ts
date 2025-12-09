@@ -355,20 +355,53 @@ export function createMockTask(overrides: Partial<any> = {}) {
 // ============================================================================
 
 vi.mock('@tiptap/react', () => ({
-    useEditor: vi.fn(() => ({
-      getHTML: vi.fn(() => '<p>Test content</p>'),
-      getText: vi.fn(() => 'Test content'),
+  useEditor: vi.fn(() => {
+    const getHTML = vi.fn(() => '<p>Test content</p>');
+
+    return {
+    getHTML,
+    getText: vi.fn(() => 'Test content'),
+    destroy: vi.fn(),
+    isEditable: true,
+    setEditable: vi.fn(),
+    commands: {
       setContent: vi.fn(),
-      destroy: vi.fn(),
-      isEditable: true,
-      setEditable: vi.fn(),
-      chain: vi.fn(() => ({
-        setColor: vi.fn().mockReturnThis(),
-        toggleHighlight: vi.fn().mockReturnThis(),
-        run: vi.fn(),
-      })),
+      setColor: vi.fn(),
+      unsetColor: vi.fn(),
+      setHighlight: vi.fn(),
+      unsetHighlight: vi.fn(),
+    },
+    chain: vi.fn(() => ({
+      focus: vi.fn().mockReturnThis(),
+      setColor: vi.fn().mockReturnThis(),
+      unsetColor: vi.fn().mockReturnThis(),
+      setHighlight: vi.fn().mockReturnThis(),
+      unsetHighlight: vi.fn().mockReturnThis(),
+      run: vi.fn(),
     })),
-    EditorContent: (props: any) => React.createElement('div', { 'data-testid': 'tiptap-editor', ...props }),
+    getAttributes: vi.fn((name: string) => {
+      if (name === 'textStyle') return { color: null };
+      if (name === 'highlight') return { color: null };
+      return {};
+    }),
+    isActive: vi.fn(() => false),
+    on: vi.fn(),
+    off: vi.fn(),
+    state: {
+      storedMarks: [],
+      selection: { from: 0 },
+      doc: {
+        resolve: () => ({
+          marks: () => [],
+          node: () => ({ marks: [] }),
+        }),
+      },
+    },
+  };
+}),
+
+EditorContent: (props: any) =>
+    React.createElement('div', { 'data-testid': 'tiptap-editor', ...props }),
 }));
 
 // ============================================================================

@@ -114,8 +114,17 @@ export function useTaskDescriptionEditor({
   }, [editor]);
 
   // Get current colors
-  const currentTextColor = editor ? (editor.getAttributes('textStyle').color || null) : null;
-  const isHighlightActive = editor ? editor.isActive('highlight') : false;
+  const hasGetAttributes = editor && typeof (editor as any).getAttributes === 'function';
+  const hasIsActive = editor && typeof (editor as any).isActive === 'function';
+
+  const currentTextColor = hasGetAttributes
+    ? ((editor as any).getAttributes('textStyle')?.color ?? null)
+    : null;
+
+  const isHighlightActive = hasIsActive
+    ? (editor as any).isActive('highlight')
+    : false;
+
   
   let currentHighlight: string | null = null;
   if (editor) {

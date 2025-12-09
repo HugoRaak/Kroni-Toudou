@@ -116,6 +116,7 @@ function DayView({
             variant="outline"
             size="sm"
             onClick={onPrev}
+            data-testid="day-prev"
             className="cursor-pointer hover:bg-primary/10 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,6 +172,7 @@ function DayView({
                 variant="outline"
                 size="sm"
                 onClick={onNext}
+                data-testid="day-next"
                 className="cursor-pointer hover:bg-primary/10 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
