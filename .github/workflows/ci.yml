@@ -13,29 +13,28 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
-          run_install: false
+          run_install: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint --max-warnings=0
+        run: pnpm run lint
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: pnpm run typecheck
 
       - name: Tests
-        run: pnpm test:ci
+        run: pnpm run test:ci
 
       - name: Build
-        run: pnpm build
+        run: pnpm run build
