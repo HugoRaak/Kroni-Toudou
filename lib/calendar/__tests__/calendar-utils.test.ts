@@ -684,7 +684,7 @@ describe('calendar-utils', () => {
   });
 
   describe('filterTasksByWorkMode', () => {
-    it('should return empty array when workMode is Congé', () => {
+    it('should return empty array when workMode is Congé and tasks have no due_on', () => {
       const tasks = [
         { id: '1', mode: 'Tous' as const },
         { id: '2', mode: 'Présentiel' as const },
@@ -692,6 +692,17 @@ describe('calendar-utils', () => {
   
       const result = filterTasksByWorkMode(tasks, 'Congé');
       expect(result).toEqual([]);
+    });
+
+    it('should return specific tasks (with due_on) when workMode is Congé', () => {
+      const tasks = [
+        { id: '1', mode: 'Tous' as const, due_on: '2024-01-01' },
+        { id: '2', mode: 'Présentiel' as const, due_on: '2024-01-02' },
+        { id: '3', mode: 'Distanciel' as const },
+      ];
+  
+      const result = filterTasksByWorkMode(tasks, 'Congé');
+      expect(result.map(t => t.id)).toEqual(['1', '2']);
     });
   
     it('should include tasks with mode Tous when filtering', () => {

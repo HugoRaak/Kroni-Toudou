@@ -12,7 +12,7 @@ import {
   validateStartDate,
   validateMaxShiftingDays,
 } from '../task-validation';
-import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK } from '@/lib/tasks/constants/task-constants';
+import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_DESCRIPTION_MAX_LENGTH } from '@/lib/tasks/constants/task-constants';
 
 describe('task-validation', () => {
   describe('isValidTaskType', () => {
@@ -99,12 +99,12 @@ describe('task-validation', () => {
     it('should return true for valid descriptions', () => {
       expect(validateTaskDescription('')).toBe(true);
       expect(validateTaskDescription('Valid description')).toBe(true);
-      expect(validateTaskDescription('a'.repeat(3000))).toBe(true); // Max length
+      expect(validateTaskDescription('a'.repeat(TASK_DESCRIPTION_MAX_LENGTH))).toBe(true); // Max length
     });
 
     it('should return false for descriptions exceeding max length', () => {
-      expect(validateTaskDescription('a'.repeat(3001))).toBe(false);
-      expect(validateTaskDescription('a'.repeat(5000))).toBe(false);
+      expect(validateTaskDescription('a'.repeat(TASK_DESCRIPTION_MAX_LENGTH + 1))).toBe(false);
+      expect(validateTaskDescription('a'.repeat(TASK_DESCRIPTION_MAX_LENGTH * 2))).toBe(false);
     });
   });
 

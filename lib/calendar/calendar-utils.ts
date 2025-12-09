@@ -196,7 +196,12 @@ export function filterTasksByWorkMode<T extends { mode?: 'Tous' | 'Présentiel' 
   tasks: T[],
   workMode: 'Présentiel' | 'Distanciel' | 'Congé'
 ): T[] {
-  if (workMode === 'Congé') return [];
+  if (workMode === 'Congé') {
+    return tasks.filter(t => {
+      const task = t as T & { due_on?: string; type?: string };
+      return task.due_on !== undefined && task.due_on !== null;
+    });
+  }
   return tasks.filter(t => {
     const taskMode = t.mode ?? 'Tous';
     return taskMode === 'Tous' || taskMode === workMode;
