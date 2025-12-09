@@ -9,8 +9,6 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "duplication": "npx jscpd --min-lines 6 \"app\" \"components\" \"lib\"",
-    "install-hooks": "node -e \"require('child_process').execSync(process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/setup-git-hooks.ps1' : 'sh scripts/install-hooks.sh', {stdio: 'inherit'})\"",
-    "postinstall": "npm run install-hooks",
     "test": "vitest --run",
     "test:coverage": "vitest --run --coverage",
     "test:ci": "vitest run --passWithNoTests",
