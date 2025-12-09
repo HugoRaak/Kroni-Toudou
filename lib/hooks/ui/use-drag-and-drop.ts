@@ -12,7 +12,7 @@ export function useDragAndDrop<T extends { id: string }>(
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setItems(initialItems);
   }, [initialItems]);
 
