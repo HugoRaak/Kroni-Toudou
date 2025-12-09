@@ -3,11 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { setWorkdayForUserAction, setWorkdayForUserActionForce } from "@/app/actions/workdays";
-import { ModeConflictError } from "@/app/actions/tasks";
+import { ModeConflictError, updateTaskAction, getCurrentUserIdAction } from "@/app/actions/tasks";
 import { formatDateLocal } from "@/lib/utils";
 import { WorkModeConflictDialog } from "@/components/calendar/workmode-conflict-dialog";
-import { updateTaskAction } from "@/app/actions/tasks";
-import { getCurrentUserIdAction } from "@/app/actions/tasks";
 import { toast } from "sonner";
 
 type WorkMode = "Présentiel" | "Distanciel" | "Congé";

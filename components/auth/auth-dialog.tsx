@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { AuthForm } from "./auth-form";
@@ -8,11 +8,7 @@ import { AuthForm } from "./auth-form";
 export function AuthDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = typeof window !== 'undefined';
 
   const handleSuccess = () => {
     setIsOpen(false);

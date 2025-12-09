@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { TaskItemCompact } from "@/components/tasks/task-item-compact";
+import { TaskItemCompact } from "@/components/tasks/items/task-item-compact";
 import { TaskWithType } from "@/lib/types";
-import { taskWithTypeToTaskLike } from "@/lib/tasks/task-conversion";
-import { getTaskTypeClassName } from "@/lib/tasks/task-constants";
-import { useDragAndDrop } from "@/lib/hooks/use-drag-and-drop";
+import { taskWithTypeToTaskLike } from "@/lib/tasks/processing/task-conversion";
+import { getTaskTypeClassName } from "@/lib/tasks/constants/task-constants";
+import { useDragAndDrop } from "@/lib/hooks/ui/use-drag-and-drop";
 import type { ModeConflictError } from "@/app/actions/tasks";
 
 interface TaskListDraggableProps {
@@ -33,7 +33,6 @@ export function TaskListDraggable({
     handleDropZoneDragOver,
     handleDropZoneDrop,
     handleTaskDragOver,
-    handleDragLeave,
     handleDrop,
     handleDragEnd,
   } = useDragAndDrop<TaskWithType>(tasks);

@@ -1,6 +1,6 @@
 "use server";
 
-import { getWorkday, getWorkdaysInRange, getWorkdaysMap, upsertWorkday, upsertWorkdaysBatch, WorkMode } from "@/lib/db/workdays";
+import { getWorkday, getWorkdaysMap, upsertWorkday, upsertWorkdaysBatch, WorkMode } from "@/lib/db/workdays";
 import { supabaseServer } from "@/lib/supabase/supabase-server";
 import { verifyAuthenticated } from "@/lib/auth/auth-helpers";
 import { getTasks } from "@/lib/db/tasks";
@@ -17,19 +17,6 @@ export async function getWorkdayAction(userId: string, dateStr: string): Promise
   return await getWorkday(userId, dateStr);
 }
 
-export async function getWorkdaysForRangeAction(
-  userId: string,
-  startDateStr: string,
-  endDateStr: string
-): Promise<Record<string, WorkMode>> {
-  const supabase = await supabaseServer();
-  const user = await verifyAuthenticated(supabase);
-  if (!user || user.id !== userId) {
-    console.warn('Security: userId mismatch or user not authenticated');
-    return {};
-  }
-  return await getWorkdaysInRange(userId, startDateStr, endDateStr);
-}
 
 export async function getWorkdaysMapAction(
   userId: string,
@@ -101,7 +88,7 @@ async function checkTasksForWorkModeConflict(
   return conflicts;
 }
 
-export type SetWorkdayResult = boolean | ModeConflictError | ModeConflictError[];
+type SetWorkdayResult = boolean | ModeConflictError | ModeConflictError[];
 
 export async function setWorkdayForUserAction(dateStr: string, mode: WorkMode): Promise<SetWorkdayResult> {
   const supabase = await supabaseServer();
@@ -118,13 +105,6 @@ export async function setWorkdayForUserAction(dateStr: string, mode: WorkMode): 
   return await upsertWorkday(user.id, dateStr, mode);
 }
 
-// Check for conflicts without saving (used to detect conflicts before saving)
-export async function checkWorkdayConflictForUserAction(dateStr: string, mode: WorkMode): Promise<ModeConflictError[]> {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-  return await checkTasksForWorkModeConflict(user.id, dateStr, mode);
-}
 
 // Check multiple workday changes for conflicts in a single batch (optimized)
 export async function checkWorkdayConflictsBatchForUserAction(

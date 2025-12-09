@@ -1,6 +1,6 @@
 import { Task } from '@/lib/types';
-import { TaskItemCompact } from '@/components/tasks/task-item-compact';
-import { TASK_TYPE_STYLES } from '@/lib/tasks/task-constants';
+import { TaskItemCompact } from '@/components/tasks/items/task-item-compact';
+import { TASK_TYPE_STYLES } from '@/lib/tasks/constants/task-constants';
 import type { ModeConflictError } from '@/app/actions/tasks';
 
 type TaskSectionSpecificProps = {

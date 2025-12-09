@@ -1,5 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { User } from '@supabase/supabase-js';
+import type { SupabaseClient, User } from '@supabase/supabase-js';
 
 /**
  * Validates password format: 10 chars min, letters, numbers, special chars
@@ -20,7 +19,7 @@ export function validatePassword(password: string): { valid: boolean; message: s
   return { valid: true, message: "" };
 }
 
-export interface TaskOwnershipVerification {
+interface TaskOwnershipVerification {
   user: User;
   taskUserId: string;
 }

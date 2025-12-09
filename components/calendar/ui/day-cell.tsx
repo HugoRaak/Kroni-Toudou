@@ -5,7 +5,7 @@ import { useMemo } from "react";
 
 type WorkMode = "Présentiel" | "Distanciel" | "Congé";
 
-export function DayCell({
+function DayCell({
   titleTop,
   titleMain,
   mode,

@@ -26,13 +26,13 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ## Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ## Développement
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
@@ -40,8 +40,8 @@ Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 ## Build de production
 
 ```bash
-npm run build
-npm start
+pnpm run build
+pnpm start
 ```
 
 ## Déploiement
@@ -67,11 +67,3 @@ L'application peut être déployée sur toute plateforme supportant Next.js (Net
 - `components/` - Composants React réutilisables
 - `lib/` - Utilitaires, hooks, fonctions de base de données
 - `proxy.ts` - Middleware pour l'authentification et la protection des routes
-
-## Fonctionnalités
-
-- Authentification avec Supabase
-- Gestion de tâches (quotidiennes, hebdomadaires, mensuelles, dates spécifiques)
-- Calendrier interactif
-- Gestion des modes de travail (Présentiel/Distanciel/Congé)
-- Système de licences

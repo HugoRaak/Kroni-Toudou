@@ -2,15 +2,15 @@
 
 import { useState, useCallback } from "react";
 import { Calendar } from "@/components/calendar/views/calendar";
-import { FloatingAddButton } from "@/components/tasks/floating-add-button";
+import { FloatingAddButton } from "@/components/tasks/ui/floating-add-button";
 import type { CalendarView } from "@/lib/calendar/calendar-navigation";
-import type { ModeConflictError } from "@/app/actions/tasks";
+import type { ModeConflictError, TaskActionResult } from "@/app/actions/tasks";
 
 interface CalendarWithAddButtonProps {
   userId: string;
   onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
-  onSubmit: (formData: FormData) => Promise<any>;
+  onSubmit: (formData: FormData) => Promise<TaskActionResult>;
 }
 
 export function CalendarWithAddButton({

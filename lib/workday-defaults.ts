@@ -1,10 +1,14 @@
 // One-line note: calculates default work mode based on day of week and French public holidays from API
 
 import { WorkMode } from "@/lib/db/workdays";
-import { formatDateLocal, parseDateLocal } from "@/lib/utils";
+import { formatDateLocal } from "@/lib/utils";
 
 // Cache for public holidays by year
 const holidaysCache = new Map<number, Set<string>>();
+
+export function __clearHolidaysCacheForTests() {
+  holidaysCache.clear();
+}
 
 /**
  * Fetches French public holidays for a given year from the official API
@@ -63,7 +67,7 @@ async function isFrenchPublicHoliday(date: Date): Promise<boolean> {
  * Day of week (0=Sunday, 1=Monday, ..., 6=Saturday) via Zeller's congruence (Gregorian).
  * month: 1..12, day: 1..31
  */
-export function getDayOfWeek(year: number, month: number, day: number): number {
+function getDayOfWeek(year: number, month: number, day: number): number {
   let m = month;
   let y = year;
   if (m < 3) { m += 12; y -= 1; }

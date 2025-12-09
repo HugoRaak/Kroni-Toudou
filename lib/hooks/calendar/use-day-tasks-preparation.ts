@@ -1,0 +1,47 @@
+import { useMemo } from 'react';
+import { DayTasksData } from '@/components/calendar/views/day-view';
+import { TempTask } from '@/lib/types';
+import { prepareTasksForToday } from '@/lib/tasks/processing/task-preparation';
+import { getTodayHiddenTaskIds } from '@/lib/storage/localStorage-tasks';
+
+export function useDayTasksPreparation(
+  tasks: DayTasksData,
+  tempTasks: TempTask[],
+  isTodayView: boolean,
+  loading: boolean,
+  orderVersion: number,
+  getHiddenTempTaskIds: () => string[],
+  layout?: 'single' | 'three-column'
+) {
+  const preparedTasks = useMemo(() => {
+    if (!tasks || !isTodayView || loading) return [];
+    
+    const hiddenIds = getTodayHiddenTaskIds();
+    const hiddenTempTaskIds = getHiddenTempTaskIds();
+    
+    return prepareTasksForToday(
+      tasks,
+      tempTasks,
+      hiddenIds,
+      hiddenTempTaskIds,
+      isTodayView,
+      loading
+    );
+  }, [tasks, tempTasks, loading, isTodayView, orderVersion, getHiddenTempTaskIds]);
+
+  const groupedPreparedTasks = useMemo(() => {
+    if (!isTodayView || layout !== 'three-column' || !preparedTasks.length) return null;
+    
+    return {
+      periodic: preparedTasks.filter(t => t.taskType === 'periodic' || t.taskType === 'temp'),
+      specific: preparedTasks.filter(t => t.taskType === 'specific'),
+      temp: [],
+    };
+  }, [preparedTasks, isTodayView, layout]);
+
+  return {
+    preparedTasks,
+    groupedPreparedTasks,
+  };
+}
+

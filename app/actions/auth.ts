@@ -116,15 +116,3 @@ export async function signOut() {
 
   redirect("/");
 }
-
-export async function getCurrentUser() {
-  const supabase = await supabaseServer();
-  
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { user };
-}

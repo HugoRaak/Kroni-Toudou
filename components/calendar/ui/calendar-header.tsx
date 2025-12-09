@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function CalendarHeader({
+function CalendarHeader({
   title,
   subtitle,
   loading,
