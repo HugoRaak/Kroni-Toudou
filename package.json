@@ -13,7 +13,7 @@
     "test:coverage": "vitest --run --coverage",
     "test:ci": "vitest run --passWithNoTests",
     "prepare": "husky install",
-    "prepush": "npm run lint && npm run test:ci && npm run typecheck"
+    "prepush": "pnpm run lint && pnpm run test:ci && pnpm run typecheck"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

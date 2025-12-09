@@ -26,13 +26,13 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ## Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ## Développement
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
@@ -40,8 +40,8 @@ Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 ## Build de production
 
 ```bash
-npm run build
-npm start
+pnpm run build
+pnpm start
 ```
 
 ## Déploiement
