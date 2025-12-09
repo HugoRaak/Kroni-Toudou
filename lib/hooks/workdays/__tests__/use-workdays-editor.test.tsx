@@ -110,6 +110,24 @@ describe('useWorkdaysEditor', () => {
     expect(result.current.localWorkdays[iso]).toBe('Distanciel');
   });
 
+  it('should not modify workday when clicking a past date', () => {
+    // Override isPastDate to simulate past date
+    vi.doMock('@/lib/utils', async () => {
+      const actual = await vi.importActual('@/lib/utils');
+      return { ...actual, isPastDate: () => true };
+    });
+  
+    const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, vi.fn()));
+  
+    act(() => {
+      result.current.handleStartEdit();
+      result.current.handleDayClick(new Date(2024, 5, 10));
+    });
+  
+    // No change expected
+    expect(result.current.localWorkdays['2024-06-10']).toBe('Présentiel');
+  });  
+
   it('handleSave with no changes calls check conflicts and closes editing', async () => {
     mockCheckWorkdayConflictsBatchForUserAction.mockResolvedValue({});
     const onSaved = vi.fn();
@@ -209,7 +227,22 @@ describe('useWorkdaysEditor', () => {
   
     expect(onSaved).toHaveBeenCalledTimes(1);
   });
+
+  it('handleCancel should reset state without calling onSaved when nothing was saved', () => {
+    const onSaved = vi.fn();
+    const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, onSaved));
   
+    act(() => {
+      result.current.handleStartEdit();
+    });
+  
+    act(() => {
+      result.current.handleCancel();
+    });
+  
+    expect(result.current.editing).toBe(false);
+    expect(onSaved).not.toHaveBeenCalled();
+  });
 
   it('should initialize userId via getCurrentUserIdAction', async () => {
     mockGetCurrentUserIdAction.mockResolvedValue('user-123');
@@ -222,6 +255,26 @@ describe('useWorkdaysEditor', () => {
 
     expect(mockGetCurrentUserIdAction).toHaveBeenCalled();
     expect(result.current.userId).toBe('user-123');
+  });
+
+  it('should fallback to Présentiel when localWorkdays contains an invalid mode', () => {
+    const workdays = {
+      '2024-06-10': 'INVALID' as unknown as WorkMode,
+    };
+  
+    const { result } = renderHook(() =>
+      useWorkdaysEditor(workdays, vi.fn())
+    );
+  
+    act(() => {
+      result.current.handleStartEdit();
+    });
+  
+    act(() => {
+      result.current.handleDayClick(new Date(2024, 5, 10)); // 10/06/2024
+    });
+  
+    expect(result.current.localWorkdays['2024-06-10']).toBe('Présentiel');
   });
 
   describe('handleDateChange', () => {
@@ -565,9 +618,8 @@ describe('useWorkdaysEditor', () => {
       await act(async () => {
         result.current.handleCancelConflict();
       });
-  
-  
+
       expect(onSaved).toHaveBeenCalledTimes(1);
     });
-  });  
+  });
 });

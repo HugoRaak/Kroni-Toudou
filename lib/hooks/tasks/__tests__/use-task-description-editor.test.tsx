@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTaskDescriptionEditor } from '../use-task-description-editor';
 
@@ -432,4 +433,124 @@ describe('useTaskDescriptionEditor', () => {
     expect(result.current.currentHighlight).toBe('#00ff00');
   });
 
+  it('should update hidden input when editor fires an update event via editor.on', () => {
+    mockEditor.getHTML.mockReturnValue('<p>From event</p>');
+
+    renderHook(() =>
+      useTaskDescriptionEditor({
+        value: '',
+        hiddenInputRef,
+      })
+    );
+
+    // We get the handler registered for the "update" event
+    const updateHandler = (mockEditor.on as unknown as Mock).mock.calls.find(
+      ([eventName]) => eventName === 'update'
+    )?.[1] as () => void;
+
+    expect(updateHandler).toBeDefined();
+
+    act(() => {
+      updateHandler();
+    });
+
+    expect(hiddenInputRef.current?.value).toBe('<p>From event</p>');
+  });
+
+  it('should increment editorState when editor fires a transaction event', () => {
+    const { result } = renderHook(() =>
+      useTaskDescriptionEditor({
+        value: '',
+        hiddenInputRef,
+      })
+    );
+
+    const initialState = result.current.editorState;
+
+    const transactionHandler = (mockEditor.on as unknown as Mock).mock.calls.find(
+      ([eventName]) => eventName === 'transaction'
+    )?.[1] as () => void;
+
+    expect(transactionHandler).toBeDefined();
+
+    act(() => {
+      transactionHandler();
+    });
+
+    expect(result.current.editorState).toBeGreaterThan(initialState);
+  });
+
+  it('should derive currentHighlight from selection marks when storedMarks do not provide a color', () => {
+    // Highlight active, but no color in getAttributes('highlight')
+    mockEditor.isActive.mockReturnValue(true);
+    mockEditor.getAttributes.mockReturnValue({} as any);
+
+    // No storedMarks
+    (mockEditor.state as any).storedMarks = null;
+
+    const highlightMark = {
+      type: { name: 'highlight' },
+      attrs: { color: '#ff00ff' },
+    };
+
+    // The selection returns a highlight mark with a color
+    (mockEditor.state.doc.resolve as unknown as Mock).mockReturnValue({
+      marks: () => [highlightMark],
+      node: () => ({ marks: [] }),
+    });
+
+    const { result } = renderHook(() =>
+      useTaskDescriptionEditor({
+        value: '',
+        hiddenInputRef,
+      })
+    );
+
+    expect(result.current.currentHighlight).toBe('#ff00ff');
+  });
+
+  it('should derive currentHighlight from node marks when selection marks have no color', () => {
+    mockEditor.isActive.mockReturnValue(true);
+    mockEditor.getAttributes.mockReturnValue({} as any);
+
+    (mockEditor.state as any).storedMarks = null;
+
+    const highlightMark = {
+      type: { name: 'highlight' },
+      attrs: { color: '#00ffff' },
+    };
+
+    (mockEditor.state.doc.resolve as unknown as Mock).mockReturnValue({
+      marks: () => [],
+      node: () => ({ marks: [highlightMark] }),
+    });
+
+    const { result } = renderHook(() =>
+      useTaskDescriptionEditor({
+        value: '',
+        hiddenInputRef,
+      })
+    );
+
+    expect(result.current.currentHighlight).toBe('#00ffff');
+  });
+
+  it('should apply highlight color using selection range when from !== to', () => {
+    // We force a selection with a real range
+    (mockEditor.state as any).selection = { from: 0, to: 5 };
+
+    const { result } = renderHook(() =>
+      useTaskDescriptionEditor({
+        value: '',
+        hiddenInputRef,
+      })
+    );
+
+    act(() => {
+      result.current.setHighlightColor('#ffcc00');
+    });
+
+    // We don't check the details of the call, just that the chain is used
+    expect(mockEditor.commands.chain).toHaveBeenCalled();
+  });
 });

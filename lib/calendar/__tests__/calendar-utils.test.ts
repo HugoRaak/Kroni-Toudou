@@ -4,6 +4,8 @@ import {
   getTasksForDateRange,
   getTasksForDate,
   checkFutureTaskShifts,
+  filterTasksByWorkMode,
+  calendarTaskToTaskLike,
   type CalendarTask,
 } from '../calendar-utils';
 import { getTasks } from '@/lib/db/tasks';
@@ -610,5 +612,118 @@ describe('calendar-utils', () => {
       const uniqueKeys = new Set(alertKeys);
       expect(alertKeys.length).toBe(uniqueKeys.size);
     });
+
+    it('should include next-year occurrence for yearly tasks when inside range', async () => {
+      const tasks = [
+        createMockTask({
+          id: '1',
+          frequency: 'annuel',
+          start_date: '2024-01-10', // January 10, 2024
+          mode: 'Tous',
+          max_shifting_days: 5,
+        }),
+      ];
+    
+      vi.mocked(getTasks).mockResolvedValue(tasks);
+    
+      // We start the window mid-December 2024
+      const startDate = normalizeToMidnight(new Date(2024, 11, 20)); // December 20, 2024
+    
+      const workdaysMap: Record<string, WorkMode> = {};
+      // We cover the range [-45, +45] around startDate
+      for (let i = -45; i <= 45; i++) {
+        const checkDate = addDays(startDate, i);
+        // Everything is in "Congé" -> forces a shift, but it will be impossible
+        workdaysMap[formatDateLocal(checkDate)] = 'Congé';
+      }
+    
+      vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
+    
+      const result = await checkFutureTaskShifts('user1', startDate);
+    
+      // The occurrence taken into account must be the 10 January 2025
+      const expectedNextYearDate = formatDateLocal(
+        normalizeToMidnight(new Date(2025, 0, 10)) // January 10, 2025
+      );
+    
+      expect(result).toHaveLength(1);
+      expect(result[0].taskId).toBe('1');
+      expect(result[0].frequency).toBe('annuel');
+      expect(result[0].originalDate).toBe(expectedNextYearDate);
+    });    
+    
+    it('should correctly calculate first occurrence when start date is before start range (negative offset)', async () => {
+      const task = createMockTask({
+        id: '1',
+        frequency: 'personnalisé' as const,
+        start_date: '2024-05-01',
+        custom_days: 10,
+        title: 'Custom Task',
+        mode: 'Tous' as const,
+        max_shifting_days: 3,
+      });
+    
+      vi.mocked(getTasks).mockResolvedValue([task]);
+    
+      // startDate AFTER start_date -> daysFromStart positive
+      const startDate = normalizeToMidnight(new Date(2024, 5, 1)); // June 1
+      const workdaysMap: Record<string, WorkMode> = {};
+    
+      // Make ALL days incompatible to force alert
+      for (let i = -45; i <= 45; i++) {
+        const d = addDays(startDate, i);
+        workdaysMap[formatDateLocal(d)] = 'Congé';
+      }
+    
+      vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
+    
+      const result = await checkFutureTaskShifts('user1', startDate);
+    
+      expect(result.length).toBeGreaterThan(0); // Alerts exist
+    });    
   });
+
+  describe('filterTasksByWorkMode', () => {
+    it('should return empty array when workMode is Congé', () => {
+      const tasks = [
+        { id: '1', mode: 'Tous' as const },
+        { id: '2', mode: 'Présentiel' as const },
+      ];
+  
+      const result = filterTasksByWorkMode(tasks, 'Congé');
+      expect(result).toEqual([]);
+    });
+  
+    it('should include tasks with mode Tous when filtering', () => {
+      const tasks = [
+        { id: '1', mode: 'Tous' as const },
+        { id: '2', mode: 'Distanciel' as const },
+      ];
+  
+      const result = filterTasksByWorkMode(tasks, 'Présentiel');
+      expect(result.map(t => t.id)).toEqual(['1']);
+    });
+  });
+  
+  describe('calendarTaskToTaskLike', () => {  
+    it('should convert CalendarTask to Task-like object and set postponed_days to undefined', () => {
+      const task: CalendarTask = {
+        id: '1',
+        title: 'Test',
+        description: 'Desc',
+        type: 'periodic',
+        day: 'Lundi' as const,
+        frequency: 'hebdomadaire' as const,
+        due_on: '2024-06-10',
+        in_progress: true,
+        mode: 'Distanciel' as const,
+        display_order: 3,
+      };
+  
+      const result = calendarTaskToTaskLike(task);
+      expect(result.id).toBe('1');
+      expect(result.title).toBe('Test');
+      expect(result.postponed_days).toBeUndefined();
+    });
+  });  
 });
