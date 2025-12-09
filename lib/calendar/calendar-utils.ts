@@ -3,7 +3,7 @@ import { getTasks } from '@/lib/db/tasks';
 import { getWorkday, getWorkdaysMap, WorkMode } from '@/lib/db/workdays';
 import { formatDateLocal, normalizeToMidnight, addDays, parseDateLocal } from '@/lib/utils';
 import { getPeriodicTasksForDateWithShift, findNextMatchingDate, needsShift } from './task-shifting-service';
-import { getDayName, getDefaultMaxShiftingDays } from './periodic-dates';
+import { getDefaultMaxShiftingDays } from './periodic-dates';
 import { sortByDisplayOrder } from '@/lib/tasks/sorting/sort-by-display-order';
 
 export interface CalendarTask {

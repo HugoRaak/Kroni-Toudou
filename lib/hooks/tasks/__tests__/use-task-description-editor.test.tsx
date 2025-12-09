@@ -349,19 +349,19 @@ describe('useTaskDescriptionEditor', () => {
     // We get the exact handlers passed to `on`
     const updateHandler = mockEditor.on.mock.calls.find(
       ([event]) => event === 'update'
-    )?.[1] as Function;
+    )?.[1] as () => void;
     const createHandler = mockEditor.on.mock.calls.find(
       ([event]) => event === 'create'
-    )?.[1] as Function;
+    )?.[1] as () => void;
     const transactionHandler = mockEditor.on.mock.calls.find(
       ([event]) => event === 'transaction'
-    )?.[1] as Function;
+    )?.[1] as () => void;
     const selectionUpdateHandler = mockEditor.on.mock.calls.find(
       ([event]) => event === 'selectionUpdate'
-    )?.[1] as Function;
+    )?.[1] as () => void;
     const focusHandler = mockEditor.on.mock.calls.find(
       ([event]) => event === 'focus'
-    )?.[1] as Function;
+    )?.[1] as () => void;
 
     expect(updateHandler).toBeDefined();
     expect(createHandler).toBeDefined();
