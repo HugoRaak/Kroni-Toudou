@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect } from 'react';
 import { processPendingLicenseAction } from '@/app/actions/licenses';
@@ -15,4 +15,3 @@ export function LicenseProcessor() {
   // This component doesn't render anything
   return null;
 }
-

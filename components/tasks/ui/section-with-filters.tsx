@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { Task, Frequency } from '@/lib/types';
@@ -23,7 +23,10 @@ type PresenceFilter = 'all' | 'presentiel' | 'distanciel';
 type FrequencyFilter = 'all' | Frequency;
 
 // Constants extracted outside component to avoid recreation
-const ACCENT_CLASSES: Record<string, { bar: string; chip: string; headerBg: string; title: string }> = {
+const ACCENT_CLASSES: Record<
+  string,
+  { bar: string; chip: string; headerBg: string; title: string }
+> = {
   yellow: {
     bar: 'bg-yellow-400/30',
     chip: 'bg-yellow-50',
@@ -99,11 +102,12 @@ export function SectionWithFilters({
   const [isSaving, setIsSaving] = useState(false);
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
+    return tasks.filter((task) => {
       const mode = task.mode ?? 'Tous';
       if (presenceFilter === 'presentiel' && mode === 'Distanciel') return false;
       if (presenceFilter === 'distanciel' && mode === 'Présentiel') return false;
-      if (showFrequencyFilter && frequencyFilter !== 'all' && task.frequency !== frequencyFilter) return false;
+      if (showFrequencyFilter && frequencyFilter !== 'all' && task.frequency !== frequencyFilter)
+        return false;
       return true;
     });
   }, [tasks, presenceFilter, frequencyFilter, showFrequencyFilter]);
@@ -155,10 +159,10 @@ export function SectionWithFilters({
 
   const handleSaveOrder = async () => {
     if (orderedTasks.length === 0) return;
-    
+
     setIsSaving(true);
     try {
-      const taskIds = orderedTasks.map(task => task.id);
+      const taskIds = orderedTasks.map((task) => task.id);
       const success = await updateTasksDisplayOrderAction(taskIds);
       if (success) {
         setIsEditOrderMode(false);
@@ -180,7 +184,9 @@ export function SectionWithFilters({
 
   return (
     <section className="mb-8 group transition-transform">
-      <div className={`relative rounded-md border overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
+      <div
+        className={`relative rounded-md border overflow-hidden shadow-sm hover:shadow-md transition-shadow`}
+      >
         <div className={`absolute inset-0 ${c.headerBg} pointer-events-none`} />
         <div className={`h-1 ${c.bar}`} />
         <div className="p-4 flex items-center justify-between relative">
@@ -226,9 +232,15 @@ export function SectionWithFilters({
                       value={presenceFilter}
                       onValueChange={(value) => setPresenceFilter(value as PresenceFilter)}
                     >
-                      <DropdownMenuRadioItem value="all" className="cursor-pointer">Tous</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="presentiel" className="cursor-pointer">Présentiel</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="distanciel" className="cursor-pointer">Distanciel</DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="all" className="cursor-pointer">
+                        Tous
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="presentiel" className="cursor-pointer">
+                        Présentiel
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="distanciel" className="cursor-pointer">
+                        Distanciel
+                      </DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
                     {showFrequencyFilter && (
                       <>
@@ -238,11 +250,19 @@ export function SectionWithFilters({
                           value={frequencyFilter}
                           onValueChange={(value) => setFrequencyFilter(value as FrequencyFilter)}
                         >
-                          <DropdownMenuRadioItem value="all" className="cursor-pointer">Toutes</DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="quotidien" className="cursor-pointer">Quotidien</DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="hebdomadaire" className="cursor-pointer">Hebdomadaire</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="all" className="cursor-pointer">
+                            Toutes
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="quotidien" className="cursor-pointer">
+                            Quotidien
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="hebdomadaire" className="cursor-pointer">
+                            Hebdomadaire
+                          </DropdownMenuRadioItem>
                           <DropdownMenuRadioItem value="mensuel">Mensuel</DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="personnalisé">Personnalisé</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="personnalisé">
+                            Personnalisé
+                          </DropdownMenuRadioItem>
                         </DropdownMenuRadioGroup>
                       </>
                     )}
@@ -298,9 +318,11 @@ export function SectionWithFilters({
                   </div>
                   <div className="mt-2 space-y-3">
                     {upcomingTasks.length === 0 ? (
-                      <div className="text-xs text-muted-foreground/80">Aucun évènement à venir.</div>
+                      <div className="text-xs text-muted-foreground/80">
+                        Aucun évènement à venir.
+                      </div>
                     ) : (
-                      upcomingTasks.map(task => (
+                      upcomingTasks.map((task) => (
                         <TaskItem
                           key={task.id}
                           task={task}
@@ -322,7 +344,7 @@ export function SectionWithFilters({
                     {pastTasks.length === 0 ? (
                       <div className="text-xs text-muted-foreground/80">Aucun évènement passé.</div>
                     ) : (
-                      pastTasks.map(task => (
+                      pastTasks.map((task) => (
                         <TaskItem
                           key={task.id}
                           task={task}
@@ -336,7 +358,7 @@ export function SectionWithFilters({
                 </div>
               </div>
             ) : (
-              tasksToDisplay.map(task => (
+              tasksToDisplay.map((task) => (
                 <TaskItem
                   key={task.id}
                   task={task}
@@ -352,4 +374,3 @@ export function SectionWithFilters({
     </section>
   );
 }
-

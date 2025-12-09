@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { TaskItemCompact } from "@/components/tasks/items/task-item-compact";
-import { TaskWithType } from "@/lib/types";
-import { taskWithTypeToTaskLike } from "@/lib/tasks/processing/task-conversion";
-import { getTaskTypeClassName } from "@/lib/tasks/constants/task-constants";
-import { useDragAndDrop } from "@/lib/hooks/ui/use-drag-and-drop";
-import { saveTodayTaskOrder } from "@/lib/storage/localStorage-tasks";
-import type { ModeConflictError } from "@/app/actions/tasks";
+import { useEffect } from 'react';
+import { TaskItemCompact } from '@/components/tasks/items/task-item-compact';
+import { TaskWithType } from '@/lib/types';
+import { taskWithTypeToTaskLike } from '@/lib/tasks/processing/task-conversion';
+import { getTaskTypeClassName } from '@/lib/tasks/constants/task-constants';
+import { useDragAndDrop } from '@/lib/hooks/ui/use-drag-and-drop';
+import { saveTodayTaskOrder } from '@/lib/storage/localStorage-tasks';
+import type { ModeConflictError } from '@/app/actions/tasks';
 
 interface TaskColumnDraggableProps {
   columnTasks: TaskWithType[];
@@ -29,12 +29,12 @@ export function TaskColumnDraggable({
   // Handler to update global order when column order changes
   const handleOrderChange = (orderedColumnTasks: TaskWithType[]) => {
     // Get current global order
-    const currentOrder = allTasks.map(t => t.id);
-    
+    const currentOrder = allTasks.map((t) => t.id);
+
     // Get IDs of tasks in this column (ordered)
-    const columnIds = orderedColumnTasks.map(t => t.id);
+    const columnIds = orderedColumnTasks.map((t) => t.id);
     const columnIdsSet = new Set(columnIds);
-    
+
     // Find all positions of column tasks in the global order
     const columnIndices: number[] = [];
     currentOrder.forEach((id, index) => {
@@ -42,10 +42,10 @@ export function TaskColumnDraggable({
         columnIndices.push(index);
       }
     });
-    
+
     // If no column tasks found in global order, just append them at the end
     if (columnIndices.length === 0) {
-      const otherIds = currentOrder.filter(id => !columnIdsSet.has(id));
+      const otherIds = currentOrder.filter((id) => !columnIdsSet.has(id));
       const newGlobalOrder = [...otherIds, ...columnIds];
       saveTodayTaskOrder(newGlobalOrder);
       if (typeof window !== 'undefined') {
@@ -53,21 +53,21 @@ export function TaskColumnDraggable({
       }
       return;
     }
-    
+
     // Find the first position where a column task appears
     const firstColumnIndex = columnIndices[0];
-    
+
     // Build new global order: preserve order of tasks before first column task,
     // insert reordered column tasks, then preserve order of tasks after last column task
-    const beforeIds = currentOrder.slice(0, firstColumnIndex).filter(id => !columnIdsSet.has(id));
+    const beforeIds = currentOrder.slice(0, firstColumnIndex).filter((id) => !columnIdsSet.has(id));
     const afterStartIndex = Math.max(...columnIndices) + 1;
-    const afterIds = currentOrder.slice(afterStartIndex).filter(id => !columnIdsSet.has(id));
-    
+    const afterIds = currentOrder.slice(afterStartIndex).filter((id) => !columnIdsSet.has(id));
+
     const newGlobalOrder = [...beforeIds, ...columnIds, ...afterIds];
-    
+
     // Save updated global order
     saveTodayTaskOrder(newGlobalOrder);
-    
+
     // Trigger event to notify that order was updated
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('task-order-updated'));
@@ -90,24 +90,24 @@ export function TaskColumnDraggable({
 
   // Update items when columnTasks change (if task IDs differ or order changed externally)
   useEffect(() => {
-    const currentIds = new Set(orderedTasks.map(t => t.id));
-    const newIds = new Set(columnTasks.map(t => t.id));
-    
+    const currentIds = new Set(orderedTasks.map((t) => t.id));
+    const newIds = new Set(columnTasks.map((t) => t.id));
+
     // Check if task IDs have changed (added/removed)
-    const idsChanged = 
+    const idsChanged =
       currentIds.size !== newIds.size ||
-      [...newIds].some(id => !currentIds.has(id)) ||
-      [...currentIds].some(id => !newIds.has(id));
-    
+      [...newIds].some((id) => !currentIds.has(id)) ||
+      [...currentIds].some((id) => !newIds.has(id));
+
     if (idsChanged) {
       setOrderedTasks(columnTasks);
       return;
     }
-    
+
     // Check if order has changed (compare order of IDs)
-    const currentOrder = orderedTasks.map(t => t.id).join(',');
-    const newOrder = columnTasks.map(t => t.id).join(',');
-    
+    const currentOrder = orderedTasks.map((t) => t.id).join(',');
+    const newOrder = columnTasks.map((t) => t.id).join(',');
+
     // Update if order changed and there's no ongoing drag operation
     if (currentOrder !== newOrder && draggedIndex === null) {
       setOrderedTasks(columnTasks);
@@ -136,11 +136,11 @@ export function TaskColumnDraggable({
           draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
         } ${
           dragOverIndex === 0 && dropPosition === 'before' && draggedIndex !== null
-            ? 'bg-blue-500/20 border-t-2 border-dashed border-blue-500' 
+            ? 'bg-blue-500/20 border-t-2 border-dashed border-blue-500'
             : ''
         }`}
       />
-      
+
       {orderedTasks.map((task, index) => (
         <div key={task.id} className="relative">
           {/* Drop zone between tasks */}
@@ -153,7 +153,7 @@ export function TaskColumnDraggable({
                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                 const mouseY = e.clientY;
                 const middle = rect.top + rect.height / 2;
-                
+
                 if (mouseY < middle) {
                   // Closer to previous task, drop after it
                   handleDropZoneDragOver(e, index - 1, 'after');
@@ -169,7 +169,7 @@ export function TaskColumnDraggable({
                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                 const mouseY = e.clientY;
                 const middle = rect.top + rect.height / 2;
-                
+
                 if (mouseY < middle) {
                   handleDropZoneDrop(e, index - 1, 'after');
                 } else {
@@ -179,14 +179,16 @@ export function TaskColumnDraggable({
               className={`h-4 -mt-2 -mb-2 transition-all z-20 ${
                 draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
               } ${
-                (dragOverIndex === index - 1 && dropPosition === 'after' && draggedIndex !== null) ||
+                (dragOverIndex === index - 1 &&
+                  dropPosition === 'after' &&
+                  draggedIndex !== null) ||
                 (dragOverIndex === index && dropPosition === 'before' && draggedIndex !== null)
-                  ? 'bg-blue-500/20 border-t-2 border-b-2 border-dashed border-blue-500' 
+                  ? 'bg-blue-500/20 border-t-2 border-b-2 border-dashed border-blue-500'
                   : ''
               }`}
             />
           )}
-          
+
           {/* Task item */}
           <div
             draggable
@@ -205,17 +207,17 @@ export function TaskColumnDraggable({
             }}
             onDragEnd={handleDragEnd}
             className={`relative group transition-all duration-200 ${
-              draggedIndex === index 
-                ? 'z-50 cursor-grabbing opacity-50' 
+              draggedIndex === index
+                ? 'z-50 cursor-grabbing opacity-50'
                 : 'cursor-move hover:opacity-90 z-0'
             }`}
           >
             <div className="relative">
-              <TaskItemCompact 
-                task={taskWithTypeToTaskLike(task)} 
+              <TaskItemCompact
+                task={taskWithTypeToTaskLike(task)}
                 className={`transition-all ${
-                  draggedIndex === index 
-                    ? 'shadow-2xl scale-105 ring-4 ring-blue-500/40 ring-offset-2 bg-background border-2 border-blue-500/60' 
+                  draggedIndex === index
+                    ? 'shadow-2xl scale-105 ring-4 ring-blue-500/40 ring-offset-2 bg-background border-2 border-blue-500/60'
                     : ''
                 } ${getTaskTypeClassName(task.taskType)}`}
                 onSubmit={onUpdate}
@@ -232,21 +234,37 @@ export function TaskColumnDraggable({
                 className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 hover:bg-muted/50 transition-colors cursor-pointer z-30"
                 title="Fini de faire cette tâche"
               >
-                <svg className="w-5 h-5 text-muted-foreground hover:text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-5 h-5 text-muted-foreground hover:text-destructive"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </button>
             </div>
-            {dragOverIndex === index && dropPosition === 'before' && draggedIndex !== null && draggedIndex !== index && (
-              <div className="absolute -top-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
-            )}
-            {dragOverIndex === index && dropPosition === 'after' && draggedIndex !== null && draggedIndex !== index && (
-              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
-            )}
+            {dragOverIndex === index &&
+              dropPosition === 'before' &&
+              draggedIndex !== null &&
+              draggedIndex !== index && (
+                <div className="absolute -top-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
+              )}
+            {dragOverIndex === index &&
+              dropPosition === 'after' &&
+              draggedIndex !== null &&
+              draggedIndex !== index && (
+                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
+              )}
           </div>
         </div>
       ))}
-      
+
       {/* Drop zone after last task */}
       <div
         onDragOver={(e) => {
@@ -264,12 +282,13 @@ export function TaskColumnDraggable({
         className={`h-4 -mt-2 transition-all ${
           draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
         } ${
-          dragOverIndex === orderedTasks.length - 1 && dropPosition === 'after' && draggedIndex !== null
-            ? 'bg-blue-500/20 border-b-2 border-dashed border-blue-500' 
+          dragOverIndex === orderedTasks.length - 1 &&
+          dropPosition === 'after' &&
+          draggedIndex !== null
+            ? 'bg-blue-500/20 border-b-2 border-dashed border-blue-500'
             : ''
         }`}
       />
     </div>
   );
 }
-

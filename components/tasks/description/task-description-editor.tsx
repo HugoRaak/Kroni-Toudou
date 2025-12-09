@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { EditorContent } from "@tiptap/react";
-import { TaskDescriptionToolbar } from "./task-description-toolbar";
-import { useRef, useState } from "react";
-import { useTaskDescriptionEditor } from "@/lib/hooks/tasks/use-task-description-editor";
+import { EditorContent } from '@tiptap/react';
+import { TaskDescriptionToolbar } from './task-description-toolbar';
+import { useRef, useState } from 'react';
+import { useTaskDescriptionEditor } from '@/lib/hooks/tasks/use-task-description-editor';
 
 type TaskDescriptionEditorProps = {
   value?: string;
@@ -14,9 +14,9 @@ type TaskDescriptionEditorProps = {
 };
 
 export function TaskDescriptionEditor({
-  value = "",
+  value = '',
   onChange,
-  placeholder = "Description de la tâche",
+  placeholder = 'Description de la tâche',
   id,
   name,
 }: TaskDescriptionEditorProps) {
@@ -76,5 +76,3 @@ export function TaskDescriptionEditor({
     </div>
   );
 }
-
-

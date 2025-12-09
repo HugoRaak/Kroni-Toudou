@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useMemo, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Task } from "@/lib/types";
-import { TaskWithShift, TaskShiftAlert } from "@/lib/calendar/calendar-utils";
-import { WorkModeBadge } from "@/components/calendar/ui/workmode-badge";
-import { HideTaskDialog } from "@/components/calendar/dialogs/hide-task-dialog";
-import { SingleColumnLayout } from "./day-view-layouts/single-column-layout";
-import { ThreeColumnLayout } from "./day-view-layouts/three-column-layout";
-import { isToday, hideTodayTask, hideTodayTempTask } from "@/lib/storage/localStorage-tasks";
-import { useTempTasks } from "@/lib/hooks/tasks/use-temp-tasks";
-import { useUnifiedTaskHandlers } from "@/lib/hooks/tasks/use-unified-task-handlers";
-import { useDayViewState } from "@/lib/hooks/calendar/use-day-view-state";
-import { useDayTasksPreparation } from "@/lib/hooks/calendar/use-day-tasks-preparation";
-import { formatDateLocal, normalizeToMidnight, isPastDate } from "@/lib/utils";
-import type { ModeConflictError } from "@/app/actions/tasks";
+import { useMemo, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Task } from '@/lib/types';
+import { TaskWithShift, TaskShiftAlert } from '@/lib/calendar/calendar-utils';
+import { WorkModeBadge } from '@/components/calendar/ui/workmode-badge';
+import { HideTaskDialog } from '@/components/calendar/dialogs/hide-task-dialog';
+import { SingleColumnLayout } from './day-view-layouts/single-column-layout';
+import { ThreeColumnLayout } from './day-view-layouts/three-column-layout';
+import { isToday, hideTodayTask, hideTodayTempTask } from '@/lib/storage/localStorage-tasks';
+import { useTempTasks } from '@/lib/hooks/tasks/use-temp-tasks';
+import { useUnifiedTaskHandlers } from '@/lib/hooks/tasks/use-unified-task-handlers';
+import { useDayViewState } from '@/lib/hooks/calendar/use-day-view-state';
+import { useDayTasksPreparation } from '@/lib/hooks/calendar/use-day-tasks-preparation';
+import { formatDateLocal, normalizeToMidnight, isPastDate } from '@/lib/utils';
+import type { ModeConflictError } from '@/app/actions/tasks';
 
 export type DayTasksData = {
   periodic: TaskWithShift[];
@@ -42,7 +42,7 @@ function DayView({
   date: Date;
   loading: boolean;
   tasks: DayTasksData;
-  workMode: "Présentiel" | "Distanciel" | "Congé";
+  workMode: 'Présentiel' | 'Distanciel' | 'Congé';
   onPrev: () => void;
   onNext: () => void;
   onModeSaved?: () => void;
@@ -52,19 +52,19 @@ function DayView({
 }) {
   const day = useMemo(() => date.getDate(), [date]);
   const month = useMemo(() => {
-    const monthStr = date.toLocaleDateString("fr-FR", { month: "long" });
+    const monthStr = date.toLocaleDateString('fr-FR', { month: 'long' });
     return monthStr.charAt(0).toUpperCase() + monthStr.slice(1);
   }, [date]);
   const year = useMemo(() => date.getFullYear(), [date]);
   const dayName = useMemo(() => {
-    const dayNameStr = date.toLocaleDateString("fr-FR", { weekday: "long" });
+    const dayNameStr = date.toLocaleDateString('fr-FR', { weekday: 'long' });
     return dayNameStr.charAt(0).toUpperCase() + dayNameStr.slice(1);
   }, [date]);
   const isTodayView = useMemo(() => isToday(date), [date]);
-  
+
   // Use day view state hook
   const state = useDayViewState(isTodayView);
-  
+
   // Use temp tasks hook
   const { tempTasks, loadTempTasks, getHiddenTempTaskIds } = useTempTasks(isTodayView, workMode);
 
@@ -88,7 +88,7 @@ function DayView({
     loading,
     state.orderVersion,
     getHiddenTempTaskIds,
-    state.layout
+    state.layout,
   );
 
   // Handler for hiding/finishing tasks (regular or temp)
@@ -110,7 +110,9 @@ function DayView({
 
   return (
     <div className="space-y-4">
-      <div className={`flex items-center ${showNavigation || isTodayView ? "justify-between" : "justify-center"}`}>
+      <div
+        className={`flex items-center ${showNavigation || isTodayView ? 'justify-between' : 'justify-center'}`}
+      >
         {showNavigation && (
           <Button
             variant="outline"
@@ -120,13 +122,19 @@ function DayView({
             className="cursor-pointer hover:bg-primary/10 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </Button>
         )}
         {!showNavigation && isTodayView && <div />}
         <div className="text-center">
-          {formatDateLocal(normalizeToMidnight(date)) === formatDateLocal(normalizeToMidnight(new Date())) && (
+          {formatDateLocal(normalizeToMidnight(date)) ===
+            formatDateLocal(normalizeToMidnight(new Date())) && (
             <span className="inline-block mb-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
               Aujourd&apos;hui
             </span>
@@ -154,15 +162,27 @@ function DayView({
                 size="sm"
                 onClick={state.handleToggleLayout}
                 className="h-8 text-xs cursor-pointer"
-                title={state.layout === 'single' ? 'Afficher en 3 colonnes' : 'Afficher en une colonne'}
+                title={
+                  state.layout === 'single' ? 'Afficher en 3 colonnes' : 'Afficher en une colonne'
+                }
               >
                 {state.layout === 'single' ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                    />
                   </svg>
                 ) : (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                 )}
               </Button>
@@ -176,7 +196,12 @@ function DayView({
                 className="cursor-pointer hover:bg-primary/10 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </Button>
             )}
@@ -232,7 +257,9 @@ function DayView({
             </div>
           </div>
         ) : !tasks ? (
-          <p className="text-center text-muted-foreground">{workMode === 'Congé' ? "Là c'est repos !" : 'Aucune tâche pour ce jour'}</p>
+          <p className="text-center text-muted-foreground">
+            {workMode === 'Congé' ? "Là c'est repos !" : 'Aucune tâche pour ce jour'}
+          </p>
         ) : state.layout === 'three-column' ? (
           <ThreeColumnLayout
             isTodayView={isTodayView}
@@ -276,5 +303,3 @@ function DayView({
 }
 
 export default DayView;
-
-

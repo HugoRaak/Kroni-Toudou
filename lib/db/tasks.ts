@@ -4,7 +4,7 @@ import { Task } from '@/lib/types';
 // Fonctions de lecture pour Server Components
 export async function getTasks(userId: string): Promise<Task[]> {
   const supabase = await supabaseServerReadOnly();
-  
+
   const { data, error } = await supabase
     .from('tasks')
     .select('*')

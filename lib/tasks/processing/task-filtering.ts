@@ -7,7 +7,7 @@ export function groupTasksByType(tasks: Task[]): {
 } {
   return {
     periodic: tasks
-      .filter(t => !!t.frequency)
+      .filter((t) => !!t.frequency)
       .sort((a, b) => {
         // Sort by display_order ascending, then by updated_at descending
         if (a.display_order !== undefined && b.display_order !== undefined) {
@@ -18,14 +18,14 @@ export function groupTasksByType(tasks: Task[]): {
         return 0;
       }),
     specificDate: tasks
-      .filter(t => !t.frequency && !!t.due_on)
+      .filter((t) => !t.frequency && !!t.due_on)
       .sort((a, b) => {
         // Sort by due_on ascending (oldest to newest)
         if (!a.due_on || !b.due_on) return 0;
         return a.due_on.localeCompare(b.due_on);
       }),
     whenPossible: tasks
-      .filter(t => !t.frequency && !t.due_on)
+      .filter((t) => !t.frequency && !t.due_on)
       .sort((a, b) => {
         // Sort by display_order ascending, then by in_progress
         if (a.display_order !== undefined && b.display_order !== undefined) {
@@ -41,4 +41,3 @@ export function groupTasksByType(tasks: Task[]): {
       }),
   };
 }
-

@@ -300,7 +300,7 @@ describe('periodic-dates', () => {
 
         expect(result).toBeNull();
       });
-      
+
       it('should handle negative days difference', () => {
         const task = createMockTask({
           frequency: 'personnalisé',

@@ -28,28 +28,28 @@ describe('task-sorting-helpers', () => {
     it('should calculate sort key when maxReorderedBeforeNewPos is -1', () => {
       const result = calculateNonReorderedSortKey(5, 0, -1, 10);
       const expected = -1 + 5 / 11; // basePos = -1, fractionalOffset = 5/11
-      
+
       expect(result).toBeCloseTo(expected, 10);
     });
 
     it('should calculate sort key when maxReorderedBeforeNewPos is provided', () => {
       const result = calculateNonReorderedSortKey(5, 0, 3, 10);
       const expected = 3 + 1 + 5 / 11; // basePos = 4, fractionalOffset = 5/11
-      
+
       expect(result).toBeCloseTo(expected, 10);
     });
 
     it('should handle position 0', () => {
       const result = calculateNonReorderedSortKey(0, 0, 2, 10);
       const expected = 3 + 0 / 11; // basePos = 3, fractionalOffset = 0
-      
+
       expect(result).toBeCloseTo(expected, 10);
     });
 
     it('should handle position at end of list', () => {
       const result = calculateNonReorderedSortKey(10, 0, 5, 10);
       const expected = 6 + 10 / 11; // basePos = 6, fractionalOffset = 10/11
-      
+
       expect(result).toBeCloseTo(expected, 10);
     });
 
@@ -57,7 +57,7 @@ describe('task-sorting-helpers', () => {
       // The function accepts reorderedBeforeCount but doesn't use it
       const result1 = calculateNonReorderedSortKey(5, 0, 3, 10);
       const result2 = calculateNonReorderedSortKey(5, 2, 3, 10);
-      
+
       // Results should be the same since reorderedBeforeCount is not used
       expect(result1).toBeCloseTo(result2, 10);
     });
@@ -65,7 +65,7 @@ describe('task-sorting-helpers', () => {
     it('should handle edge case with totalTasks = 0', () => {
       const result = calculateNonReorderedSortKey(0, 0, -1, 0);
       const expected = -1 + 0 / 1; // fractionalOffset = 0/1 = 0
-      
+
       expect(result).toBeCloseTo(expected, 10);
     });
 
@@ -100,7 +100,7 @@ describe('task-sorting-helpers', () => {
       const taskIds = ['task1', 'task2'];
       const oldOrderMap = new Map([
         ['task1', 10], // oldPos > targetOldPos
-        ['task2', 8],  // oldPos > targetOldPos
+        ['task2', 8], // oldPos > targetOldPos
       ]);
       const newPositionMap = new Map([
         ['task1', 3], // newPos < targetOldPos
@@ -118,7 +118,7 @@ describe('task-sorting-helpers', () => {
       const taskIds = ['task1', 'task2'];
       const oldOrderMap = new Map([
         ['task1', 10], // oldPos > targetOldPos
-        ['task2', 8],  // oldPos > targetOldPos
+        ['task2', 8], // oldPos > targetOldPos
       ]);
       const newPositionMap = new Map([
         ['task1', 6], // newPos > targetOldPos (did not move before)
@@ -135,15 +135,15 @@ describe('task-sorting-helpers', () => {
     it('should handle mixed scenarios', () => {
       const taskIds = ['task1', 'task2', 'task3', 'task4'];
       const oldOrderMap = new Map([
-        ['task1', 2],  // oldPos < targetOldPos (count)
+        ['task1', 2], // oldPos < targetOldPos (count)
         ['task2', 10], // oldPos > targetOldPos, newPos < targetOldPos (count)
-        ['task3', 8],  // oldPos > targetOldPos, newPos > targetOldPos (don't count)
-        ['task4', 1],  // oldPos < targetOldPos (count)
+        ['task3', 8], // oldPos > targetOldPos, newPos > targetOldPos (don't count)
+        ['task4', 1], // oldPos < targetOldPos (count)
       ]);
       const newPositionMap = new Map([
         ['task1', 0],
-        ['task2', 3],  // moved before targetOldPos
-        ['task3', 6],  // still after targetOldPos
+        ['task2', 3], // moved before targetOldPos
+        ['task3', 6], // still after targetOldPos
         ['task4', 1],
       ]);
       const targetOldPos = 5;
@@ -156,15 +156,13 @@ describe('task-sorting-helpers', () => {
 
     it('should handle empty taskIds array', () => {
       const result = countReorderedBefore([], new Map(), new Map(), 5);
-      
+
       expect(result).toBe(0);
     });
 
     it('should handle tasks not in oldOrderMap', () => {
       const taskIds = ['task1', 'task2'];
-      const oldOrderMap = new Map([
-        ['task1', 2],
-      ]);
+      const oldOrderMap = new Map([['task1', 2]]);
       const newPositionMap = new Map([
         ['task1', 1],
         ['task2', 3],
@@ -184,9 +182,7 @@ describe('task-sorting-helpers', () => {
         ['task1', 2],
         ['task2', 4],
       ]);
-      const newPositionMap = new Map([
-        ['task1', 1],
-      ]);
+      const newPositionMap = new Map([['task1', 1]]);
       const targetOldPos = 5;
 
       const result = countReorderedBefore(taskIds, oldOrderMap, newPositionMap, targetOldPos);

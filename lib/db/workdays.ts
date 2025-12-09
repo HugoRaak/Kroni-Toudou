@@ -1,6 +1,6 @@
-import { supabaseServer, supabaseServerReadOnly } from "@/lib/supabase/supabase-server";
-import { getDefaultWorkMode } from "@/lib/workday-defaults";
-import { addDays, formatDateLocal, normalizeToMidnight, parseDateLocal } from "@/lib/utils";
+import { supabaseServer, supabaseServerReadOnly } from '@/lib/supabase/supabase-server';
+import { getDefaultWorkMode } from '@/lib/workday-defaults';
+import { addDays, formatDateLocal, normalizeToMidnight, parseDateLocal } from '@/lib/utils';
 
 export type WorkMode = 'Présentiel' | 'Distanciel' | 'Congé';
 
@@ -17,13 +17,13 @@ export async function getWorkday(userId: string, workDate: string): Promise<Work
     console.error('Error fetching workday:', error);
     return await getDefaultWorkMode(workDate);
   }
-  return (data?.work_mode as WorkMode) ?? await getDefaultWorkMode(workDate);
+  return (data?.work_mode as WorkMode) ?? (await getDefaultWorkMode(workDate));
 }
 
 export async function getWorkdaysInRange(
   userId: string,
   startDate: string,
-  endDate: string
+  endDate: string,
 ): Promise<Record<string, WorkMode>> {
   const supabase = await supabaseServerReadOnly();
   const { data, error } = await supabase
@@ -39,7 +39,7 @@ export async function getWorkdaysInRange(
 
   const map: Record<string, WorkMode> = {};
   const dbWorkdays = new Set<string>();
-  
+
   // Fill with database values
   for (const row of data ?? []) {
     // Normalize date format to YYYY-MM-DD to ensure consistency
@@ -62,11 +62,11 @@ export async function getWorkdaysInRange(
   // Fill missing dates with defaults
   const start = parseDateLocal(startDate);
   const end = parseDateLocal(endDate);
-  
+
   // Iterate through dates using constructor to guarantee midnight local time
   let current = normalizeToMidnight(start);
   const endDateObj = normalizeToMidnight(end);
-  
+
   while (current <= endDateObj) {
     const dateStr = formatDateLocal(current);
     if (!dbWorkdays.has(dateStr)) {
@@ -81,20 +81,18 @@ export async function getWorkdaysInRange(
 export async function upsertWorkday(
   userId: string,
   workDate: string,
-  workMode: WorkMode
+  workMode: WorkMode,
 ): Promise<boolean> {
   const supabase = await supabaseServer();
-  const { error } = await supabase
-    .from('workdays')
-    .upsert(
-      {
-        user_id: userId,
-        work_date: workDate,
-        work_mode: workMode,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id,work_date' }
-    );
+  const { error } = await supabase.from('workdays').upsert(
+    {
+      user_id: userId,
+      work_date: workDate,
+      work_mode: workMode,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id,work_date' },
+  );
 
   if (error) {
     console.error('Error upserting workday:', error);
@@ -105,23 +103,21 @@ export async function upsertWorkday(
 
 export async function upsertWorkdaysBatch(
   userId: string,
-  workdays: Array<{ workDate: string; workMode: WorkMode }>
+  workdays: Array<{ workDate: string; workMode: WorkMode }>,
 ): Promise<boolean> {
   if (workdays.length === 0) return true;
-  
+
   const supabase = await supabaseServer();
   const now = new Date().toISOString();
-  const { error } = await supabase
-    .from('workdays')
-    .upsert(
-      workdays.map(({ workDate, workMode }) => ({
-        user_id: userId,
-        work_date: workDate,
-        work_mode: workMode,
-        updated_at: now,
-      })),
-      { onConflict: 'user_id,work_date' }
-    );
+  const { error } = await supabase.from('workdays').upsert(
+    workdays.map(({ workDate, workMode }) => ({
+      user_id: userId,
+      work_date: workDate,
+      work_mode: workMode,
+      updated_at: now,
+    })),
+    { onConflict: 'user_id,work_date' },
+  );
 
   if (error) {
     console.error('Error upserting workdays batch:', error);
@@ -130,12 +126,14 @@ export async function upsertWorkdaysBatch(
   return true;
 }
 
-export async function getWorkdaysMap(userId: string, startDate: Date, maxDays: number = 45): Promise<Record<string, WorkMode>> {
+export async function getWorkdaysMap(
+  userId: string,
+  startDate: Date,
+  maxDays: number = 45,
+): Promise<Record<string, WorkMode>> {
   const current = normalizeToMidnight(startDate);
   const endDate = addDays(current, maxDays);
   const startDateStr = formatDateLocal(current);
   const endDateStr = formatDateLocal(endDate);
   return await getWorkdaysInRange(userId, startDateStr, endDateStr);
 }
-
-

@@ -1,7 +1,7 @@
 // One-line note: calculates default work mode based on day of week and French public holidays from API
 
-import { WorkMode } from "@/lib/db/workdays";
-import { formatDateLocal } from "@/lib/utils";
+import { WorkMode } from '@/lib/db/workdays';
+import { formatDateLocal } from '@/lib/utils';
 
 // Cache for public holidays by year
 const holidaysCache = new Map<number, Set<string>>();
@@ -19,18 +19,20 @@ async function fetchFrenchPublicHolidays(year: number): Promise<Set<string>> {
     // Use fetch without Next.js cache options in server context to avoid issues
     const response = await fetch(
       `https://calendrier.api.gouv.fr/jours-feries/metropole/${year}.json`,
-      { 
+      {
         cache: 'force-cache',
-        next: { revalidate: 86400 } // Cache for 24 hours (only works in certain Next.js contexts)
-      }
+        next: { revalidate: 86400 }, // Cache for 24 hours (only works in certain Next.js contexts)
+      },
     );
-    
+
     if (!response.ok) {
-      console.error(`Failed to fetch holidays for year ${year}: ${response.status} ${response.statusText}`);
+      console.error(
+        `Failed to fetch holidays for year ${year}: ${response.status} ${response.statusText}`,
+      );
       return new Set<string>();
     }
-    
-    const data = await response.json() as Record<string, string>;
+
+    const data = (await response.json()) as Record<string, string>;
     // Keys are dates in YYYY-MM-DD format
     return new Set(Object.keys(data));
   } catch (error) {
@@ -47,7 +49,7 @@ async function getFrenchPublicHolidays(year: number): Promise<Set<string>> {
   if (holidaysCache.has(year)) {
     return holidaysCache.get(year)!;
   }
-  
+
   const holidays = await fetchFrenchPublicHolidays(year);
   holidaysCache.set(year, holidays);
   return holidays;
@@ -70,19 +72,17 @@ async function isFrenchPublicHoliday(date: Date): Promise<boolean> {
 function getDayOfWeek(year: number, month: number, day: number): number {
   let m = month;
   let y = year;
-  if (m < 3) { m += 12; y -= 1; }
+  if (m < 3) {
+    m += 12;
+    y -= 1;
+  }
 
-  const k = y % 100;         // year of century
+  const k = y % 100; // year of century
   const j = Math.floor(y / 100); // zero-based century
 
   // Zeller: h = 0..6 with 0=Saturday
   const hRaw =
-    day +
-    Math.floor((13 * (m + 1)) / 5) +
-    k +
-    Math.floor(k / 4) +
-    Math.floor(j / 4) -
-    2 * j;
+    day + Math.floor((13 * (m + 1)) / 5) + k + Math.floor(k / 4) + Math.floor(j / 4) - 2 * j;
 
   // Normalise modulo 7 pour éviter les négatifs
   const h = ((hRaw % 7) + 7) % 7;
@@ -102,7 +102,7 @@ export async function getDefaultWorkMode(date: Date | string): Promise<WorkMode>
   // Parse date string to ensure consistent date object
   const dateStr = typeof date === 'string' ? date : formatDateLocal(date);
   const [year, month, day] = dateStr.split('-').map(Number);
-  
+
   // Calculate day of week using timezone-independent formula
   const dayOfWeek = getDayOfWeek(year, month, day);
 
@@ -132,4 +132,3 @@ export async function getDefaultWorkMode(date: Date | string): Promise<WorkMode>
   // Monday (1), Tuesday (2), Thursday (4) are Présentiel
   return 'Présentiel';
 }
-

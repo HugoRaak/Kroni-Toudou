@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Button } from '@/components/ui/button';
 import { Highlighter } from 'lucide-react';
@@ -6,9 +6,21 @@ import { useClickOutside } from '@/lib/hooks/ui/use-click-outside';
 import { useRef } from 'react';
 
 const HIGHLIGHT_COLORS = [
-  "#FFFF00", "#FF0000", "#00FF00", "#00FFFF", "#0000FF",
-  "#FF00FF", "#000000", "#FFFFFF", "#EEECE1", "#1F497D",
-  "#4F81BD", "#A2C4C9", "#F2DCDB", "#E5B8B7", "#D8E4BC"
+  '#FFFF00',
+  '#FF0000',
+  '#00FF00',
+  '#00FFFF',
+  '#0000FF',
+  '#FF00FF',
+  '#000000',
+  '#FFFFFF',
+  '#EEECE1',
+  '#1F497D',
+  '#4F81BD',
+  '#A2C4C9',
+  '#F2DCDB',
+  '#E5B8B7',
+  '#D8E4BC',
 ];
 
 type HighlightColorPickerProps = {
@@ -36,15 +48,27 @@ export function HighlightColorPicker({
         variant="ghost"
         size="icon-sm"
         onClick={() => onOpenChange(!isOpen)}
-        className={`${isOpen ? "bg-accent text-accent-foreground border border-border" : ""} ${isActive ? "bg-accent/50 border-2" : ""}`}
-        style={currentColor ? { borderColor: currentColor } : isActive ? { borderColor: '#FFFF00' } : undefined}
+        className={`${isOpen ? 'bg-accent text-accent-foreground border border-border' : ''} ${isActive ? 'bg-accent/50 border-2' : ''}`}
+        style={
+          currentColor
+            ? { borderColor: currentColor }
+            : isActive
+              ? { borderColor: '#FFFF00' }
+              : undefined
+        }
         aria-label="Surlignage"
-        title={currentColor ? `Surlignage: ${currentColor}` : isActive ? "Surlignage actif" : "Surlignage"}
+        title={
+          currentColor
+            ? `Surlignage: ${currentColor}`
+            : isActive
+              ? 'Surlignage actif'
+              : 'Surlignage'
+        }
       >
         <div className="relative">
           <Highlighter className={`h-4 w-4 ${isActive ? 'opacity-100' : 'opacity-60'}`} />
           {isActive && currentColor && (
-            <div 
+            <div
               className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background shadow-sm"
               style={{ backgroundColor: currentColor }}
             />
@@ -89,4 +113,3 @@ export function HighlightColorPicker({
     </div>
   );
 }
-

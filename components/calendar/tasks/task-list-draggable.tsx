@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { TaskItemCompact } from "@/components/tasks/items/task-item-compact";
-import { TaskWithType } from "@/lib/types";
-import { taskWithTypeToTaskLike } from "@/lib/tasks/processing/task-conversion";
-import { getTaskTypeClassName } from "@/lib/tasks/constants/task-constants";
-import { useDragAndDrop } from "@/lib/hooks/ui/use-drag-and-drop";
-import type { ModeConflictError } from "@/app/actions/tasks";
+import { useEffect } from 'react';
+import { TaskItemCompact } from '@/components/tasks/items/task-item-compact';
+import { TaskWithType } from '@/lib/types';
+import { taskWithTypeToTaskLike } from '@/lib/tasks/processing/task-conversion';
+import { getTaskTypeClassName } from '@/lib/tasks/constants/task-constants';
+import { useDragAndDrop } from '@/lib/hooks/ui/use-drag-and-drop';
+import type { ModeConflictError } from '@/app/actions/tasks';
 
 interface TaskListDraggableProps {
   tasks: TaskWithType[];
@@ -39,15 +39,15 @@ export function TaskListDraggable({
 
   // Update items when tasks change (only if task IDs differ, not just order)
   useEffect(() => {
-    const currentIds = new Set(orderedTasks.map(t => t.id));
-    const newIds = new Set(tasks.map(t => t.id));
-    
+    const currentIds = new Set(orderedTasks.map((t) => t.id));
+    const newIds = new Set(tasks.map((t) => t.id));
+
     // Only reset if task IDs have changed (added/removed), not just reordered
-    const idsChanged = 
+    const idsChanged =
       currentIds.size !== newIds.size ||
-      [...newIds].some(id => !currentIds.has(id)) ||
-      [...currentIds].some(id => !newIds.has(id));
-    
+      [...newIds].some((id) => !currentIds.has(id)) ||
+      [...currentIds].some((id) => !newIds.has(id));
+
     if (idsChanged) {
       setOrderedTasks(tasks);
     }
@@ -72,12 +72,12 @@ export function TaskListDraggable({
             draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
           } ${
             dragOverIndex === 0 && dropPosition === 'before' && draggedIndex !== null
-              ? 'bg-blue-500/20 border-t-2 border-dashed border-blue-500' 
+              ? 'bg-blue-500/20 border-t-2 border-dashed border-blue-500'
               : ''
           }`}
         />
       )}
-      
+
       {orderedTasks.map((task, index) => (
         <div key={task.id} className="relative">
           {/* Drop zone between tasks */}
@@ -90,7 +90,7 @@ export function TaskListDraggable({
                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                 const mouseY = e.clientY;
                 const middle = rect.top + rect.height / 2;
-                
+
                 if (mouseY < middle) {
                   // Closer to previous task, drop after it
                   handleDropZoneDragOver(e, index - 1, 'after');
@@ -106,7 +106,7 @@ export function TaskListDraggable({
                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                 const mouseY = e.clientY;
                 const middle = rect.top + rect.height / 2;
-                
+
                 if (mouseY < middle) {
                   handleDropZoneDrop(e, index - 1, 'after');
                 } else {
@@ -116,14 +116,16 @@ export function TaskListDraggable({
               className={`h-4 -mt-2 -mb-2 transition-all z-20 ${
                 draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
               } ${
-                (dragOverIndex === index - 1 && dropPosition === 'after' && draggedIndex !== null) ||
+                (dragOverIndex === index - 1 &&
+                  dropPosition === 'after' &&
+                  draggedIndex !== null) ||
                 (dragOverIndex === index && dropPosition === 'before' && draggedIndex !== null)
-                  ? 'bg-blue-500/20 border-t-2 border-b-2 border-dashed border-blue-500' 
+                  ? 'bg-blue-500/20 border-t-2 border-b-2 border-dashed border-blue-500'
                   : ''
               }`}
             />
           )}
-          
+
           {/* Task item */}
           <div
             draggable
@@ -142,17 +144,17 @@ export function TaskListDraggable({
             }}
             onDragEnd={handleDragEnd}
             className={`relative group transition-all duration-200 ${
-              draggedIndex === index 
-                ? 'z-50 cursor-grabbing opacity-50' 
+              draggedIndex === index
+                ? 'z-50 cursor-grabbing opacity-50'
                 : 'cursor-move hover:opacity-90 z-0'
             }`}
           >
             <div className="relative">
-              <TaskItemCompact 
-                task={taskWithTypeToTaskLike(task)} 
+              <TaskItemCompact
+                task={taskWithTypeToTaskLike(task)}
                 className={`transition-all ${
-                  draggedIndex === index 
-                    ? 'shadow-2xl scale-105 ring-4 ring-blue-500/40 ring-offset-2 bg-background border-2 border-blue-500/60' 
+                  draggedIndex === index
+                    ? 'shadow-2xl scale-105 ring-4 ring-blue-500/40 ring-offset-2 bg-background border-2 border-blue-500/60'
                     : ''
                 } ${getTaskTypeClassName(task.taskType)}`}
                 onSubmit={onUpdate}
@@ -169,21 +171,37 @@ export function TaskListDraggable({
                 className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 hover:bg-muted/50 transition-colors cursor-pointer z-30"
                 title="Fini de faire cette tâche"
               >
-                <svg className="w-5 h-5 text-muted-foreground hover:text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-5 h-5 text-muted-foreground hover:text-destructive"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </button>
             </div>
-            {dragOverIndex === index && dropPosition === 'before' && draggedIndex !== null && draggedIndex !== index && (
-              <div className="absolute -top-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
-            )}
-            {dragOverIndex === index && dropPosition === 'after' && draggedIndex !== null && draggedIndex !== index && (
-              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
-            )}
+            {dragOverIndex === index &&
+              dropPosition === 'before' &&
+              draggedIndex !== null &&
+              draggedIndex !== index && (
+                <div className="absolute -top-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
+              )}
+            {dragOverIndex === index &&
+              dropPosition === 'after' &&
+              draggedIndex !== null &&
+              draggedIndex !== index && (
+                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-blue-500/70 rounded-full z-20" />
+              )}
           </div>
         </div>
       ))}
-      
+
       {/* Drop zone after last task */}
       {orderedTasks.length > 0 && (
         <div
@@ -202,8 +220,10 @@ export function TaskListDraggable({
           className={`h-4 -mt-2 transition-all ${
             draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
           } ${
-            dragOverIndex === orderedTasks.length - 1 && dropPosition === 'after' && draggedIndex !== null
-              ? 'bg-blue-500/20 border-b-2 border-dashed border-blue-500' 
+            dragOverIndex === orderedTasks.length - 1 &&
+            dropPosition === 'after' &&
+            draggedIndex !== null
+              ? 'bg-blue-500/20 border-b-2 border-dashed border-blue-500'
               : ''
           }`}
         />
@@ -211,4 +231,3 @@ export function TaskListDraggable({
     </div>
   );
 }
-

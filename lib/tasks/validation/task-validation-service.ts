@@ -13,33 +13,32 @@ export type ModeConflictError = {
 export async function checkModeConflict(
   userId: string,
   due_on: string | undefined,
-  mode: 'Tous' | 'Présentiel' | 'Distanciel' | undefined
+  mode: 'Tous' | 'Présentiel' | 'Distanciel' | undefined,
 ): Promise<ModeConflictError | null> {
   if (!due_on) return null;
-  
+
   const workMode = await getWorkday(userId, due_on);
-  
+
   if (workMode === 'Congé') {
     const taskMode = mode ?? 'Tous';
     return {
       type: 'MODE_CONFLICT',
       taskDate: due_on,
       taskMode: taskMode,
-      workMode: 'Congé'
+      workMode: 'Congé',
     };
   }
-  
+
   if (!mode || mode === 'Tous') return null;
-  
+
   if (mode !== workMode) {
     return {
       type: 'MODE_CONFLICT',
       taskDate: due_on,
       taskMode: mode,
-      workMode: workMode
+      workMode: workMode,
     };
   }
-  
+
   return null;
 }
-

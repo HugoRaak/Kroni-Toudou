@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import type { ModeConflictError } from '@/app/actions/tasks';
@@ -29,9 +29,10 @@ export function useModeConflicts(): UseModeConflictsReturn {
   const [currentConflictIndex, setCurrentConflictIndex] = useState<number>(0);
   const [confirmedConflicts, setConfirmedConflicts] = useState<Set<number>>(new Set());
 
-  const currentConflict = modeConflicts.length > 0 && currentConflictIndex < modeConflicts.length 
-    ? modeConflicts[currentConflictIndex] 
-    : null;
+  const currentConflict =
+    modeConflicts.length > 0 && currentConflictIndex < modeConflicts.length
+      ? modeConflicts[currentConflictIndex]
+      : null;
 
   const handleConfirmConflict = (index: number) => {
     const newConfirmed = new Set(confirmedConflicts);
@@ -65,4 +66,3 @@ export function useModeConflicts(): UseModeConflictsReturn {
     resetConflicts,
   };
 }
-

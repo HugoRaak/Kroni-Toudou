@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { TaskWithType } from "@/lib/types";
-import { DayTasksData } from "@/components/calendar/views/day-view";
-import { TaskListDraggable } from "@/components/calendar/tasks/task-list-draggable";
-import { TaskSectionWhenPossible } from "@/components/calendar/tasks/task-section-when-possible";
-import { TaskSectionSpecific } from "@/components/calendar/tasks/task-section-specific";
-import { DraggableTaskSection } from "@/components/calendar/tasks/draggable-task-section";
-import type { ModeConflictError } from "@/app/actions/tasks";
+import { TaskWithType } from '@/lib/types';
+import { DayTasksData } from '@/components/calendar/views/day-view';
+import { TaskListDraggable } from '@/components/calendar/tasks/task-list-draggable';
+import { TaskSectionWhenPossible } from '@/components/calendar/tasks/task-section-when-possible';
+import { TaskSectionSpecific } from '@/components/calendar/tasks/task-section-specific';
+import { DraggableTaskSection } from '@/components/calendar/tasks/draggable-task-section';
+import type { ModeConflictError } from '@/app/actions/tasks';
 
 interface SingleColumnLayoutProps {
   isTodayView: boolean;
-  workMode: "Présentiel" | "Distanciel" | "Congé";
+  workMode: 'Présentiel' | 'Distanciel' | 'Congé';
   tasks: DayTasksData;
   preparedTasks: TaskWithType[];
   onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
@@ -107,7 +107,7 @@ export function SingleColumnLayout({
     <div className="space-y-6">
       <DraggableTaskSection
         title="Tâches périodiques"
-        icon={(
+        icon={
           <svg
             width="14"
             height="14"
@@ -119,7 +119,7 @@ export function SingleColumnLayout({
             <circle cx="12" cy="12" r="10" strokeWidth="2" />
             <path d="M12 6v6l4 2" strokeWidth="2" />
           </svg>
-        )}
+        }
         titleClassName="text-yellow-900"
         tasks={tasks.periodic}
         taskClassName="bg-yellow-50 border-yellow-400/30"
@@ -139,7 +139,7 @@ export function SingleColumnLayout({
       />
       <DraggableTaskSection
         title="Quand je peux"
-        icon={(
+        icon={
           <svg
             width="18"
             height="18"
@@ -153,7 +153,7 @@ export function SingleColumnLayout({
               strokeWidth="2"
             />
           </svg>
-        )}
+        }
         titleClassName="text-orange-800"
         tasks={[...tasks.whenPossible.inProgress, ...tasks.whenPossible.notStarted]}
         taskClassName="bg-orange-50 border-orange-600/25"
@@ -172,4 +172,3 @@ export function SingleColumnLayout({
     </div>
   );
 }
-

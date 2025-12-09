@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Button } from '@/components/ui/button';
 import { Bold, Italic, Underline as UnderlineIcon } from 'lucide-react';
@@ -43,11 +43,13 @@ export function TaskDescriptionToolbar({
           editor.chain().focus().toggleBold().run();
           setTimeout(() => onEditorStateUpdate(), 0);
         }}
-        className={editor.isActive("bold") ? "bg-accent text-accent-foreground border border-border" : ""}
+        className={
+          editor.isActive('bold') ? 'bg-accent text-accent-foreground border border-border' : ''
+        }
         aria-label="Gras"
         title="Gras"
       >
-        <Bold className={`h-4 w-4 ${editor.isActive("bold") ? "font-bold" : ""}`} />
+        <Bold className={`h-4 w-4 ${editor.isActive('bold') ? 'font-bold' : ''}`} />
       </Button>
       <Button
         type="button"
@@ -57,11 +59,13 @@ export function TaskDescriptionToolbar({
           editor.chain().focus().toggleItalic().run();
           setTimeout(() => onEditorStateUpdate(), 0);
         }}
-        className={editor.isActive("italic") ? "bg-accent text-accent-foreground border border-border" : ""}
+        className={
+          editor.isActive('italic') ? 'bg-accent text-accent-foreground border border-border' : ''
+        }
         aria-label="Italique"
         title="Italique"
       >
-        <Italic className={`h-4 w-4 ${editor.isActive("italic") ? "italic" : ""}`} />
+        <Italic className={`h-4 w-4 ${editor.isActive('italic') ? 'italic' : ''}`} />
       </Button>
       <Button
         type="button"
@@ -71,11 +75,15 @@ export function TaskDescriptionToolbar({
           editor.chain().focus().toggleUnderline().run();
           setTimeout(() => onEditorStateUpdate(), 0);
         }}
-        className={editor.isActive("underline") ? "bg-accent text-accent-foreground border border-border" : ""}
+        className={
+          editor.isActive('underline')
+            ? 'bg-accent text-accent-foreground border border-border'
+            : ''
+        }
         aria-label="Souligné"
         title="Souligné"
       >
-        <UnderlineIcon className={`h-4 w-4 ${editor.isActive("underline") ? "underline" : ""}`} />
+        <UnderlineIcon className={`h-4 w-4 ${editor.isActive('underline') ? 'underline' : ''}`} />
       </Button>
       <div className="w-px h-6 bg-border mx-1" />
       <TextColorPicker
@@ -100,4 +108,3 @@ export function TaskDescriptionToolbar({
     </div>
   );
 }
-

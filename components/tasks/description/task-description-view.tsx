@@ -1,16 +1,13 @@
-"use client";
+'use client';
 
-import { sanitizeClient } from "@/lib/sanitize-client";
+import { sanitizeClient } from '@/lib/sanitize-client';
 
 type TaskDescriptionViewProps = {
   description?: string | null;
   className?: string;
 };
 
-export function TaskDescriptionView({
-  description,
-  className = "",
-}: TaskDescriptionViewProps) {
+export function TaskDescriptionView({ description, className = '' }: TaskDescriptionViewProps) {
   if (!description) {
     return null;
   }
@@ -25,4 +22,3 @@ export function TaskDescriptionView({
     />
   );
 }
-

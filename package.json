@@ -14,12 +14,15 @@
     "test:coverage": "vitest --run --coverage",
     "test:ci": "vitest run --passWithNoTests",
     "prepare": "husky install",
-    "prepush": "pnpm run lint && pnpm run test:ci && pnpm run typecheck"
+    "prepush": "pnpm run lint && pnpm run test:ci && pnpm run typecheck",
+    "format": "prettier --write ."
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "vitest related --run"
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
     ]
   },
   "dependencies": {
@@ -40,6 +43,7 @@
     "isomorphic-dompurify": "^2.33.0",
     "lucide-react": "^0.548.0",
     "next": "^16.0.7",
+    "prettier": "^3.7.4",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "sanitize-html": "^2.17.0",

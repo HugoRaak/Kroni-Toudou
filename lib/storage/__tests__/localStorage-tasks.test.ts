@@ -41,7 +41,7 @@ describe('localStorage-tasks', () => {
     it('should ignore time component', () => {
       const todayMorning = new Date();
       todayMorning.setHours(0, 0, 0, 0);
-      
+
       const todayEvening = new Date();
       todayEvening.setHours(23, 59, 59, 999);
 
@@ -90,16 +90,16 @@ describe('localStorage-tasks', () => {
   describe('today task order storage', () => {
     it('should save and retrieve the task order', () => {
       const order = ['task1', 'task2', 'task3'];
-  
+
       saveTodayTaskOrder(order);
       const result = getTodayTaskOrder();
-  
+
       expect(result).toEqual(order);
     });
-  
+
     it('should return an empty array when no order exists', () => {
       const result = getTodayTaskOrder();
-  
+
       expect(result).toEqual([]);
     });
   });
@@ -149,7 +149,7 @@ describe('localStorage-tasks', () => {
 
   describe('getTodayTempTasks', () => {
     it('should get temp tasks from storage', () => {
-      createTodayTempTask("Temp Task");
+      createTodayTempTask('Temp Task');
 
       const result = getTodayTempTasks();
 
@@ -243,7 +243,7 @@ describe('localStorage-tasks', () => {
       updateTodayTempTask(task.id, { title: 'Updated Title' });
 
       const tasks = getTodayTempTasks();
-      const updatedTask = tasks.find(t => t.id === task.id);
+      const updatedTask = tasks.find((t) => t.id === task.id);
       expect(updatedTask?.title).toBe('Updated Title');
     });
   });
@@ -255,7 +255,7 @@ describe('localStorage-tasks', () => {
 
       expect(result).toBe(true);
       const tasks = getTodayTempTasks();
-      expect(tasks.find(t => t.id === task.id)).toBeUndefined();
+      expect(tasks.find((t) => t.id === task.id)).toBeUndefined();
     });
 
     it('should return false if task does not exist', () => {
@@ -270,8 +270,8 @@ describe('localStorage-tasks', () => {
       deleteTodayTempTask(task1.id);
 
       const tasks = getTodayTempTasks();
-      expect(tasks.find(t => t.id === task2.id)).toBeDefined();
-      expect(tasks.find(t => t.id === task1.id)).toBeUndefined();
+      expect(tasks.find((t) => t.id === task2.id)).toBeDefined();
+      expect(tasks.find((t) => t.id === task1.id)).toBeUndefined();
     });
   });
 

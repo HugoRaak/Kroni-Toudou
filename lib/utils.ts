@@ -1,9 +1,9 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { getWeekDateRange } from "./calendar/calendar-date-utils";
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { getWeekDateRange } from './calendar/calendar-date-utils';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 // Formats a date to YYYY-MM-DD using local timezone components (not UTC)
@@ -35,34 +35,26 @@ export function isPastDate(date: Date): boolean {
 // Helper function to add days to a date
 // Uses milliseconds to avoid timezone and month boundary issues
 export function addDays(date: Date, days: number): Date {
-  return normalizeToMidnight(new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate() + days
-  ));
+  return normalizeToMidnight(new Date(date.getFullYear(), date.getMonth(), date.getDate() + days));
 }
 
-
-export function getRangeForView(
-  view: "day" | "week" | "month",
-  anchor: Date
-) {
+export function getRangeForView(view: 'day' | 'week' | 'month', anchor: Date) {
   const d = normalizeToMidnight(anchor);
 
-  if (view === "day") {
+  if (view === 'day') {
     return { start: d, end: d };
   }
 
-  if (view === "week") {
+  if (view === 'week') {
     const range = getWeekDateRange(d);
 
     return { start: range.start, end: range.end };
   }
 
-  if (view === "month") {
+  if (view === 'month') {
     return {
       start: new Date(d.getFullYear(), d.getMonth(), 1),
-      end: new Date(d.getFullYear(), d.getMonth() + 1, 0)
+      end: new Date(d.getFullYear(), d.getMonth() + 1, 0),
     };
   }
 

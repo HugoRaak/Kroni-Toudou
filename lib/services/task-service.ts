@@ -1,7 +1,15 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Task, Frequency, DayOfWeek } from '@/lib/types';
-import { getCategoryFromFormData, calculateNextDisplayOrder, getTaskCategory, hasCategoryChanged } from '@/lib/tasks/processing/task-metadata';
-import { checkModeConflict, ModeConflictError } from '@/lib/tasks/validation/task-validation-service';
+import {
+  getCategoryFromFormData,
+  calculateNextDisplayOrder,
+  getTaskCategory,
+  hasCategoryChanged,
+} from '@/lib/tasks/processing/task-metadata';
+import {
+  checkModeConflict,
+  ModeConflictError,
+} from '@/lib/tasks/validation/task-validation-service';
 import { sanitizeServer } from '@/lib/sanitize-server';
 
 export type TaskActionResult = Task | null | ModeConflictError;
@@ -39,26 +47,22 @@ interface UpdateTaskData {
 export async function createTask(
   supabase: SupabaseClient,
   taskData: CreateTaskData,
-  options?: { ignoreConflict?: boolean }
+  options?: { ignoreConflict?: boolean },
 ): Promise<TaskActionResult> {
   if (!options?.ignoreConflict) {
     const modeConflict = await checkModeConflict(
       taskData.userId,
       taskData.due_on ?? undefined,
-      taskData.mode
+      taskData.mode,
     );
     if (modeConflict) return modeConflict;
   }
-  
+
   const category = getCategoryFromFormData(taskData.frequency, taskData.due_on);
-  const display_order = await calculateNextDisplayOrder(
-    supabase,
-    taskData.userId,
-    category
-  );
-  
+  const display_order = await calculateNextDisplayOrder(supabase, taskData.userId, category);
+
   const sanitizedDescription = sanitizeServer(taskData.description);
-  
+
   const { data, error } = await supabase
     .from('tasks')
     .insert({
@@ -92,8 +96,12 @@ export async function updateTask(
   userId: string,
   taskId: string,
   updates: UpdateTaskData,
-  currentTask: { frequency?: Frequency | null; due_on?: string | null; mode?: 'Tous' | 'Présentiel' | 'Distanciel' | null },
-  options?: { ignoreConflict?: boolean }
+  currentTask: {
+    frequency?: Frequency | null;
+    due_on?: string | null;
+    mode?: 'Tous' | 'Présentiel' | 'Distanciel' | null;
+  },
+  options?: { ignoreConflict?: boolean },
 ): Promise<TaskActionResult> {
   if (!options?.ignoreConflict && (updates.due_on !== undefined || updates.mode !== undefined)) {
     const due_on = updates.due_on ?? currentTask.due_on;
@@ -101,29 +109,24 @@ export async function updateTask(
     const modeConflict = await checkModeConflict(userId, due_on ?? undefined, mode ?? undefined);
     if (modeConflict) return modeConflict;
   }
-  
+
   // Determine if category is changing
   const frequencyIsBeingUpdated = 'frequency' in updates;
   const dueOnIsBeingUpdated = 'due_on' in updates;
-  
-  const currentFrequency = frequencyIsBeingUpdated 
+
+  const currentFrequency = frequencyIsBeingUpdated
     ? (updates.frequency ?? null)
     : currentTask.frequency;
-  const currentDueOn = dueOnIsBeingUpdated 
-    ? (updates.due_on ?? null)
-    : currentTask.due_on;
-  
-  if (hasCategoryChanged(currentTask.frequency, currentTask.due_on, currentFrequency, currentDueOn)) {
+  const currentDueOn = dueOnIsBeingUpdated ? (updates.due_on ?? null) : currentTask.due_on;
+
+  if (
+    hasCategoryChanged(currentTask.frequency, currentTask.due_on, currentFrequency, currentDueOn)
+  ) {
     const newCategory = getTaskCategory(currentFrequency, currentDueOn);
-    const newDisplayOrder = await calculateNextDisplayOrder(
-      supabase,
-      userId,
-      newCategory,
-      taskId
-    );
+    const newDisplayOrder = await calculateNextDisplayOrder(supabase, userId, newCategory, taskId);
     updates.display_order = newDisplayOrder;
   }
-  
+
   const cleanedUpdates: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(updates)) {
     if (key === 'description' && value !== undefined && value !== null) {
@@ -132,7 +135,7 @@ export async function updateTask(
       cleanedUpdates[key] = value === undefined ? null : value;
     }
   }
-  
+
   const { data, error } = await supabase
     .from('tasks')
     .update({
@@ -155,13 +158,9 @@ export async function updateTask(
 export async function deleteTask(
   supabase: SupabaseClient,
   userId: string,
-  taskId: string
+  taskId: string,
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('tasks')
-    .delete()
-    .eq('id', taskId)
-    .eq('user_id', userId);
+  const { error } = await supabase.from('tasks').delete().eq('id', taskId).eq('user_id', userId);
 
   if (error) {
     console.error('Error deleting task:', error);
@@ -170,4 +169,3 @@ export async function deleteTask(
 
   return true;
 }
-

@@ -1,6 +1,6 @@
-import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
-import { DayTasksData } from "@/components/calendar/views/day-view";
-import { TempTask } from "@/lib/types";
+import { formatDateLocal, normalizeToMidnight } from '@/lib/utils';
+import { DayTasksData } from '@/components/calendar/views/day-view';
+import { TempTask } from '@/lib/types';
 
 /**
  * Generic helpers for localStorage operations
@@ -13,10 +13,10 @@ function getStorageKey(prefix: string, date?: Date): string {
 
 function getStorageItem<T>(key: string): T | null {
   if (typeof window === 'undefined') return null;
-  
+
   const stored = window.localStorage.getItem(key);
   if (!stored) return null;
-  
+
   try {
     return JSON.parse(stored) as T;
   } catch {
@@ -31,7 +31,7 @@ function setStorageItem<T>(key: string, data: T): void {
 
 function getAllKeysWithPrefix(prefix: string): string[] {
   if (typeof window === 'undefined') return [];
-  
+
   const keys: string[] = [];
   for (let i = 0; i < window.localStorage.length; i++) {
     const key = window.localStorage.key(i);
@@ -44,9 +44,9 @@ function getAllKeysWithPrefix(prefix: string): string[] {
 
 function cleanupOldKeys(prefix: string, currentKey: string): void {
   if (typeof window === 'undefined') return;
-  
+
   const allKeys = getAllKeysWithPrefix(prefix);
-  allKeys.forEach(key => {
+  allKeys.forEach((key) => {
     if (key !== currentKey) {
       window.localStorage.removeItem(key);
     }
@@ -141,4 +141,3 @@ export const storage = {
     },
   },
 };
-

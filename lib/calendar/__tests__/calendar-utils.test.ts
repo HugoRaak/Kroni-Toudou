@@ -25,7 +25,9 @@ vi.mock('@/lib/db/workdays', () => ({
 }));
 
 vi.mock('../task-shifting-service', async () => {
-  const actual = await vi.importActual<typeof import('../task-shifting-service')>('../task-shifting-service');
+  const actual = await vi.importActual<typeof import('../task-shifting-service')>(
+    '../task-shifting-service',
+  );
   return {
     ...actual,
     findNextMatchingDate: actual.findNextMatchingDate,
@@ -56,7 +58,12 @@ describe('calendar-utils', () => {
       const specificTask2 = createMockTask({ id: '2', due_on: '2024-06-16' });
       const whenPossibleTask = createMockTask({ id: '3', in_progress: false });
 
-      vi.mocked(getTasks).mockResolvedValue([periodicTask, specificTask, specificTask2, whenPossibleTask]);
+      vi.mocked(getTasks).mockResolvedValue([
+        periodicTask,
+        specificTask,
+        specificTask2,
+        whenPossibleTask,
+      ]);
       vi.mocked(getWorkday).mockResolvedValue('Présentiel');
       vi.mocked(getPeriodicTasksForDateWithShift).mockResolvedValue({
         tasks: [periodicTask],
@@ -87,7 +94,7 @@ describe('calendar-utils', () => {
       const result = await getTasksForDay('user1', date, 'Présentiel');
 
       // Should include Présentiel and Tous tasks, exclude Distanciel
-      const periodicIds = result.periodic.map(t => t.id);
+      const periodicIds = result.periodic.map((t) => t.id);
       expect(periodicIds).toContain('1');
       expect(periodicIds).toContain('3');
       expect(periodicIds).not.toContain('2');
@@ -188,11 +195,11 @@ describe('calendar-utils', () => {
       const result = await getTasksForDateRange('user1', startDate, endDate);
 
       expect(result).toHaveLength(2);
-      expect(result.map(t => t.id)).toContain('1');
-      expect(result.map(t => t.id)).toContain('2');
-      expect(result.map(t => t.id)).not.toContain('3');
-      expect(result.map(t => t.id)).not.toContain('4');
-      expect(result.map(t => t.id)).not.toContain('5');
+      expect(result.map((t) => t.id)).toContain('1');
+      expect(result.map((t) => t.id)).toContain('2');
+      expect(result.map((t) => t.id)).not.toContain('3');
+      expect(result.map((t) => t.id)).not.toContain('4');
+      expect(result.map((t) => t.id)).not.toContain('5');
     });
 
     it('should sort tasks by due_on ascending', async () => {
@@ -222,8 +229,8 @@ describe('calendar-utils', () => {
       const result = await getTasksForDateRange('user1', startDate, endDate);
 
       expect(result).toHaveLength(2);
-      expect(result.map(t => t.id)).toContain('1');
-      expect(result.map(t => t.id)).toContain('2');
+      expect(result.map((t) => t.id)).toContain('1');
+      expect(result.map((t) => t.id)).toContain('2');
     });
 
     it('should convert tasks to CalendarTask format', async () => {
@@ -271,14 +278,19 @@ describe('calendar-utils', () => {
       const result = getTasksForDate(tasks, date);
 
       expect(result).toHaveLength(2);
-      expect(result.map(t => t.id)).toContain('1');
-      expect(result.map(t => t.id)).toContain('3');
-      expect(result.map(t => t.id)).not.toContain('2');
+      expect(result.map((t) => t.id)).toContain('1');
+      expect(result.map((t) => t.id)).toContain('3');
+      expect(result.map((t) => t.id)).not.toContain('2');
     });
 
     it('should not return periodic or when-possible tasks', () => {
       const tasks: CalendarTask[] = [
-        createMockCalendarTask({ id: '1', type: 'periodic', frequency: 'hebdomadaire', day: 'Lundi' }),
+        createMockCalendarTask({
+          id: '1',
+          type: 'periodic',
+          frequency: 'hebdomadaire',
+          day: 'Lundi',
+        }),
         createMockCalendarTask({ id: '2', type: 'when_possible', in_progress: true }),
       ];
       const date = normalizeToMidnight(new Date(2024, 5, 15));
@@ -361,14 +373,14 @@ describe('calendar-utils', () => {
       ];
 
       vi.mocked(getTasks).mockResolvedValue(tasks);
-      
+
       const workdaysMap: Record<string, WorkMode> = {};
       const startDate = normalizeToMidnight(new Date(2024, 5, 10));
       for (let i = 0; i <= 45; i++) {
         const checkDate = addDays(startDate, i);
         workdaysMap[formatDateLocal(checkDate)] = 'Distanciel';
       }
-      
+
       vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
 
       const result = await checkFutureTaskShifts('user1', startDate);
@@ -392,14 +404,14 @@ describe('calendar-utils', () => {
       ];
 
       vi.mocked(getTasks).mockResolvedValue(tasks);
-      
+
       const workdaysMap: Record<string, WorkMode> = {};
       const startDate = normalizeToMidnight(new Date(2024, 5, 1));
       for (let i = 0; i <= 45; i++) {
         const checkDate = addDays(startDate, i);
         workdaysMap[formatDateLocal(checkDate)] = 'Présentiel';
       }
-      
+
       vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
 
       const result = await checkFutureTaskShifts('user1', startDate);
@@ -420,14 +432,14 @@ describe('calendar-utils', () => {
       ];
 
       vi.mocked(getTasks).mockResolvedValue(tasks);
-      
+
       const workdaysMap: Record<string, WorkMode> = {};
       const startDate = normalizeToMidnight(new Date(2024, 5, 4));
       for (let i = 0; i <= 45; i++) {
         const checkDate = addDays(startDate, i);
         workdaysMap[formatDateLocal(checkDate)] = 'Congé';
       }
-      
+
       vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
 
       const result = await checkFutureTaskShifts('user1', startDate);
@@ -448,7 +460,7 @@ describe('calendar-utils', () => {
       ];
 
       vi.mocked(getTasks).mockResolvedValue(tasks);
-      
+
       const workdaysMap: Record<string, WorkMode> = {};
       const startDate = normalizeToMidnight(new Date(2024, 5, 1));
       let checkDate = startDate;
@@ -464,7 +476,7 @@ describe('calendar-utils', () => {
         checkDate = addDays(checkDate, 1);
         workdaysMap[formatDateLocal(checkDate)] = 'Congé';
       }
-      
+
       vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
 
       const result = await checkFutureTaskShifts('user1', startDate);
@@ -483,7 +495,7 @@ describe('calendar-utils', () => {
       ];
 
       vi.mocked(getTasks).mockResolvedValue(tasks);
-      
+
       const workdaysMap: Record<string, WorkMode> = {};
       const startDate = normalizeToMidnight(new Date(2024, 5, 15));
       let checkDate = startDate;
@@ -497,7 +509,7 @@ describe('calendar-utils', () => {
         checkDate = addDays(checkDate, 1);
         workdaysMap[formatDateLocal(checkDate)] = 'Congé';
       }
-      
+
       vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
 
       const result = await checkFutureTaskShifts('user1', startDate);
@@ -559,21 +571,21 @@ describe('calendar-utils', () => {
       ];
 
       vi.mocked(getTasks).mockResolvedValue(tasks);
-      
+
       const workdaysMap: Record<string, WorkMode> = {};
       for (let i = 0; i <= 45; i++) {
         const checkDate = normalizeToMidnight(new Date(2024, 5, 15 + i));
         workdaysMap[formatDateLocal(checkDate)] = 'Présentiel';
       }
-      
+
       vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
 
       const startDate = normalizeToMidnight(new Date(2024, 5, 15));
       const result = await checkFutureTaskShifts('user1', startDate);
 
-      const pastAlert = result.find(a => a.taskId === '1');
-      const futureAlert = result.find(a => a.taskId === '2');
-      
+      const pastAlert = result.find((a) => a.taskId === '1');
+      const futureAlert = result.find((a) => a.taskId === '2');
+
       if (pastAlert) {
         expect(pastAlert.isFutureShift).toBe(false);
       }
@@ -595,20 +607,20 @@ describe('calendar-utils', () => {
       ];
 
       vi.mocked(getTasks).mockResolvedValue(tasks);
-      
+
       const workdaysMap: Record<string, WorkMode> = {};
       for (let i = 0; i <= 45; i++) {
         const checkDate = normalizeToMidnight(new Date(2024, 5, 1 + i));
         workdaysMap[formatDateLocal(checkDate)] = 'Présentiel';
       }
-      
+
       vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
 
       const startDate = normalizeToMidnight(new Date(2024, 5, 15));
       const result = await checkFutureTaskShifts('user1', startDate);
 
       // Check for duplicates by taskId and originalDate
-      const alertKeys = result.map(a => `${a.taskId}-${a.originalDate}`);
+      const alertKeys = result.map((a) => `${a.taskId}-${a.originalDate}`);
       const uniqueKeys = new Set(alertKeys);
       expect(alertKeys.length).toBe(uniqueKeys.size);
     });
@@ -623,12 +635,12 @@ describe('calendar-utils', () => {
           max_shifting_days: 5,
         }),
       ];
-    
+
       vi.mocked(getTasks).mockResolvedValue(tasks);
-    
+
       // We start the window mid-December 2024
       const startDate = normalizeToMidnight(new Date(2024, 11, 20)); // December 20, 2024
-    
+
       const workdaysMap: Record<string, WorkMode> = {};
       // We cover the range [-45, +45] around startDate
       for (let i = -45; i <= 45; i++) {
@@ -636,22 +648,22 @@ describe('calendar-utils', () => {
         // Everything is in "Congé" -> forces a shift, but it will be impossible
         workdaysMap[formatDateLocal(checkDate)] = 'Congé';
       }
-    
+
       vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
-    
+
       const result = await checkFutureTaskShifts('user1', startDate);
-    
+
       // The occurrence taken into account must be the 10 January 2025
       const expectedNextYearDate = formatDateLocal(
-        normalizeToMidnight(new Date(2025, 0, 10)) // January 10, 2025
+        normalizeToMidnight(new Date(2025, 0, 10)), // January 10, 2025
       );
-    
+
       expect(result).toHaveLength(1);
       expect(result[0].taskId).toBe('1');
       expect(result[0].frequency).toBe('annuel');
       expect(result[0].originalDate).toBe(expectedNextYearDate);
-    });    
-    
+    });
+
     it('should correctly calculate first occurrence when start date is before start range (negative offset)', async () => {
       const task = createMockTask({
         id: '1',
@@ -662,25 +674,25 @@ describe('calendar-utils', () => {
         mode: 'Tous' as const,
         max_shifting_days: 3,
       });
-    
+
       vi.mocked(getTasks).mockResolvedValue([task]);
-    
+
       // startDate AFTER start_date -> daysFromStart positive
       const startDate = normalizeToMidnight(new Date(2024, 5, 1)); // June 1
       const workdaysMap: Record<string, WorkMode> = {};
-    
+
       // Make ALL days incompatible to force alert
       for (let i = -45; i <= 45; i++) {
         const d = addDays(startDate, i);
         workdaysMap[formatDateLocal(d)] = 'Congé';
       }
-    
+
       vi.mocked(getWorkdaysMap).mockResolvedValue(workdaysMap);
-    
+
       const result = await checkFutureTaskShifts('user1', startDate);
-    
+
       expect(result.length).toBeGreaterThan(0); // Alerts exist
-    });    
+    });
   });
 
   describe('filterTasksByWorkMode', () => {
@@ -689,7 +701,7 @@ describe('calendar-utils', () => {
         { id: '1', mode: 'Tous' as const },
         { id: '2', mode: 'Présentiel' as const },
       ];
-  
+
       const result = filterTasksByWorkMode(tasks, 'Congé');
       expect(result).toEqual([]);
     });
@@ -700,23 +712,23 @@ describe('calendar-utils', () => {
         { id: '2', mode: 'Présentiel' as const, due_on: '2024-01-02' },
         { id: '3', mode: 'Distanciel' as const },
       ];
-  
+
       const result = filterTasksByWorkMode(tasks, 'Congé');
-      expect(result.map(t => t.id)).toEqual(['1', '2']);
+      expect(result.map((t) => t.id)).toEqual(['1', '2']);
     });
-  
+
     it('should include tasks with mode Tous when filtering', () => {
       const tasks = [
         { id: '1', mode: 'Tous' as const },
         { id: '2', mode: 'Distanciel' as const },
       ];
-  
+
       const result = filterTasksByWorkMode(tasks, 'Présentiel');
-      expect(result.map(t => t.id)).toEqual(['1']);
+      expect(result.map((t) => t.id)).toEqual(['1']);
     });
   });
-  
-  describe('calendarTaskToTaskLike', () => {  
+
+  describe('calendarTaskToTaskLike', () => {
     it('should convert CalendarTask to Task-like object and set postponed_days to undefined', () => {
       const task: CalendarTask = {
         id: '1',
@@ -730,11 +742,11 @@ describe('calendar-utils', () => {
         mode: 'Distanciel' as const,
         display_order: 3,
       };
-  
+
       const result = calendarTaskToTaskLike(task);
       expect(result.id).toBe('1');
       expect(result.title).toBe('Test');
       expect(result.postponed_days).toBeUndefined();
     });
-  });  
+  });
 });

@@ -11,30 +11,30 @@ export function useDayTasksPreparation(
   loading: boolean,
   orderVersion: number,
   getHiddenTempTaskIds: () => string[],
-  layout?: 'single' | 'three-column'
+  layout?: 'single' | 'three-column',
 ) {
   const preparedTasks = useMemo(() => {
     if (!tasks || !isTodayView || loading) return [];
-    
+
     const hiddenIds = getTodayHiddenTaskIds();
     const hiddenTempTaskIds = getHiddenTempTaskIds();
-    
+
     return prepareTasksForToday(
       tasks,
       tempTasks,
       hiddenIds,
       hiddenTempTaskIds,
       isTodayView,
-      loading
+      loading,
     );
   }, [tasks, tempTasks, loading, isTodayView, orderVersion, getHiddenTempTaskIds]);
 
   const groupedPreparedTasks = useMemo(() => {
     if (!isTodayView || layout !== 'three-column' || !preparedTasks.length) return null;
-    
+
     return {
-      periodic: preparedTasks.filter(t => t.taskType === 'periodic' || t.taskType === 'temp'),
-      specific: preparedTasks.filter(t => t.taskType === 'specific'),
+      periodic: preparedTasks.filter((t) => t.taskType === 'periodic' || t.taskType === 'temp'),
+      specific: preparedTasks.filter((t) => t.taskType === 'specific'),
       temp: [],
     };
   }, [preparedTasks, isTodayView, layout]);
@@ -44,4 +44,3 @@ export function useDayTasksPreparation(
     groupedPreparedTasks,
   };
 }
-

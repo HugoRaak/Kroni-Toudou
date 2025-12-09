@@ -1,8 +1,10 @@
 import { supabaseServer } from '@/lib/supabase/supabase-server';
 
-export async function validateLicense(licenseKey: string): Promise<{ valid: boolean; error?: string }> {
+export async function validateLicense(
+  licenseKey: string,
+): Promise<{ valid: boolean; error?: string }> {
   const supabase = await supabaseServer();
-  
+
   const { data, error } = await supabase
     .from('licences')
     .select('key, user_id, active, expires_at')
@@ -40,9 +42,12 @@ export async function validateLicense(licenseKey: string): Promise<{ valid: bool
   return { valid: true };
 }
 
-export async function associateLicenseToUser(licenseKey: string, userId: string): Promise<{ success: boolean; error?: string }> {
+export async function associateLicenseToUser(
+  licenseKey: string,
+  userId: string,
+): Promise<{ success: boolean; error?: string }> {
   const supabase = await supabaseServer();
-  
+
   // First validate the license again
   const validation = await validateLicense(licenseKey);
   if (!validation.valid) {
@@ -57,9 +62,8 @@ export async function associateLicenseToUser(licenseKey: string, userId: string)
 
   if (error) {
     console.error('Error associating license to user:', error);
-    return { success: false, error: 'Erreur lors de l\'association de la licence' };
+    return { success: false, error: "Erreur lors de l'association de la licence" };
   }
 
   return { success: true };
 }
-

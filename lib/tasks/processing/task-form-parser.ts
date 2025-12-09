@@ -17,7 +17,7 @@ import {
 interface ParsedTaskFormData {
   title: string;
   description: string;
-  taskType: typeof TASK_TYPES[keyof typeof TASK_TYPES];
+  taskType: (typeof TASK_TYPES)[keyof typeof TASK_TYPES];
   mode: Task['mode'];
   frequency?: Frequency;
   day?: DayOfWeek;
@@ -111,8 +111,23 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
 }
 
 export function parsedDataToTaskUpdates(
-  parsed: ParsedTaskFormData
-): Partial<Pick<Task, 'title' | 'description' | 'frequency' | 'day' | 'custom_days' | 'max_shifting_days' | 'start_date' | 'due_on' | 'postponed_days' | 'in_progress' | 'mode'>> {
+  parsed: ParsedTaskFormData,
+): Partial<
+  Pick<
+    Task,
+    | 'title'
+    | 'description'
+    | 'frequency'
+    | 'day'
+    | 'custom_days'
+    | 'max_shifting_days'
+    | 'start_date'
+    | 'due_on'
+    | 'postponed_days'
+    | 'in_progress'
+    | 'mode'
+  >
+> {
   const updates: Partial<Task> = {
     title: parsed.title,
     description: parsed.description,
@@ -152,4 +167,3 @@ export function parsedDataToTaskUpdates(
 
   return updates;
 }
-

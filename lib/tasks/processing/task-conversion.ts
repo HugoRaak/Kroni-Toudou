@@ -1,11 +1,11 @@
-import { Task, TaskWithType, TempTask } from "@/lib/types";
-import { TaskWithShift } from "@/lib/calendar/calendar-utils";
+import { Task, TaskWithType, TempTask } from '@/lib/types';
+import { TaskWithShift } from '@/lib/calendar/calendar-utils';
 
 /**
  * Converts a TaskWithType to a Task-like object for TaskItemCompact.
  */
 export function taskWithTypeToTaskLike(
-  task: TaskWithType
+  task: TaskWithType,
 ): (Partial<Task> & { id: string; title: string; description: string }) | TaskWithShift {
   if (task.taskType === 'temp') {
     const tempTask = task as TempTask & { taskType: 'temp' };
@@ -26,4 +26,3 @@ export function taskWithTypeToTaskLike(
   }
   return task as Task & { taskType: 'periodic' | 'specific' };
 }
-

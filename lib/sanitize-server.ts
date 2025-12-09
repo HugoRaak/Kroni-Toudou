@@ -1,5 +1,5 @@
 // Server-side HTML sanitization using sanitize-html
-import sanitizeHtml from "sanitize-html";
+import sanitizeHtml from 'sanitize-html';
 
 export function sanitizeServer(html: string): string {
   if (!html || typeof html !== 'string') {
@@ -19,4 +19,3 @@ export function sanitizeServer(html: string): string {
     },
   });
 }
-

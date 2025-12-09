@@ -1,12 +1,20 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { CalendarTask } from '@/lib/calendar/calendar-utils';
 import { DayTasksData } from '@/components/calendar/views/day-view';
 import { getWorkdayAction } from '@/app/actions/workdays';
-import { getTodayTasksFromStorage, saveTodayTasksToStorage, isToday } from '@/lib/storage/localStorage-tasks';
+import {
+  getTodayTasksFromStorage,
+  saveTodayTasksToStorage,
+  isToday,
+} from '@/lib/storage/localStorage-tasks';
 import { normalizeToMidnight, formatDateLocal, getRangeForView } from '@/lib/utils';
-import { getCalendarDayDataAction, getCalendarRangeDataAction, checkFutureTaskShiftsAction } from '@/app/actions/calendar';
+import {
+  getCalendarDayDataAction,
+  getCalendarRangeDataAction,
+  checkFutureTaskShiftsAction,
+} from '@/app/actions/calendar';
 import { showTaskShiftAlerts } from '@/lib/calendar/task-shift-alerts';
 import type { CalendarView } from '@/lib/calendar/calendar-navigation';
 
@@ -39,9 +47,13 @@ export function useCalendarData({
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
   const [dayTasks, setDayTasks] = useState<DayTasksData>(null);
   const [loading, setLoading] = useState(true);
-  const [dayWorkMode, setDayWorkMode] = useState<'Présentiel' | 'Distanciel' | 'Congé'>('Présentiel');
-  const [workdaysMap, setWorkdaysMap] = useState<Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>>({});
-  
+  const [dayWorkMode, setDayWorkMode] = useState<'Présentiel' | 'Distanciel' | 'Congé'>(
+    'Présentiel',
+  );
+  const [workdaysMap, setWorkdaysMap] = useState<
+    Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>
+  >({});
+
   const loadRequestIdRef = useRef(0);
   const isLoadingRef = useRef(false);
   const isInitialMountRef = useRef(true);
@@ -52,7 +64,7 @@ export function useCalendarData({
 
     isLoadingRef.current = true;
     setLoading(true);
-    
+
     try {
       const isDayLikeView = currentView === 'day' || currentView === 'today';
       const activeDayDate = currentView === 'today' ? normalizeToMidnight(new Date()) : dayDate;
@@ -61,7 +73,7 @@ export function useCalendarData({
         // Check localStorage cache for today
         if (isToday(activeDayDate) && !forceReload && !isInitialMountRef.current) {
           const storedTasks = getTodayTasksFromStorage();
-          
+
           if (storedTasks) {
             const mode = await getWorkdayAction(userId, formatDateLocal(activeDayDate));
             if (currentRequestId !== loadRequestIdRef.current) {
@@ -139,7 +151,7 @@ export function useCalendarData({
     const timeoutId = setTimeout(() => {
       loadTasks();
     }, 250);
-    
+
     return () => {
       clearTimeout(timeoutId);
     };
@@ -171,4 +183,3 @@ export function useCalendarData({
     setDayWorkMode,
   };
 }
-

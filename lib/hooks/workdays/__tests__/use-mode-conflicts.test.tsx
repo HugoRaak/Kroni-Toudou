@@ -17,8 +17,26 @@ describe('useModeConflicts', () => {
     const { result } = renderHook(() => useModeConflicts());
 
     const conflicts = [
-      { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-10', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-10', newMode: 'Présentiel' as const },
-      { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-11', taskMode: 'Présentiel' as const, workMode: 'Distanciel' as const }, dateStr: '2024-06-11', newMode: 'Distanciel' as const },
+      {
+        conflict: {
+          type: 'MODE_CONFLICT' as const,
+          taskDate: '2024-06-10',
+          taskMode: 'Tous' as const,
+          workMode: 'Congé' as const,
+        },
+        dateStr: '2024-06-10',
+        newMode: 'Présentiel' as const,
+      },
+      {
+        conflict: {
+          type: 'MODE_CONFLICT' as const,
+          taskDate: '2024-06-11',
+          taskMode: 'Présentiel' as const,
+          workMode: 'Distanciel' as const,
+        },
+        dateStr: '2024-06-11',
+        newMode: 'Distanciel' as const,
+      },
     ];
 
     act(() => {
@@ -34,7 +52,18 @@ describe('useModeConflicts', () => {
     const { result } = renderHook(() => useModeConflicts());
 
     act(() => {
-      result.current.setModeConflicts([{ conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-10', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-10', newMode: 'Présentiel' as const }]);
+      result.current.setModeConflicts([
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-10',
+            taskMode: 'Tous' as const,
+            workMode: 'Congé' as const,
+          },
+          dateStr: '2024-06-10',
+          newMode: 'Présentiel' as const,
+        },
+      ]);
       result.current.handleConfirmConflict(0);
     });
 
@@ -46,8 +75,26 @@ describe('useModeConflicts', () => {
 
     act(() => {
       result.current.setModeConflicts([
-        { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-10', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-10', newMode: 'Présentiel' as const },
-        { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-11', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-11', newMode: 'Distanciel' as const },
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-10',
+            taskMode: 'Tous' as const,
+            workMode: 'Congé' as const,
+          },
+          dateStr: '2024-06-10',
+          newMode: 'Présentiel' as const,
+        },
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-11',
+            taskMode: 'Tous' as const,
+            workMode: 'Congé' as const,
+          },
+          dateStr: '2024-06-11',
+          newMode: 'Distanciel' as const,
+        },
       ]);
     });
 
@@ -64,15 +111,24 @@ describe('useModeConflicts', () => {
 
   it('should not advance index when already at last conflict', () => {
     const { result } = renderHook(() => useModeConflicts());
-  
+
     act(() => {
       result.current.setModeConflicts([
-        { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-10', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-10', newMode: 'Présentiel' as const },
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-10',
+            taskMode: 'Tous' as const,
+            workMode: 'Congé' as const,
+          },
+          dateStr: '2024-06-10',
+          newMode: 'Présentiel' as const,
+        },
       ]);
       // We try to skip when there is only one conflict
       result.current.handleSkipConflict();
     });
-  
+
     expect(result.current.currentConflictIndex).toBe(0);
     expect(result.current.currentConflict?.dateStr).toBe('2024-06-10');
   });
@@ -81,7 +137,18 @@ describe('useModeConflicts', () => {
     const { result } = renderHook(() => useModeConflicts());
 
     act(() => {
-      result.current.setModeConflicts([{ conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-10', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-10', newMode: 'Présentiel' as const }]);
+      result.current.setModeConflicts([
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-10',
+            taskMode: 'Tous' as const,
+            workMode: 'Congé' as const,
+          },
+          dateStr: '2024-06-10',
+          newMode: 'Présentiel' as const,
+        },
+      ]);
       result.current.handleConfirmConflict(0);
       result.current.resetConflicts();
     });
@@ -95,28 +162,46 @@ describe('useModeConflicts', () => {
 
   it('should allow manual change of currentConflictIndex', () => {
     const { result } = renderHook(() => useModeConflicts());
-  
+
     const conflicts = [
-      { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-10', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-10', newMode: 'Présentiel' as const },
-      { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-11', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-11', newMode: 'Distanciel' as const },
+      {
+        conflict: {
+          type: 'MODE_CONFLICT' as const,
+          taskDate: '2024-06-10',
+          taskMode: 'Tous' as const,
+          workMode: 'Congé' as const,
+        },
+        dateStr: '2024-06-10',
+        newMode: 'Présentiel' as const,
+      },
+      {
+        conflict: {
+          type: 'MODE_CONFLICT' as const,
+          taskDate: '2024-06-11',
+          taskMode: 'Tous' as const,
+          workMode: 'Congé' as const,
+        },
+        dateStr: '2024-06-11',
+        newMode: 'Distanciel' as const,
+      },
     ];
-  
+
     act(() => {
       result.current.setModeConflicts(conflicts);
       result.current.setCurrentConflictIndex(1);
     });
-  
+
     expect(result.current.currentConflictIndex).toBe(1);
     expect(result.current.currentConflict).toEqual(conflicts[1]);
   });
 
   it('should replace confirmedConflicts when using setConfirmedConflicts', () => {
     const { result } = renderHook(() => useModeConflicts());
-  
+
     act(() => {
       result.current.setConfirmedConflicts(new Set([1, 2]));
     });
-  
+
     expect(result.current.confirmedConflicts.has(1)).toBe(true);
     expect(result.current.confirmedConflicts.has(2)).toBe(true);
     expect(result.current.confirmedConflicts.size).toBe(2);

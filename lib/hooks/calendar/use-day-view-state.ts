@@ -18,9 +18,9 @@ export function useDayViewState(isTodayView: boolean) {
   // Listen for order updates from drag & drop
   useEffect(() => {
     if (!isTodayView) return;
-    
+
     const handler = () => {
-      setOrderVersion(v => v + 1);
+      setOrderVersion((v) => v + 1);
     };
     window.addEventListener('task-order-updated', handler);
     return () => window.removeEventListener('task-order-updated', handler);
@@ -58,4 +58,3 @@ export function useDayViewState(isTodayView: boolean) {
     handleCancelHide,
   };
 }
-

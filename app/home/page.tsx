@@ -1,17 +1,19 @@
 import { supabaseServerReadOnly } from '@/lib/supabase/supabase-server';
 import { redirect } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
-import { 
-  updateTaskFromFormAction, 
-  deleteTaskActionWrapper, 
-  createTaskFromFormAction 
+import {
+  updateTaskFromFormAction,
+  deleteTaskActionWrapper,
+  createTaskFromFormAction,
 } from '@/app/actions/tasks';
 import { LicenseProcessor } from '@/components/license-processor';
 import { CalendarWithAddButton } from '@/components/calendar/ui/calendar-with-add-button';
 
 export default async function Home() {
   const supabase = await supabaseServerReadOnly();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login');

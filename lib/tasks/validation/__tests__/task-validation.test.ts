@@ -12,7 +12,12 @@ import {
   validateStartDate,
   validateMaxShiftingDays,
 } from '../task-validation';
-import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_DESCRIPTION_MAX_LENGTH } from '@/lib/tasks/constants/task-constants';
+import {
+  TASK_TYPES,
+  FREQUENCIES,
+  DAYS_OF_WEEK,
+  TASK_DESCRIPTION_MAX_LENGTH,
+} from '@/lib/tasks/constants/task-constants';
 
 describe('task-validation', () => {
   describe('isValidTaskType', () => {
@@ -31,7 +36,7 @@ describe('task-validation', () => {
 
   describe('isValidFrequency', () => {
     it('should return true for valid frequencies', () => {
-      FREQUENCIES.forEach(freq => {
+      FREQUENCIES.forEach((freq) => {
         expect(isValidFrequency(freq)).toBe(true);
       });
     });
@@ -45,7 +50,7 @@ describe('task-validation', () => {
 
   describe('isValidDayOfWeek', () => {
     it('should return true for valid days of week', () => {
-      DAYS_OF_WEEK.forEach(day => {
+      DAYS_OF_WEEK.forEach((day) => {
         expect(isValidDayOfWeek(day)).toBe(true);
       });
     });

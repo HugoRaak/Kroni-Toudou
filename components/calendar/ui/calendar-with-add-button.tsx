@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { Calendar } from "@/components/calendar/views/calendar";
-import { FloatingAddButton } from "@/components/tasks/ui/floating-add-button";
-import type { CalendarView } from "@/lib/calendar/calendar-navigation";
-import type { ModeConflictError, TaskActionResult } from "@/app/actions/tasks";
+import { useState, useCallback } from 'react';
+import { Calendar } from '@/components/calendar/views/calendar';
+import { FloatingAddButton } from '@/components/tasks/ui/floating-add-button';
+import type { CalendarView } from '@/lib/calendar/calendar-navigation';
+import type { ModeConflictError, TaskActionResult } from '@/app/actions/tasks';
 
 interface CalendarWithAddButtonProps {
   userId: string;
@@ -20,27 +20,24 @@ export function CalendarWithAddButton({
   onSubmit,
 }: CalendarWithAddButtonProps) {
   const [isViewingToday, setIsViewingToday] = useState(false);
-  const [currentView, setCurrentView] = useState<CalendarView>("day");
+  const [currentView, setCurrentView] = useState<CalendarView>('day');
   const [dayDate, setDayDate] = useState<Date | undefined>(undefined);
 
-  const handleViewChange = useCallback(
-    (viewingToday: boolean, view: CalendarView, date?: Date) => {
-      setIsViewingToday(viewingToday);
-      setCurrentView(view);
-      setDayDate((previous) => {
-        if (!date) {
-          return previous;
-        }
+  const handleViewChange = useCallback((viewingToday: boolean, view: CalendarView, date?: Date) => {
+    setIsViewingToday(viewingToday);
+    setCurrentView(view);
+    setDayDate((previous) => {
+      if (!date) {
+        return previous;
+      }
 
-        if (!previous) {
-          return date;
-        }
+      if (!previous) {
+        return date;
+      }
 
-        return previous.getTime() === date.getTime() ? previous : date;
-      });
-    },
-    [],
-  );
+      return previous.getTime() === date.getTime() ? previous : date;
+    });
+  }, []);
 
   return (
     <>

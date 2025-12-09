@@ -66,7 +66,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     expect(mockUseEditor).toHaveBeenCalled();
@@ -77,7 +77,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '<p>Initial content</p>',
         hiddenInputRef,
-      })
+      }),
     );
 
     expect(mockUseEditor).toHaveBeenCalled();
@@ -92,7 +92,7 @@ describe('useTaskDescriptionEditor', () => {
         value: '',
         onChange: mockOnChange,
         hiddenInputRef,
-      })
+      }),
     );
 
     // Simulate editor update
@@ -113,7 +113,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     // Simulate editor update
@@ -130,36 +130,35 @@ describe('useTaskDescriptionEditor', () => {
   it('should sync editor content when value prop changes', () => {
     // the editor already contains the initial HTML
     mockEditor.getHTML.mockReturnValue('<p>Initial</p>');
-  
+
     const { rerender } = renderHook(
       ({ value }) =>
         useTaskDescriptionEditor({
           value,
           hiddenInputRef,
         }),
-      { initialProps: { value: '<p>Initial</p>' } }
+      { initialProps: { value: '<p>Initial</p>' } },
     );
-  
+
     expect(mockEditor.setContent).not.toHaveBeenCalled();
-  
+
     // now we change the prop
     mockEditor.getHTML.mockReturnValue('<p>Initial</p>'); // before the change
     rerender({ value: '<p>Updated</p>' });
-  
+
     expect(mockEditor.setContent).toHaveBeenCalledWith('<p>Updated</p>', { emitUpdate: false });
   });
-  
 
   it('should not sync editor content when value is the same', () => {
     mockEditor.getHTML.mockReturnValue('<p>Same</p>');
-    
+
     const { rerender } = renderHook(
       ({ value }) =>
         useTaskDescriptionEditor({
           value,
           hiddenInputRef,
         }),
-      { initialProps: { value: '<p>Same</p>' } }
+      { initialProps: { value: '<p>Same</p>' } },
     );
 
     rerender({ value: '<p>Same</p>' });
@@ -172,7 +171,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     act(() => {
@@ -187,7 +186,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     act(() => {
@@ -202,7 +201,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     act(() => {
@@ -219,7 +218,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     expect(result.current.currentTextColor).toBe('#0000ff');
@@ -232,7 +231,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     expect(result.current.currentTextColor).toBeNull();
@@ -246,7 +245,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     expect(result.current.isHighlightActive).toBe(true);
@@ -260,7 +259,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     mockEditor.getHTML.mockReturnValue('<p>Form submit</p>');
@@ -277,7 +276,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     const initialState = result.current.editorState;
@@ -298,7 +297,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     const initialState = result.current.editorState;
@@ -319,7 +318,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     const initialState = result.current.editorState;
@@ -336,7 +335,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     // We have registered the listeners
@@ -348,19 +347,19 @@ describe('useTaskDescriptionEditor', () => {
 
     // We get the exact handlers passed to `on`
     const updateHandler = mockEditor.on.mock.calls.find(
-      ([event]) => event === 'update'
+      ([event]) => event === 'update',
     )?.[1] as () => void;
     const createHandler = mockEditor.on.mock.calls.find(
-      ([event]) => event === 'create'
+      ([event]) => event === 'create',
     )?.[1] as () => void;
     const transactionHandler = mockEditor.on.mock.calls.find(
-      ([event]) => event === 'transaction'
+      ([event]) => event === 'transaction',
     )?.[1] as () => void;
     const selectionUpdateHandler = mockEditor.on.mock.calls.find(
-      ([event]) => event === 'selectionUpdate'
+      ([event]) => event === 'selectionUpdate',
     )?.[1] as () => void;
     const focusHandler = mockEditor.on.mock.calls.find(
-      ([event]) => event === 'focus'
+      ([event]) => event === 'focus',
     )?.[1] as () => void;
 
     expect(updateHandler).toBeDefined();
@@ -397,7 +396,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     expect(result.current.currentHighlight).toBe('#ff00ff');
@@ -421,7 +420,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     // The user chooses a highlight color → selectedHighlightColor is updated
@@ -440,12 +439,12 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     // We get the handler registered for the "update" event
     const updateHandler = (mockEditor.on as unknown as Mock).mock.calls.find(
-      ([eventName]) => eventName === 'update'
+      ([eventName]) => eventName === 'update',
     )?.[1] as () => void;
 
     expect(updateHandler).toBeDefined();
@@ -462,13 +461,13 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     const initialState = result.current.editorState;
 
     const transactionHandler = (mockEditor.on as unknown as Mock).mock.calls.find(
-      ([eventName]) => eventName === 'transaction'
+      ([eventName]) => eventName === 'transaction',
     )?.[1] as () => void;
 
     expect(transactionHandler).toBeDefined();
@@ -503,7 +502,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     expect(result.current.currentHighlight).toBe('#ff00ff');
@@ -529,7 +528,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     expect(result.current.currentHighlight).toBe('#00ffff');
@@ -543,7 +542,7 @@ describe('useTaskDescriptionEditor', () => {
       useTaskDescriptionEditor({
         value: '',
         hiddenInputRef,
-      })
+      }),
     );
 
     act(() => {
