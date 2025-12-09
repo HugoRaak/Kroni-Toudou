@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { DragEvent } from 'react';
 import { saveTodayTaskOrder } from '@/lib/storage/localStorage-tasks';
 
 export function useDragAndDrop<T extends { id: string }>(
@@ -9,6 +10,11 @@ export function useDragAndDrop<T extends { id: string }>(
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [dropPosition, setDropPosition] = useState<'before' | 'after' | null>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setItems(initialItems);
+  }, [initialItems]);
 
   // Update items when initialItems change
   const updateItems = (newItems: T[]) => {
@@ -22,7 +28,7 @@ export function useDragAndDrop<T extends { id: string }>(
     setDraggedIndex(index);
   };
 
-  const handleDropZoneDragOver = (e: React.DragEvent, targetIndex: number, position: 'before' | 'after') => {
+  const handleDropZoneDragOver = (e: DragEvent, targetIndex: number, position: 'before' | 'after') => {
     e.preventDefault();
     e.stopPropagation();
     if (draggedIndex === null) return;
@@ -49,7 +55,7 @@ export function useDragAndDrop<T extends { id: string }>(
     }
   };
 
-  const handleDropZoneDrop = (e: React.DragEvent, targetIndex: number, position: 'before' | 'after') => {
+  const handleDropZoneDrop = (e: DragEvent, targetIndex: number, position: 'before' | 'after') => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -92,7 +98,7 @@ export function useDragAndDrop<T extends { id: string }>(
     resetDragState();
   };
 
-  const handleTaskDragOver = (e: React.DragEvent, index: number) => {
+  const handleTaskDragOver = (e: DragEvent, index: number) => {
     e.preventDefault();
     if (draggedIndex !== null && draggedIndex !== index) {
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -114,7 +120,7 @@ export function useDragAndDrop<T extends { id: string }>(
     setDropPosition(null);
   };
 
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+  const handleDrop = (e: DragEvent, dropIndex: number) => {
     e.preventDefault();
     
     if (draggedIndex === null || dropPosition === null) {
