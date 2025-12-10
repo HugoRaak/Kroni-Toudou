@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,7 +15,12 @@ import { AuthForm } from './auth-form';
 export function AuthDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const mounted = typeof window !== 'undefined';
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   const handleSuccess = () => {
     setIsOpen(false);
