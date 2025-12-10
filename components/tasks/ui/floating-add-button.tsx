@@ -219,11 +219,12 @@ export function FloatingAddButton({
               <div className="flex flex-col gap-3 pt-4">
                 <div className="relative">
                   <Image
-                    src="/kroni-pointing-down2.png"
+                    src="/kroni-pointing-down2.webp"
                     alt="Kroni pointe vers le bas"
                     width={72}
                     height={72}
                     className="absolute left-3/4 -translate-x-1/2 -top-13 rounded-md pointer-events-none select-none z-10"
+                    loading="lazy"
                   />
                   <div className="flex space-x-2 w-full">
                     <DialogClose asChild>

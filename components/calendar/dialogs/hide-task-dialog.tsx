@@ -26,7 +26,7 @@ export function HideTaskDialog({ open, task, onConfirm, onCancel }: HideTaskDial
           <div className="flex flex-col items-center gap-4 mb-4">
             <DialogTitle className="text-center">C&apos;est bon c&apos;est fini ?</DialogTitle>
             <Image
-              src="/kroni-impatient.png"
+              src="/kroni-impatient.webp"
               alt="Kroni impatient"
               width={80}
               height={80}

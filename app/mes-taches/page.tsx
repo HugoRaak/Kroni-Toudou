@@ -32,12 +32,11 @@ export default async function MesTachesPage() {
         <div className="mb-8">
           <div className="flex items-center justify-center gap-4">
             <Image
-              src="/kroni-glasses.png"
+              src="/kroni-glasses.webp"
               alt="Kroni"
               width={48}
               height={48}
               className="rounded-md pointer-events-none select-none"
-              loading="eager"
             />
             <div>
               <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-center">
@@ -45,12 +44,11 @@ export default async function MesTachesPage() {
               </h1>
             </div>
             <Image
-              src="/kroni-jongle.png"
+              src="/kroni-jongle.webp"
               alt="Kroni"
               width={52}
               height={52}
               className="rounded-md pointer-events-none select-none -mt-4"
-              loading="eager"
             />
           </div>
           <div className="mt-4 h-1 w-full bg-gradient-to-r from-yellow-400/40 via-violet-500/30 to-orange-500/30 rounded-full" />

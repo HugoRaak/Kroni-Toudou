@@ -194,7 +194,7 @@ export function TaskEditDialog({
                   <div className="flex flex-col gap-3 pt-4">
                     <div className="relative">
                       <Image
-                        src="/kroni-pointing-down2.png"
+                        src="/kroni-pointing-down2.webp"
                         alt="Kroni pointe vers le bas"
                         width={72}
                         height={72}
@@ -256,12 +256,12 @@ export function TaskEditDialog({
                 <div className="flex flex-col items-center gap-4 mb-4">
                   <DialogTitle className="text-center">Supprimer la tâche ?</DialogTitle>
                   <Image
-                    src="/kroni-sad.png"
+                    src="/kroni-sad.webp"
                     alt="Kroni triste"
                     width={80}
                     height={80}
                     className="rounded-md"
-                    priority={false}
+                    loading="lazy"
                   />
                   <DialogDescription className="text-center">
                     Êtes-vous sûr de vouloir supprimer la tâche{' '}

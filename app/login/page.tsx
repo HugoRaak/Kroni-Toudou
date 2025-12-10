@@ -17,13 +17,13 @@ export default async function LoginPage({
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">
             <Image
-              src="/kroni.png"
+              src="/kroni.webp"
               alt="Kroni le dinosaure"
               width={120}
               height={120}
               style={{ height: 'auto', width: 'auto' }}
               className="mx-auto rounded-full"
-              loading="eager"
+              priority={true}
             />
             <h2 className="text-2xl font-bold text-foreground">Bienvenue sur Kroni-Toudou !</h2>
             <p className="text-muted-foreground max-w-md">

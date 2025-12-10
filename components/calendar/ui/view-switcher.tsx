@@ -14,7 +14,7 @@ function ViewSwitcher({
   return (
     <div className="flex items-center justify-center gap-2">
       <Image
-        src="/kroni-calendar.png"
+        src="/kroni-calendar.webp"
         alt="Kroni calendrier"
         width={64}
         height={64}
@@ -54,7 +54,7 @@ function ViewSwitcher({
         Mois
       </Button>
       <Image
-        src="/kroni-sleepy.png"
+        src="/kroni-sleepy.webp"
         alt="Kroni endormi"
         width={64}
         height={64}

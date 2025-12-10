@@ -35,7 +35,7 @@ export function Navbar({ user }: { user: User | null }) {
         <div className="flex h-16 items-center justify-between">
           <Link href="/home" className="flex items-center gap-2 group">
             <Image
-              src="/kroni.png"
+              src="/kroni.webp"
               alt="Kroni mascot"
               width={28}
               height={28}
