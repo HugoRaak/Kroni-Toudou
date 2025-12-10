@@ -1,5 +1,5 @@
 import { supabaseServer, supabaseServerReadOnly } from '@/lib/supabase/supabase-server';
-import { getDefaultWorkMode } from '@/lib/workday-defaults';
+import { getDefaultWorkMode, getFrenchPublicHolidays } from '@/lib/workday-defaults';
 import { addDays, formatDateLocal, normalizeToMidnight, parseDateLocal } from '@/lib/utils';
 
 export type WorkMode = 'Présentiel' | 'Distanciel' | 'Congé';
@@ -13,11 +13,12 @@ export async function getWorkday(userId: string, workDate: string): Promise<Work
     .eq('work_date', workDate)
     .maybeSingle();
 
+  const holidays = await getFrenchPublicHolidays(parseDateLocal(workDate).getFullYear());
   if (error) {
     console.error('Error fetching workday:', error);
-    return await getDefaultWorkMode(workDate);
+    return getDefaultWorkMode(workDate, holidays);
   }
-  return (data?.work_mode as WorkMode) ?? (await getDefaultWorkMode(workDate));
+  return (data?.work_mode as WorkMode) ?? (getDefaultWorkMode(workDate, holidays));
 }
 
 export async function getWorkdaysInRange(
@@ -67,10 +68,12 @@ export async function getWorkdaysInRange(
   let current = normalizeToMidnight(start);
   const endDateObj = normalizeToMidnight(end);
 
+  const holidays = await getFrenchPublicHolidays(current.getFullYear());
+
   while (current <= endDateObj) {
     const dateStr = formatDateLocal(current);
     if (!dbWorkdays.has(dateStr)) {
-      map[dateStr] = await getDefaultWorkMode(current);
+      map[dateStr] = getDefaultWorkMode(current, holidays);
     }
     current = addDays(current, 1);
   }

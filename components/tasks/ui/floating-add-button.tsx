@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +12,6 @@ import {
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
-import { TaskForm } from '@/components/tasks/forms/task-form';
 import { createTaskFromForm, ModeConflictError, type TaskActionResult } from '@/app/actions/tasks';
 import { createTodayTempTask } from '@/lib/storage/localStorage-tasks';
 import { Plus, Loader2 } from 'lucide-react';
@@ -28,6 +28,21 @@ interface FloatingAddButtonProps {
   currentView?: CalendarView;
   dayDate?: Date;
 }
+
+const TaskForm = dynamic(
+  () => import('@/components/tasks/forms/task-form').then((m) => m.TaskForm),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="space-y-4">
+        {/* Skeleton très simple, pas besoin de faire compliqué */}
+        <div className="h-9 w-full bg-muted rounded-md" />
+        <div className="h-24 w-full bg-muted rounded-md" />
+        <div className="h-9 w-full bg-muted rounded-md" />
+      </div>
+    ),
+  }
+);
 
 export function FloatingAddButton({
   userId,

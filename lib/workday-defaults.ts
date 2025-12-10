@@ -45,7 +45,7 @@ async function fetchFrenchPublicHolidays(year: number): Promise<Set<string>> {
 /**
  * Gets French public holidays for a given year (uses cache)
  */
-async function getFrenchPublicHolidays(year: number): Promise<Set<string>> {
+export async function getFrenchPublicHolidays(year: number): Promise<Set<string>> {
   if (holidaysCache.has(year)) {
     return holidaysCache.get(year)!;
   }
@@ -53,16 +53,6 @@ async function getFrenchPublicHolidays(year: number): Promise<Set<string>> {
   const holidays = await fetchFrenchPublicHolidays(year);
   holidaysCache.set(year, holidays);
   return holidays;
-}
-
-/**
- * Checks if a date is a French public holiday
- */
-async function isFrenchPublicHoliday(date: Date): Promise<boolean> {
-  const year = date.getFullYear();
-  const dateStr = formatDateLocal(date); // YYYY-MM-DD format
-  const holidays = await getFrenchPublicHolidays(year);
-  return holidays.has(dateStr);
 }
 
 /**
@@ -98,7 +88,7 @@ function getDayOfWeek(year: number, month: number, day: number): number {
  * - Wednesday, Friday -> Distanciel
  * - Monday, Tuesday, Thursday -> Présentiel
  */
-export async function getDefaultWorkMode(date: Date | string): Promise<WorkMode> {
+export function getDefaultWorkMode(date: Date | string, holidays: Set<string>): WorkMode {
   // Parse date string to ensure consistent date object
   const dateStr = typeof date === 'string' ? date : formatDateLocal(date);
   const [year, month, day] = dateStr.split('-').map(Number);
@@ -111,17 +101,8 @@ export async function getDefaultWorkMode(date: Date | string): Promise<WorkMode>
     return 'Congé';
   }
 
-  // Create date object for holiday check (needed for formatDateLocal)
-  const dateObj = new Date(year, month - 1, day);
-
-  // French public holidays are Congé
-  try {
-    if (await isFrenchPublicHoliday(dateObj)) {
-      return 'Congé';
-    }
-  } catch (error) {
-    // If holiday check fails, log but continue with weekday logic
-    console.error(`Error checking holiday for ${dateStr}:`, error);
+  if (holidays.has(dateStr)) {
+    return 'Congé';
   }
 
   // Wednesday (3) and Friday (5) are Distanciel
