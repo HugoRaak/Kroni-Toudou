@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { processPendingLicenseAction } from '@/app/actions/licenses';
+import { processPendingLicenseAction } from '@/app/actions/auth/licenses';
 
 export function LicenseProcessor() {
   useEffect(() => {

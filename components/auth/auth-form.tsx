@@ -5,6 +5,7 @@ import { signIn, signUp } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { validatePassword } from '@/lib/auth/auth-helpers';
+import Link from 'next/link';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
@@ -329,8 +330,19 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
 
       <div className="space-y-2">
         <Button type="submit" className="w-full cursor-pointer" disabled={loading || emailSent}>
-          {loading ? 'Chargement...' : mode === 'login' ? 'Se connecter' : 'S&apos;inscrire'}
+          {loading ? 'Chargement...' : mode === 'login' ? 'Se connecter' : "S'inscrire"}
         </Button>
+
+        {mode === 'login' && !emailSent && (
+          <div className="text-center">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-muted-foreground hover:text-foreground underline"
+            >
+              Mot de passe oublié ?
+            </Link>
+          </div>
+        )}
 
         {emailSent && (
           <Button
