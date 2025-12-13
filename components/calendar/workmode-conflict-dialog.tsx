@@ -15,13 +15,13 @@ import { formatDateLocal, parseDateLocal, addDays } from '@/lib/utils';
 import { getWorkdaysMapAction } from '@/app/actions/workdays';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { WorkMode } from '@/lib/db/workdays';
+import type { ModeConflict } from '@/lib/hooks/workdays/use-mode-conflicts';
 
 type WorkModeConflictDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   conflict: ModeConflictError;
-  modeConflicts: Array<{ conflict: ModeConflictError; dateStr: string; newMode: WorkMode }>;
+  modeConflicts: ModeConflict[];
   userId: string;
   onDateChange: (taskId: string, newDate: string) => void;
   onCancel: () => void;

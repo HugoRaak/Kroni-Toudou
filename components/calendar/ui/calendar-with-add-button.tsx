@@ -5,9 +5,13 @@ import { Calendar } from '@/components/calendar/views/calendar';
 import { FloatingAddButton } from '@/components/tasks/ui/floating-add-button';
 import type { CalendarView } from '@/lib/calendar/calendar-navigation';
 import type { ModeConflictError, TaskActionResult } from '@/app/actions/tasks';
+import type { DayTasksData } from '@/components/calendar/views/day-view';
 
 interface CalendarWithAddButtonProps {
   userId: string;
+  initialDayData?: DayTasksData;
+  initialWorkMode?: 'Présentiel' | 'Distanciel' | 'Congé';
+  initialDayDate?: Date;
   onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
   onSubmit: (formData: FormData) => Promise<TaskActionResult>;
@@ -15,6 +19,9 @@ interface CalendarWithAddButtonProps {
 
 export function CalendarWithAddButton({
   userId,
+  initialDayData,
+  initialWorkMode,
+  initialDayDate,
   onUpdateTask,
   onDeleteTask,
   onSubmit,
@@ -43,6 +50,9 @@ export function CalendarWithAddButton({
     <>
       <Calendar
         userId={userId}
+        initialDayData={initialDayData}
+        initialWorkMode={initialWorkMode}
+        initialDayDate={initialDayDate}
         onUpdateTask={onUpdateTask}
         onDeleteTask={onDeleteTask}
         onViewChange={handleViewChange}

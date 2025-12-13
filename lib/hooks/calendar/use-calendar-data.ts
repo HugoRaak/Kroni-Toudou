@@ -24,6 +24,9 @@ type UseCalendarDataOptions = {
   dayDate: Date;
   weekDate: Date;
   monthDate: Date;
+  initialDayData?: DayTasksData;
+  initialWorkMode?: 'Présentiel' | 'Distanciel' | 'Congé';
+  initialDayDate?: Date;
 };
 
 type UseCalendarDataReturn = {
@@ -43,12 +46,15 @@ export function useCalendarData({
   dayDate,
   weekDate,
   monthDate,
+  initialDayData,
+  initialWorkMode,
+  initialDayDate,
 }: UseCalendarDataOptions): UseCalendarDataReturn {
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
-  const [dayTasks, setDayTasks] = useState<DayTasksData>(null);
-  const [loading, setLoading] = useState(true);
+  const [dayTasks, setDayTasks] = useState<DayTasksData>(initialDayData ?? null);
+  const [loading, setLoading] = useState(!initialDayData);
   const [dayWorkMode, setDayWorkMode] = useState<'Présentiel' | 'Distanciel' | 'Congé'>(
-    'Présentiel',
+    initialWorkMode ?? 'Présentiel',
   );
   const [workdaysMap, setWorkdaysMap] = useState<
     Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>
@@ -57,6 +63,7 @@ export function useCalendarData({
   const loadRequestIdRef = useRef(0);
   const isLoadingRef = useRef(false);
   const isInitialMountRef = useRef(true);
+  const hasUsedInitialDataRef = useRef(false);
 
   const loadTasks = async (forceReload = false) => {
     loadRequestIdRef.current += 1;
@@ -148,6 +155,27 @@ export function useCalendarData({
 
   // Debounced load on view/date changes
   useEffect(() => {
+    // Skip initial load if we have initial data and are viewing today
+    if (
+      isInitialMountRef.current &&
+      initialDayData &&
+      initialDayDate &&
+      isToday(dayDate) &&
+      (currentView === 'day' || currentView === 'today')
+    ) {
+      // Check if we're viewing the same day as initial data
+      const viewingToday = normalizeToMidnight(dayDate).getTime() === initialDayDate.getTime();
+      if (viewingToday) {
+        isInitialMountRef.current = false;
+        hasUsedInitialDataRef.current = true;
+        // Save to localStorage if viewing today
+        if (isToday(dayDate)) {
+          saveTodayTasksToStorage(initialDayData);
+        }
+        return;
+      }
+    }
+
     const timeoutId = setTimeout(() => {
       loadTasks();
     }, 250);
@@ -155,7 +183,7 @@ export function useCalendarData({
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [currentView, dayDate, weekDate, monthDate]);
+  }, [currentView, dayDate, weekDate, monthDate, initialDayData, initialDayDate]);
 
   // Refresh on task events
   useEffect(() => {

@@ -204,17 +204,15 @@ export function FloatingAddButton({
           </DialogHeader>
           <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-1">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <TaskForm
-                key={
-                  isOpen
-                    ? `task-form-${currentView}-${dayDate?.getTime() || ''}`
-                    : 'task-form-closed'
-                }
-                isViewingToday={isViewingToday}
-                onTempTaskChange={setIsTempTask}
-                currentView={currentView}
-                dayDate={dayDate}
-              />
+              {isOpen && (
+                <TaskForm
+                  key={`task-form-${currentView}-${dayDate?.getTime() || ''}`}
+                  isViewingToday={isViewingToday}
+                  onTempTaskChange={setIsTempTask}
+                  currentView={currentView}
+                  dayDate={dayDate}
+                />
+              )}
 
               <div className="flex flex-col gap-3 pt-4">
                 <div className="relative">

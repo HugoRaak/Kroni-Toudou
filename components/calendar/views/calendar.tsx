@@ -11,14 +11,21 @@ import { isToday } from '@/lib/storage/localStorage-tasks';
 import type { ModeConflictError } from '@/app/actions/tasks';
 import { useCalendarData } from '@/lib/hooks/calendar/use-calendar-data';
 import { useCalendarHandlers } from '@/lib/hooks/calendar/use-calendar-handlers';
+import type { DayTasksData } from '@/components/calendar/views/day-view';
 
 export function Calendar({
   userId,
+  initialDayData,
+  initialWorkMode,
+  initialDayDate,
   onUpdateTask,
   onDeleteTask,
   onViewChange,
 }: {
   userId: string;
+  initialDayData?: DayTasksData;
+  initialWorkMode?: 'Présentiel' | 'Distanciel' | 'Congé';
+  initialDayDate?: Date;
   onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
   onViewChange?: (isViewingToday: boolean, currentView: CalendarView, dayDate?: Date) => void;
@@ -44,6 +51,9 @@ export function Calendar({
     dayDate,
     weekDate,
     monthDate,
+    initialDayData,
+    initialWorkMode,
+    initialDayDate,
   });
 
   // Notify parent when viewing today changes

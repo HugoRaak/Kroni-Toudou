@@ -85,6 +85,10 @@ export function WorkModeBadge({
 
       if (result === true) {
         onSaved?.();
+      } else if (result === false) {
+        // Authentication failure or database error - revert to original mode
+        setSelectedMode(workMode);
+        toast.error('Erreur. Réessayer');
       }
     } finally {
       setSaving(false);

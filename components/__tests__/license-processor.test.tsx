@@ -12,7 +12,14 @@ describe('LicenseProcessor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockProcessPendingLicenseAction.mockResolvedValue({ success: true });
+  
+    (globalThis as any).requestIdleCallback = (cb: any) => {
+      cb();
+      return 1;
+    };
+    (globalThis as any).cancelIdleCallback = vi.fn();
   });
+  
 
   it('should return null (render nothing)', () => {
     const { container } = render(<LicenseProcessor />);
