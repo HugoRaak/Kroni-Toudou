@@ -41,7 +41,7 @@ const TaskForm = dynamic(
         <div className="h-9 w-full bg-muted rounded-md" />
       </div>
     ),
-  }
+  },
 );
 
 export function FloatingAddButton({

@@ -22,7 +22,8 @@ export default async function ForgotPasswordPage() {
               />
               <h2 className="text-2xl font-bold text-foreground mt-4">Mot de passe oublié</h2>
               <p className="text-muted-foreground mt-2">
-                Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+                Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre
+                mot de passe.
               </p>
             </div>
 
@@ -44,4 +45,3 @@ export default async function ForgotPasswordPage() {
     </div>
   );
 }
-

@@ -53,8 +53,8 @@ export default function ResetPasswordPage() {
 
     const validation = validatePassword(password.trim());
     if (!validation.valid) {
-        toast.error(validation.message);
-        return;
+      toast.error(validation.message);
+      return;
     }
 
     startTransition(async () => {
@@ -66,7 +66,10 @@ export default function ResetPasswordPage() {
 
       if (error) {
         const errorLower = error.message.toLowerCase();
-        if (errorLower.includes('password should be at least') || errorLower.includes('password too short')) {
+        if (
+          errorLower.includes('password should be at least') ||
+          errorLower.includes('password too short')
+        ) {
           toast.error('Le mot de passe doit contenir au moins 6 caractères.');
         } else if (errorLower.includes('session')) {
           toast.error('Le lien de réinitialisation a expiré. Veuillez en demander un nouveau.');
@@ -137,7 +140,9 @@ export default function ResetPasswordPage() {
                 className="mx-auto rounded-full"
                 priority={true}
               />
-              <h2 className="text-2xl font-bold text-foreground mt-4">Réinitialiser le mot de passe</h2>
+              <h2 className="text-2xl font-bold text-foreground mt-4">
+                Réinitialiser le mot de passe
+              </h2>
               <p className="text-muted-foreground mt-2">
                 Entrez votre nouveau mot de passe ci-dessous.
               </p>
@@ -146,7 +151,10 @@ export default function ResetPasswordPage() {
             <div className="bg-card border rounded-lg p-6 shadow-sm">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
                     Nouveau mot de passe
                   </label>
                   <div className="relative">
@@ -166,7 +174,9 @@ export default function ResetPasswordPage() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring rounded p-1"
                       tabIndex={-1}
-                      aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                      aria-label={
+                        showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+                      }
                     >
                       {showPassword ? (
                         <svg
@@ -293,4 +303,3 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
-

@@ -15,13 +15,13 @@ export function ForgotPasswordForm() {
     e.preventDefault();
 
     if (!email || !email.trim()) {
-      toast.error('L\'email est requis.');
+      toast.error("L'email est requis.");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      toast.error('Format d\'email invalide.');
+      toast.error("Format d'email invalide.");
       return;
     }
 
@@ -29,7 +29,9 @@ export function ForgotPasswordForm() {
       const result = await requestPasswordResetAction({ email: email.trim() });
 
       if (result.success) {
-        toast.success('Un email de réinitialisation a été envoyé. Vérifiez votre boîte de réception.');
+        toast.success(
+          'Un email de réinitialisation a été envoyé. Vérifiez votre boîte de réception.',
+        );
         setEmailSent(true);
       } else {
         toast.error(result.message);
@@ -41,7 +43,8 @@ export function ForgotPasswordForm() {
     return (
       <div className="space-y-4">
         <div className="text-sm text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400 p-3 rounded">
-          Un email de réinitialisation a été envoyé à <strong>{email}</strong>. Vérifiez votre boîte de réception et suivez les instructions.
+          Un email de réinitialisation a été envoyé à <strong>{email}</strong>. Vérifiez votre boîte
+          de réception et suivez les instructions.
         </div>
         <Button
           type="button"
@@ -75,7 +78,8 @@ export function ForgotPasswordForm() {
           disabled={isPending}
         />
         <p className="text-xs text-muted-foreground mt-1">
-          Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+          Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de
+          passe.
         </p>
       </div>
 
@@ -85,4 +89,3 @@ export function ForgotPasswordForm() {
     </form>
   );
 }
-

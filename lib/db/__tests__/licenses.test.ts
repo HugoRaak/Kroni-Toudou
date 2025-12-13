@@ -17,7 +17,6 @@ const mockQueryBuilder = (args: any) => ({
   })),
 });
 
-
 const mockSupabaseServer = vi.fn(() => Promise.resolve(mockSupabaseClient));
 
 vi.mock('@/lib/supabase/supabase-server', () => ({
@@ -68,7 +67,9 @@ describe('licenses', () => {
         valid: false,
         error: 'Erreur lors de la vérification de la licence',
       });
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error validating license:', { message: 'Database error' });
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error validating license:', {
+        message: 'Database error',
+      });
 
       consoleErrorSpy.mockRestore();
     });
@@ -328,7 +329,9 @@ describe('licenses', () => {
         success: false,
         error: "Erreur lors de l'association de la licence",
       });
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error associating license to user:', { message: 'Update failed' });
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error associating license to user:', {
+        message: 'Update failed',
+      });
 
       consoleErrorSpy.mockRestore();
     });

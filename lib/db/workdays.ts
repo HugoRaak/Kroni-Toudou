@@ -18,7 +18,7 @@ export async function getWorkday(userId: string, workDate: string): Promise<Work
     console.error('Error fetching workday:', error);
     return getDefaultWorkMode(workDate, holidays);
   }
-  return (data?.work_mode as WorkMode) ?? (getDefaultWorkMode(workDate, holidays));
+  return (data?.work_mode as WorkMode) ?? getDefaultWorkMode(workDate, holidays);
 }
 
 export async function getWorkdaysInRange(

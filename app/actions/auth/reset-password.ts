@@ -2,9 +2,7 @@
 
 import { supabaseServer } from '@/lib/supabase/supabase-server';
 
-type ResetPasswordResult =
-  | { success: true }
-  | { success: false; message: string };
+type ResetPasswordResult = { success: true } | { success: false; message: string };
 
 function translateError(errorMessage: string): string {
   const errorLower = errorMessage.toLowerCase();
@@ -22,18 +20,18 @@ function translateError(errorMessage: string): string {
   return 'Une erreur est survenue. Veuillez réessayer.';
 }
 
-export async function requestPasswordResetAction(
-  formData: { email: string },
-): Promise<ResetPasswordResult> {
+export async function requestPasswordResetAction(formData: {
+  email: string;
+}): Promise<ResetPasswordResult> {
   const { email } = formData;
 
   if (!email || !email.trim()) {
-    return { success: false, message: 'L\'email est requis.' };
+    return { success: false, message: "L'email est requis." };
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email.trim())) {
-    return { success: false, message: 'Format d\'email invalide.' };
+    return { success: false, message: "Format d'email invalide." };
   }
 
   const supabase = await supabaseServer();

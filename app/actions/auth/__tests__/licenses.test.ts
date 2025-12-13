@@ -195,10 +195,9 @@ describe('processPendingLicenseAction', () => {
         pending_license_key: null,
       },
     });
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Error removing pending license from metadata:',
-      { message: 'Update failed' },
-    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error removing pending license from metadata:', {
+      message: 'Update failed',
+    });
 
     consoleErrorSpy.mockRestore();
   });

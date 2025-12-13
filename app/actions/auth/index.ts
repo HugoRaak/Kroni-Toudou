@@ -127,4 +127,3 @@ export async function signOut() {
 
   redirect('/');
 }
-

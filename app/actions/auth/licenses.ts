@@ -49,4 +49,3 @@ export async function processPendingLicenseAction(): Promise<{ success: boolean;
 
   return { success: true };
 }
-

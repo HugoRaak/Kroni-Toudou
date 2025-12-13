@@ -31,17 +31,17 @@ describe('LicenseProcessor', () => {
 
   it('should not call processPendingLicenseAction multiple times on re-render', async () => {
     const { rerender } = render(<LicenseProcessor />);
-  
+
     await waitFor(() => {
       expect(mockProcessPendingLicenseAction).toHaveBeenCalledTimes(1);
     });
-  
+
     rerender(<LicenseProcessor />);
-  
+
     await waitFor(() => {
       expect(mockProcessPendingLicenseAction).toHaveBeenCalledTimes(1);
     });
-  });  
+  });
 
   it('should log error if processPendingLicenseAction rejects', async () => {
     const error = new Error('Processing failed');
