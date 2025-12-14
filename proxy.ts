@@ -37,12 +37,13 @@ export async function proxy(request: NextRequest) {
 
   // Protected routes
   const protectedRoutes = ['/home', '/mes-taches'];
+  const authOnlyForGuestsRoutes = ['/login', '/forgot-password', '/reset-password'];
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
-  const isLoginPage = pathname === '/login';
+  const isGuestOnlyRoute = authOnlyForGuestsRoutes.some((route) => pathname.startsWith(route));
   const isRootPage = pathname === '/';
 
   // If user is authenticated and tries to access login, redirect to home
-  if (user && isLoginPage) {
+  if (user && isGuestOnlyRoute) {
     return NextResponse.redirect(new URL('/home', request.url));
   }
 
