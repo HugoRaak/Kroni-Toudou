@@ -1,8 +1,5 @@
-import { 
-  updateTodayTempTask, 
-  deleteTodayTempTask 
-} from "@/lib/storage/localStorage-tasks";
-import type { ModeConflictError } from "@/app/actions/tasks";
+import { updateTodayTempTask, deleteTodayTempTask } from '@/lib/storage/localStorage-tasks';
+import type { ModeConflictError } from '@/app/actions/tasks';
 
 interface UseUnifiedTaskHandlersProps {
   onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
@@ -15,15 +12,17 @@ export function useUnifiedTaskHandlers({
   onDeleteTask,
   loadTempTasks,
 }: UseUnifiedTaskHandlersProps) {
-  const handleUpdateTaskUnified = async (formData: FormData): Promise<boolean | ModeConflictError> => {
+  const handleUpdateTaskUnified = async (
+    formData: FormData,
+  ): Promise<boolean | ModeConflictError> => {
     const id = String(formData.get('id') || '');
     const isTempTask = id.startsWith('temp-');
-    
+
     if (isTempTask) {
       // Update temp task in localStorage
       const title = String(formData.get('title') || '');
       const description = String(formData.get('description') || '');
-      
+
       const updated = updateTodayTempTask(id, { title, description });
       if (updated) {
         loadTempTasks();
@@ -39,7 +38,7 @@ export function useUnifiedTaskHandlers({
 
   const handleDeleteTaskUnified = async (id: string): Promise<boolean> => {
     const isTempTask = id.startsWith('temp-');
-    
+
     if (isTempTask) {
       const result = deleteTodayTempTask(id);
       if (result) {
@@ -58,4 +57,3 @@ export function useUnifiedTaskHandlers({
     handleDeleteTaskUnified,
   };
 }
-

@@ -1,12 +1,20 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { CalendarTask } from '@/lib/calendar/calendar-utils';
 import { DayTasksData } from '@/components/calendar/views/day-view';
 import { getWorkdayAction } from '@/app/actions/workdays';
-import { getTodayTasksFromStorage, saveTodayTasksToStorage, isToday } from '@/lib/storage/localStorage-tasks';
+import {
+  getTodayTasksFromStorage,
+  saveTodayTasksToStorage,
+  isToday,
+} from '@/lib/storage/localStorage-tasks';
 import { normalizeToMidnight, formatDateLocal, getRangeForView } from '@/lib/utils';
-import { getCalendarDayDataAction, getCalendarRangeDataAction, checkFutureTaskShiftsAction } from '@/app/actions/calendar';
+import {
+  getCalendarDayDataAction,
+  getCalendarRangeDataAction,
+  checkFutureTaskShiftsAction,
+} from '@/app/actions/calendar';
 import { showTaskShiftAlerts } from '@/lib/calendar/task-shift-alerts';
 import type { CalendarView } from '@/lib/calendar/calendar-navigation';
 
@@ -16,6 +24,9 @@ type UseCalendarDataOptions = {
   dayDate: Date;
   weekDate: Date;
   monthDate: Date;
+  initialDayData?: DayTasksData;
+  initialWorkMode?: 'Présentiel' | 'Distanciel' | 'Congé';
+  initialDayDate?: Date;
 };
 
 type UseCalendarDataReturn = {
@@ -35,16 +46,24 @@ export function useCalendarData({
   dayDate,
   weekDate,
   monthDate,
+  initialDayData,
+  initialWorkMode,
+  initialDayDate,
 }: UseCalendarDataOptions): UseCalendarDataReturn {
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
-  const [dayTasks, setDayTasks] = useState<DayTasksData>(null);
-  const [loading, setLoading] = useState(true);
-  const [dayWorkMode, setDayWorkMode] = useState<'Présentiel' | 'Distanciel' | 'Congé'>('Présentiel');
-  const [workdaysMap, setWorkdaysMap] = useState<Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>>({});
-  
+  const [dayTasks, setDayTasks] = useState<DayTasksData>(initialDayData ?? null);
+  const [loading, setLoading] = useState(!initialDayData);
+  const [dayWorkMode, setDayWorkMode] = useState<'Présentiel' | 'Distanciel' | 'Congé'>(
+    initialWorkMode ?? 'Présentiel',
+  );
+  const [workdaysMap, setWorkdaysMap] = useState<
+    Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>
+  >({});
+
   const loadRequestIdRef = useRef(0);
   const isLoadingRef = useRef(false);
   const isInitialMountRef = useRef(true);
+  const hasUsedInitialDataRef = useRef(false);
 
   const loadTasks = async (forceReload = false) => {
     loadRequestIdRef.current += 1;
@@ -52,7 +71,7 @@ export function useCalendarData({
 
     isLoadingRef.current = true;
     setLoading(true);
-    
+
     try {
       const isDayLikeView = currentView === 'day' || currentView === 'today';
       const activeDayDate = currentView === 'today' ? normalizeToMidnight(new Date()) : dayDate;
@@ -61,7 +80,7 @@ export function useCalendarData({
         // Check localStorage cache for today
         if (isToday(activeDayDate) && !forceReload && !isInitialMountRef.current) {
           const storedTasks = getTodayTasksFromStorage();
-          
+
           if (storedTasks) {
             const mode = await getWorkdayAction(userId, formatDateLocal(activeDayDate));
             if (currentRequestId !== loadRequestIdRef.current) {
@@ -136,14 +155,35 @@ export function useCalendarData({
 
   // Debounced load on view/date changes
   useEffect(() => {
+    // Skip initial load if we have initial data and are viewing today
+    if (
+      isInitialMountRef.current &&
+      initialDayData &&
+      initialDayDate &&
+      isToday(dayDate) &&
+      (currentView === 'day' || currentView === 'today')
+    ) {
+      // Check if we're viewing the same day as initial data
+      const viewingToday = normalizeToMidnight(dayDate).getTime() === initialDayDate.getTime();
+      if (viewingToday) {
+        isInitialMountRef.current = false;
+        hasUsedInitialDataRef.current = true;
+        // Save to localStorage if viewing today
+        if (isToday(dayDate)) {
+          saveTodayTasksToStorage(initialDayData);
+        }
+        return;
+      }
+    }
+
     const timeoutId = setTimeout(() => {
       loadTasks();
     }, 250);
-    
+
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [currentView, dayDate, weekDate, monthDate]);
+  }, [currentView, dayDate, weekDate, monthDate, initialDayData, initialDayDate]);
 
   // Refresh on task events
   useEffect(() => {
@@ -171,4 +211,3 @@ export function useCalendarData({
     setDayWorkMode,
   };
 }
-

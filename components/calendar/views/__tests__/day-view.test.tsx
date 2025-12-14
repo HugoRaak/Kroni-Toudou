@@ -81,9 +81,8 @@ vi.mock('@/components/calendar/ui/workmode-badge', () => ({
 }));
 
 vi.mock('@/components/calendar/dialogs/hide-task-dialog', () => ({
-  HideTaskDialog: ({ open }: { open: boolean }) => (
-    open ? <div data-testid="hide-task-dialog">Hide Task Dialog</div> : null
-  ),
+  HideTaskDialog: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="hide-task-dialog">Hide Task Dialog</div> : null,
 }));
 
 const defaultTasks: DayTasksData = {
@@ -115,7 +114,7 @@ describe('DayView', () => {
         onNext={mockOnNext}
         onUpdateTask={mockOnUpdateTask}
         onDeleteTask={mockOnDeleteTask}
-      />
+      />,
     );
 
     expect(screen.queryByText(/Aucune tâche pour ce jour/i)).not.toBeInTheDocument();
@@ -133,7 +132,7 @@ describe('DayView', () => {
         onNext={mockOnNext}
         onUpdateTask={mockOnUpdateTask}
         onDeleteTask={mockOnDeleteTask}
-      />
+      />,
     );
 
     expect(screen.getByText(/Aucune tâche pour ce jour/i)).toBeInTheDocument();
@@ -150,7 +149,7 @@ describe('DayView', () => {
         onNext={mockOnNext}
         onUpdateTask={mockOnUpdateTask}
         onDeleteTask={mockOnDeleteTask}
-      />
+      />,
     );
 
     expect(screen.getByText(/Là c'est repos !/i)).toBeInTheDocument();
@@ -159,7 +158,16 @@ describe('DayView', () => {
   it('should render tasks with single column layout', () => {
     const tasks: DayTasksData = {
       ...defaultTasks,
-      periodic: [{ id: '1', title: 'Task 1', description: '', user_id: 'user1', created_at: '', updated_at: '' } as Task],
+      periodic: [
+        {
+          id: '1',
+          title: 'Task 1',
+          description: '',
+          user_id: 'user1',
+          created_at: '',
+          updated_at: '',
+        } as Task,
+      ],
     };
 
     render(
@@ -172,7 +180,7 @@ describe('DayView', () => {
         onNext={mockOnNext}
         onUpdateTask={mockOnUpdateTask}
         onDeleteTask={mockOnDeleteTask}
-      />
+      />,
     );
 
     expect(screen.getByTestId('single-column-layout')).toBeInTheDocument();
@@ -182,7 +190,16 @@ describe('DayView', () => {
     mockUseDayViewState.layout = 'three-column';
     const tasks: DayTasksData = {
       ...defaultTasks,
-      periodic: [{ id: '1', title: 'Task 1', description: '', user_id: 'user1', created_at: '', updated_at: '' } as Task],
+      periodic: [
+        {
+          id: '1',
+          title: 'Task 1',
+          description: '',
+          user_id: 'user1',
+          created_at: '',
+          updated_at: '',
+        } as Task,
+      ],
     };
 
     render(
@@ -195,7 +212,7 @@ describe('DayView', () => {
         onNext={mockOnNext}
         onUpdateTask={mockOnUpdateTask}
         onDeleteTask={mockOnDeleteTask}
-      />
+      />,
     );
 
     expect(screen.getByTestId('three-column-layout')).toBeInTheDocument();
@@ -213,7 +230,7 @@ describe('DayView', () => {
         onUpdateTask={mockOnUpdateTask}
         onDeleteTask={mockOnDeleteTask}
         showNavigation={true}
-      />
+      />,
     );
 
     fireEvent.click(screen.getByTestId('day-prev'));
@@ -232,7 +249,7 @@ describe('DayView', () => {
         onUpdateTask={mockOnUpdateTask}
         onDeleteTask={mockOnDeleteTask}
         showNavigation={true}
-      />
+      />,
     );
 
     fireEvent.click(screen.getByTestId('day-next'));
@@ -250,7 +267,7 @@ describe('DayView', () => {
         onNext={mockOnNext}
         onUpdateTask={mockOnUpdateTask}
         onDeleteTask={mockOnDeleteTask}
-      />
+      />,
     );
 
     expect(screen.getByTestId('workmode-badge')).toBeInTheDocument();
@@ -259,7 +276,12 @@ describe('DayView', () => {
 
   it('should show hide task dialog when hideConfirmOpen is true', () => {
     mockUseDayViewState.hideConfirmOpen = true;
-    mockUseDayViewState.taskToHide = { id: '1', title: 'Task', description: '', taskType: 'periodic' } as any;
+    mockUseDayViewState.taskToHide = {
+      id: '1',
+      title: 'Task',
+      description: '',
+      taskType: 'periodic',
+    } as any;
 
     render(
       <DayView
@@ -271,7 +293,7 @@ describe('DayView', () => {
         onNext={mockOnNext}
         onUpdateTask={mockOnUpdateTask}
         onDeleteTask={mockOnDeleteTask}
-      />
+      />,
     );
 
     expect(screen.getByTestId('hide-task-dialog')).toBeInTheDocument();

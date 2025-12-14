@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -147,5 +147,12 @@
 }
 
 .resize-y::-webkit-resizer {
-  background: linear-gradient(135deg, transparent 0%, transparent 30%, hsl(var(--border)) 30%, hsl(var(--border)) 70%, transparent 70%);
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 30%,
+    hsl(var(--border)) 30%,
+    hsl(var(--border)) 70%,
+    transparent 70%
+  );
 }

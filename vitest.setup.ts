@@ -1,8 +1,8 @@
 /**
  * Vitest setup file
- * 
+ *
  * This file configures all mocks and test utilities needed for the test suite.
- * 
+ *
  * Mocks included:
  * - Supabase (supabase-server.ts)
  * - Next.js (cookies, headers, navigation)
@@ -11,16 +11,16 @@
  * - fetch API (for workday-defaults)
  * - TipTap editor
  * - Window events
- * 
+ *
  * Helpers exported:
  * - createMockSupabaseQueryBuilder: Create a mock Supabase query builder
  * - createMockUser: Create a mock user object
  * - createMockTask: Create a mock task object
- * 
+ *
  * Usage in tests:
  * ```ts
  * import { createMockTask, createMockUser } from '@/vitest.setup';
- * 
+ *
  * const task = createMockTask({ title: 'My Task' });
  * const user = createMockUser({ email: 'user@example.com' });
  * ```
@@ -101,34 +101,35 @@ vi.mock('@/lib/supabase/supabase-server', () => ({
 const mockCookies = new Map<string, string>();
 
 vi.mock('next/headers', () => ({
-    cookies: vi.fn(() => ({
-      getAll: vi.fn(() => Array.from(mockCookies.entries()).map(([name, value]) => ({ name, value }))),
-      get: vi.fn((name: string) => {
-        const value = mockCookies.get(name);
-        return value ? { name, value } : undefined;
-      }),
-      set: vi.fn(({ name, value }: { name: string; value: string }) => {
-        mockCookies.set(name, value);
-      }),
-    })),
+  cookies: vi.fn(() => ({
+    getAll: vi.fn(() =>
+      Array.from(mockCookies.entries()).map(([name, value]) => ({ name, value })),
+    ),
+    get: vi.fn((name: string) => {
+      const value = mockCookies.get(name);
+      return value ? { name, value } : undefined;
+    }),
+    set: vi.fn(({ name, value }: { name: string; value: string }) => {
+      mockCookies.set(name, value);
+    }),
+  })),
 }));
-  
 
 // Mock Next.js navigation
 vi.mock('next/navigation', () => ({
-    redirect: vi.fn((url: string) => {
-      throw new Error(`NEXT_REDIRECT:${url}`);
-    }),
-    revalidatePath: vi.fn(),
-    revalidateTag: vi.fn(),
-    useRouter: () => ({
-      push: vi.fn(),
-      replace: vi.fn(),
-      refresh: vi.fn(),
-      back: vi.fn(),
-      forward: vi.fn(),
-    }),
-    useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn((url: string) => {
+    throw new Error(`NEXT_REDIRECT:${url}`);
+  }),
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // ============================================================================
@@ -184,26 +185,26 @@ vi.mock('sonner', () => ({
 global.fetch = vi.fn();
 
 (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url: string) => {
-if (typeof url === 'string' && url.includes('calendrier.api.gouv.fr/jours-feries')) {
+  if (typeof url === 'string' && url.includes('calendrier.api.gouv.fr/jours-feries')) {
     return Promise.resolve({
-        ok: true,
-        json: async () => ({
-            '2024-01-01': 'Jour de l\'an',
-            '2024-05-01': 'Fête du Travail',
-            '2024-05-08': 'Victoire 1945',
-            '2024-07-14': 'Fête nationale',
-            '2024-08-15': 'Assomption',
-            '2024-11-01': 'Toussaint',
-            '2024-11-11': 'Armistice 1918',
-            '2024-12-25': 'Noël',
-            }),
-        } as Response);
-    }
-
-    return Promise.resolve({
-        ok: true,
-        json: async () => ({}),
+      ok: true,
+      json: async () => ({
+        '2024-01-01': "Jour de l'an",
+        '2024-05-01': 'Fête du Travail',
+        '2024-05-08': 'Victoire 1945',
+        '2024-07-14': 'Fête nationale',
+        '2024-08-15': 'Assomption',
+        '2024-11-01': 'Toussaint',
+        '2024-11-11': 'Armistice 1918',
+        '2024-12-25': 'Noël',
+      }),
     } as Response);
+  }
+
+  return Promise.resolve({
+    ok: true,
+    json: async () => ({}),
+  } as Response);
 });
 
 // ============================================================================
@@ -213,29 +214,33 @@ if (typeof url === 'string' && url.includes('calendrier.api.gouv.fr/jours-feries
 // Mock window.addEventListener and removeEventListener for custom events
 const eventListeners = new Map<string, Set<EventListenerOrEventListenerObject>>();
 
-window.addEventListener = vi.fn((
-  type: string,
-  listener: EventListenerOrEventListenerObject,
-  _options?: boolean | AddEventListenerOptions
-) => {
-  if (!eventListeners.has(type)) {
-    eventListeners.set(type, new Set());
-  }
-  eventListeners.get(type)!.add(listener);
-}) as typeof window.addEventListener;
+window.addEventListener = vi.fn(
+  (
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    _options?: boolean | AddEventListenerOptions,
+  ) => {
+    if (!eventListeners.has(type)) {
+      eventListeners.set(type, new Set());
+    }
+    eventListeners.get(type)!.add(listener);
+  },
+) as typeof window.addEventListener;
 
-window.removeEventListener = vi.fn((
-  type: string,
-  listener: EventListenerOrEventListenerObject,
-  _options?: boolean | EventListenerOptions
-) => {
-  eventListeners.get(type)?.delete(listener);
-}) as typeof window.removeEventListener;
+window.removeEventListener = vi.fn(
+  (
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    _options?: boolean | EventListenerOptions,
+  ) => {
+    eventListeners.get(type)?.delete(listener);
+  },
+) as typeof window.removeEventListener;
 
 window.dispatchEvent = vi.fn((event: Event) => {
   const listeners = eventListeners.get(event.type);
   if (listeners) {
-    listeners.forEach(listener => {
+    listeners.forEach((listener) => {
       try {
         if (typeof listener === 'function') {
           listener(event);
@@ -359,48 +364,48 @@ vi.mock('@tiptap/react', () => ({
     const getHTML = vi.fn(() => '<p>Test content</p>');
 
     return {
-    getHTML,
-    getText: vi.fn(() => 'Test content'),
-    destroy: vi.fn(),
-    isEditable: true,
-    setEditable: vi.fn(),
-    commands: {
-      setContent: vi.fn(),
-      setColor: vi.fn(),
-      unsetColor: vi.fn(),
-      setHighlight: vi.fn(),
-      unsetHighlight: vi.fn(),
-    },
-    chain: vi.fn(() => ({
-      focus: vi.fn().mockReturnThis(),
-      setColor: vi.fn().mockReturnThis(),
-      unsetColor: vi.fn().mockReturnThis(),
-      setHighlight: vi.fn().mockReturnThis(),
-      unsetHighlight: vi.fn().mockReturnThis(),
-      run: vi.fn(),
-    })),
-    getAttributes: vi.fn((name: string) => {
-      if (name === 'textStyle') return { color: null };
-      if (name === 'highlight') return { color: null };
-      return {};
-    }),
-    isActive: vi.fn(() => false),
-    on: vi.fn(),
-    off: vi.fn(),
-    state: {
-      storedMarks: [],
-      selection: { from: 0 },
-      doc: {
-        resolve: () => ({
-          marks: () => [],
-          node: () => ({ marks: [] }),
-        }),
+      getHTML,
+      getText: vi.fn(() => 'Test content'),
+      destroy: vi.fn(),
+      isEditable: true,
+      setEditable: vi.fn(),
+      commands: {
+        setContent: vi.fn(),
+        setColor: vi.fn(),
+        unsetColor: vi.fn(),
+        setHighlight: vi.fn(),
+        unsetHighlight: vi.fn(),
       },
-    },
-  };
-}),
+      chain: vi.fn(() => ({
+        focus: vi.fn().mockReturnThis(),
+        setColor: vi.fn().mockReturnThis(),
+        unsetColor: vi.fn().mockReturnThis(),
+        setHighlight: vi.fn().mockReturnThis(),
+        unsetHighlight: vi.fn().mockReturnThis(),
+        run: vi.fn(),
+      })),
+      getAttributes: vi.fn((name: string) => {
+        if (name === 'textStyle') return { color: null };
+        if (name === 'highlight') return { color: null };
+        return {};
+      }),
+      isActive: vi.fn(() => false),
+      on: vi.fn(),
+      off: vi.fn(),
+      state: {
+        storedMarks: [],
+        selection: { from: 0 },
+        doc: {
+          resolve: () => ({
+            marks: () => [],
+            node: () => ({ marks: [] }),
+          }),
+        },
+      },
+    };
+  }),
 
-EditorContent: (props: any) =>
+  EditorContent: (props: any) =>
     React.createElement('div', { 'data-testid': 'tiptap-editor', ...props }),
 }));
 

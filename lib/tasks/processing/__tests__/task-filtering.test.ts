@@ -82,9 +82,7 @@ describe('task-filtering', () => {
     });
 
     it('should not include tasks with due_on in whenPossible', () => {
-      const tasks: Task[] = [
-        createMockTask({ id: '1', due_on: '2024-06-15' }),
-      ];
+      const tasks: Task[] = [createMockTask({ id: '1', due_on: '2024-06-15' })];
 
       const result = groupTasksByType(tasks);
 

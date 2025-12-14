@@ -35,10 +35,9 @@ describe('useDragAndDrop', () => {
 
   it('should update items when initialItems change', () => {
     const initialItems: TestItem[] = [{ id: '1', title: 'Item 1' }];
-    const { result, rerender } = renderHook(
-      ({ items }) => useDragAndDrop(items),
-      { initialProps: { items: initialItems } }
-    );
+    const { result, rerender } = renderHook(({ items }) => useDragAndDrop(items), {
+      initialProps: { items: initialItems },
+    });
 
     const newItems: TestItem[] = [
       { id: '1', title: 'Item 1' },
@@ -250,7 +249,7 @@ describe('useDragAndDrop', () => {
       result.current.handleDropZoneDragOver(
         { preventDefault: vi.fn(), stopPropagation: vi.fn() } as unknown as DragEvent,
         1,
-        'after'
+        'after',
       );
     });
 

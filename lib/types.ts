@@ -1,5 +1,12 @@
 export type Frequency = 'quotidien' | 'hebdomadaire' | 'mensuel' | 'annuel' | 'personnalisé';
-export type DayOfWeek = 'Lundi' | 'Mardi' | 'Mercredi' | 'Jeudi' | 'Vendredi' | 'Samedi' | 'Dimanche';
+export type DayOfWeek =
+  | 'Lundi'
+  | 'Mardi'
+  | 'Mercredi'
+  | 'Jeudi'
+  | 'Vendredi'
+  | 'Samedi'
+  | 'Dimanche';
 
 export interface Task {
   id: string;
@@ -29,4 +36,6 @@ export interface TempTask {
   created_at: string;
 }
 
-export type TaskWithType = (Task & { taskType: 'periodic' | 'specific' | 'temp' }) | (TempTask & { taskType: 'temp' });
+export type TaskWithType =
+  | (Task & { taskType: 'periodic' | 'specific' | 'temp' })
+  | (TempTask & { taskType: 'temp' });

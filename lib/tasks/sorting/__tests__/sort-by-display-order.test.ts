@@ -58,7 +58,7 @@ describe('sortByDisplayOrder', () => {
 
     // Order should remain the same (stable sort)
     expect(sorted).toHaveLength(3);
-    expect(sorted.map(t => t.id)).toEqual(['1', '2', '3']);
+    expect(sorted.map((t) => t.id)).toEqual(['1', '2', '3']);
   });
 
   it('should handle all tasks with display_order', () => {
@@ -117,10 +117,10 @@ describe('sortByDisplayOrder', () => {
       { id: '2', display_order: 1 },
     ];
 
-    const originalOrder = tasks.map(t => t.id);
+    const originalOrder = tasks.map((t) => t.id);
     sortByDisplayOrder(tasks);
 
-    expect(tasks.map(t => t.id)).toEqual(originalOrder);
+    expect(tasks.map((t) => t.id)).toEqual(originalOrder);
   });
 
   it('should handle tasks with display_order 0', () => {

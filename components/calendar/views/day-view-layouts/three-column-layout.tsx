@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { TaskWithType } from "@/lib/types";
-import { DayTasksData } from "@/components/calendar/views/day-view";
-import { TaskColumnDraggable } from "@/components/calendar/tasks/task-column-draggable";
-import { TaskSectionWhenPossible } from "@/components/calendar/tasks/task-section-when-possible";
-import { DraggableTaskSection } from "@/components/calendar/tasks/draggable-task-section";
-import { TaskSectionSpecific } from "@/components/calendar/tasks/task-section-specific";
-import type { ModeConflictError } from "@/app/actions/tasks";
+import { TaskWithType } from '@/lib/types';
+import { DayTasksData } from '@/components/calendar/views/day-view';
+import { TaskColumnDraggable } from '@/components/calendar/tasks/task-column-draggable';
+import { TaskSectionWhenPossible } from '@/components/calendar/tasks/task-section-when-possible';
+import { DraggableTaskSection } from '@/components/calendar/tasks/draggable-task-section';
+import { TaskSectionSpecific } from '@/components/calendar/tasks/task-section-specific';
+import type { ModeConflictError } from '@/app/actions/tasks';
 
 interface ThreeColumnLayoutProps {
   isTodayView: boolean;
-  workMode: "Présentiel" | "Distanciel" | "Congé";
+  workMode: 'Présentiel' | 'Distanciel' | 'Congé';
   tasks: DayTasksData;
   preparedTasks: TaskWithType[];
   groupedPreparedTasks: {
@@ -138,7 +138,8 @@ export function ThreeColumnLayout({
               </svg>
               Quand je peux
             </h3>
-            {tasks.whenPossible.inProgress.length > 0 || tasks.whenPossible.notStarted.length > 0 ? (
+            {tasks.whenPossible.inProgress.length > 0 ||
+            tasks.whenPossible.notStarted.length > 0 ? (
               <TaskSectionWhenPossible
                 inProgress={tasks.whenPossible.inProgress}
                 notStarted={tasks.whenPossible.notStarted}
@@ -158,7 +159,7 @@ export function ThreeColumnLayout({
           <div>
             <DraggableTaskSection
               title="Périodiques"
-              icon={(
+              icon={
                 <svg
                   width="14"
                   height="14"
@@ -170,7 +171,7 @@ export function ThreeColumnLayout({
                   <circle cx="12" cy="12" r="10" strokeWidth="2" />
                   <path d="M12 6v6l4 2" strokeWidth="2" />
                 </svg>
-              )}
+              }
               titleClassName="text-yellow-900"
               tasks={tasks.periodic}
               taskClassName="bg-yellow-50 border-yellow-400/30"
@@ -194,7 +195,7 @@ export function ThreeColumnLayout({
           <div>
             <DraggableTaskSection
               title="Quand je peux"
-              icon={(
+              icon={
                 <svg
                   width="18"
                   height="18"
@@ -208,7 +209,7 @@ export function ThreeColumnLayout({
                     strokeWidth="2"
                   />
                 </svg>
-              )}
+              }
               titleClassName="text-orange-800"
               tasks={[...tasks.whenPossible.inProgress, ...tasks.whenPossible.notStarted]}
               taskClassName="bg-orange-50 border-orange-600/25"
@@ -220,7 +221,7 @@ export function ThreeColumnLayout({
           </div>
         </>
       )}
-      {isTodayView && 
+      {isTodayView &&
         workMode !== 'Congé' &&
         preparedTasks.length === 0 &&
         tasks.whenPossible.inProgress.length === 0 &&
@@ -242,4 +243,3 @@ export function ThreeColumnLayout({
     </div>
   );
 }
-

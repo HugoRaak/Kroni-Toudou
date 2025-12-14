@@ -3,14 +3,14 @@ import { TaskCategory, getCategoryFilter } from '@/lib/tasks/processing/task-met
 import {
   calculateReorderedSortKey,
   calculateNonReorderedSortKey,
-  countReorderedBefore
+  countReorderedBefore,
 } from './task-sorting-helpers';
 
 export async function updateTasksDisplayOrder(
   supabase: SupabaseClient,
   userId: string,
   taskIds: string[],
-  category: TaskCategory
+  category: TaskCategory,
 ): Promise<boolean> {
   if (taskIds.length === 0) return true;
 
@@ -25,20 +25,18 @@ export async function updateTasksDisplayOrder(
     return false;
   }
 
-  const reorderedTasksForVerification = allUserTasks.filter(t => taskIds.includes(t.id));
+  const reorderedTasksForVerification = allUserTasks.filter((t) => taskIds.includes(t.id));
   if (reorderedTasksForVerification.length !== taskIds.length) {
     console.error('Error: some tasks not found or not owned by user');
     return false;
   }
 
   const categoryFilter = getCategoryFilter(category);
-  const categoryTasks = allUserTasks
-    .filter(categoryFilter)
-    .sort((a, b) => {
-      const aOrder = a.display_order ?? Infinity;
-      const bOrder = b.display_order ?? Infinity;
-      return aOrder - bOrder;
-    });
+  const categoryTasks = allUserTasks.filter(categoryFilter).sort((a, b) => {
+    const aOrder = a.display_order ?? Infinity;
+    const bOrder = b.display_order ?? Infinity;
+    return aOrder - bOrder;
+  });
 
   const reorderedIdsSet = new Set(taskIds);
   const oldOrderMap = new Map<string, number>();
@@ -52,9 +50,9 @@ export async function updateTasksDisplayOrder(
   });
 
   // Calculer les clés de tri en utilisant les helpers
-  const tasksWithSortKey = categoryTasks.map(task => {
+  const tasksWithSortKey = categoryTasks.map((task) => {
     const oldPos = oldOrderMap.get(task.id) ?? Infinity;
-    
+
     if (reorderedIdsSet.has(task.id)) {
       const newPos = newPositionMap.get(task.id) ?? Infinity;
       return {
@@ -68,53 +66,53 @@ export async function updateTasksDisplayOrder(
         taskIds,
         oldOrderMap,
         newPositionMap,
-        oldPos
+        oldPos,
       );
-      
+
       // Calculer maxReorderedBeforeNewPos
       let maxReorderedBeforeNewPos = -1;
       for (const reorderedId of taskIds) {
         const reorderedOldPos = oldOrderMap.get(reorderedId) ?? Infinity;
         const reorderedNewPos = newPositionMap.get(reorderedId) ?? Infinity;
-        
-        if ((reorderedOldPos < oldPos) || (reorderedOldPos > oldPos && reorderedNewPos < oldPos)) {
+
+        if (reorderedOldPos < oldPos || (reorderedOldPos > oldPos && reorderedNewPos < oldPos)) {
           maxReorderedBeforeNewPos = Math.max(maxReorderedBeforeNewPos, reorderedNewPos);
         }
       }
-      
+
       return {
         id: task.id,
         sortKey: calculateNonReorderedSortKey(
           oldPos,
           reorderedBeforeCount,
           maxReorderedBeforeNewPos,
-          categoryTasks.length
+          categoryTasks.length,
         ),
         oldPos,
         isReordered: false,
       };
     }
   });
-  
+
   tasksWithSortKey.sort((a, b) => {
     if (a.sortKey !== b.sortKey) {
       return a.sortKey - b.sortKey;
     }
     return a.oldPos - b.oldPos;
   });
-  
-  const finalOrderIds = tasksWithSortKey.map(t => t.id);
+
+  const finalOrderIds = tasksWithSortKey.map((t) => t.id);
 
   const updatePromises = finalOrderIds.map((id, index) =>
     supabase
       .from('tasks')
       .update({ display_order: index + 1, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('user_id', userId)
+      .eq('user_id', userId),
   );
 
   const results = await Promise.all(updatePromises);
-  const hasError = results.some(result => result.error);
+  const hasError = results.some((result) => result.error);
 
   if (hasError) {
     console.error('Error updating display_order');
@@ -123,4 +121,3 @@ export async function updateTasksDisplayOrder(
 
   return true;
 }
-

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useCallback } from 'react';
 import { normalizeToMidnight, formatDateLocal } from '@/lib/utils';
@@ -40,52 +40,58 @@ export function useCalendarHandlers({
     await loadTasks(true);
   }, [loadTasks]);
 
-  const handleUpdateTask = useCallback(async (formData: FormData): Promise<boolean | ModeConflictError> => {
-    const result = await onUpdateTask(formData);
-    const success = result === true;
-    
-    const isDayLikeView = currentView === 'day' || currentView === 'today';
-    const activeDayDate = currentView === 'today' ? normalizeToMidnight(new Date()) : dayDate;
+  const handleUpdateTask = useCallback(
+    async (formData: FormData): Promise<boolean | ModeConflictError> => {
+      const result = await onUpdateTask(formData);
+      const success = result === true;
 
-    if (success && isDayLikeView && isToday(activeDayDate)) {
-      const { dayData, mode } = await getCalendarDayDataAction({
-        userId,
-        dateStr: formatDateLocal(activeDayDate),
-      });
-      saveTodayTasksToStorage(dayData);
-      setDayTasks(dayData);
-      setDayWorkMode(mode);
-      
-      if (dayData?.alerts) {
-        showTaskShiftAlerts(dayData.alerts);
+      const isDayLikeView = currentView === 'day' || currentView === 'today';
+      const activeDayDate = currentView === 'today' ? normalizeToMidnight(new Date()) : dayDate;
+
+      if (success && isDayLikeView && isToday(activeDayDate)) {
+        const { dayData, mode } = await getCalendarDayDataAction({
+          userId,
+          dateStr: formatDateLocal(activeDayDate),
+        });
+        saveTodayTasksToStorage(dayData);
+        setDayTasks(dayData);
+        setDayWorkMode(mode);
+
+        if (dayData?.alerts) {
+          showTaskShiftAlerts(dayData.alerts);
+        }
+      } else if (success && isDayLikeView) {
+        await loadTasks();
       }
-    } else if (success && isDayLikeView) {
-      await loadTasks();
-    }
-    
-    return result;
-  }, [userId, currentView, dayDate, onUpdateTask, loadTasks, setDayTasks, setDayWorkMode]);
 
-  const handleDeleteTask = useCallback(async (id: string): Promise<boolean> => {
-    const result = await onDeleteTask(id);
-    
-    const isDayLikeView = currentView === 'day' || currentView === 'today';
-    const activeDayDate = currentView === 'today' ? normalizeToMidnight(new Date()) : dayDate;
+      return result;
+    },
+    [userId, currentView, dayDate, onUpdateTask, loadTasks, setDayTasks, setDayWorkMode],
+  );
 
-    if (result && isDayLikeView && isToday(activeDayDate)) {
-      const { dayData, mode } = await getCalendarDayDataAction({
-        userId,
-        dateStr: formatDateLocal(activeDayDate),
-      });
-      saveTodayTasksToStorage(dayData);
-      setDayTasks(dayData);
-      setDayWorkMode(mode);
-    } else if (result && isDayLikeView) {
-      await loadTasks();
-    }
-    
-    return result;
-  }, [userId, currentView, dayDate, onDeleteTask, loadTasks, setDayTasks, setDayWorkMode]);
+  const handleDeleteTask = useCallback(
+    async (id: string): Promise<boolean> => {
+      const result = await onDeleteTask(id);
+
+      const isDayLikeView = currentView === 'day' || currentView === 'today';
+      const activeDayDate = currentView === 'today' ? normalizeToMidnight(new Date()) : dayDate;
+
+      if (result && isDayLikeView && isToday(activeDayDate)) {
+        const { dayData, mode } = await getCalendarDayDataAction({
+          userId,
+          dateStr: formatDateLocal(activeDayDate),
+        });
+        saveTodayTasksToStorage(dayData);
+        setDayTasks(dayData);
+        setDayWorkMode(mode);
+      } else if (result && isDayLikeView) {
+        await loadTasks();
+      }
+
+      return result;
+    },
+    [userId, currentView, dayDate, onDeleteTask, loadTasks, setDayTasks, setDayWorkMode],
+  );
 
   return {
     handleModeSaved,
@@ -93,4 +99,3 @@ export function useCalendarHandlers({
     handleDeleteTask,
   };
 }
-

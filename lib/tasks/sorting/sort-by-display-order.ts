@@ -11,4 +11,3 @@ export function sortByDisplayOrder<T extends { display_order?: number }>(tasks: 
     return 0;
   });
 }
-

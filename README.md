@@ -4,7 +4,7 @@ Gestionnaire de todolist avec votre mascotte Kroni. Application Next.js avec aut
 
 ## Prérequis
 
-- Node.js 18+ 
+- Node.js 18+
 - Compte Supabase avec projet configuré
 - Base de données Supabase avec les tables : `tasks`, `workdays`, `licences`
 

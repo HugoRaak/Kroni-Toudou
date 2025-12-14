@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Button } from '@/components/ui/button';
 import { Palette } from 'lucide-react';
@@ -6,8 +6,18 @@ import { useClickOutside } from '@/lib/hooks/ui/use-click-outside';
 import { useRef } from 'react';
 
 const TEXT_COLORS = [
-  "#000000", "#A50021", "#E00000", "#F08A00", "#F2D500", "#FFFFFF",
-  "#008A00", "#00B5CE", "#0070C0", "#002060", "#7030A0", "#FF99FF"
+  '#000000',
+  '#A50021',
+  '#E00000',
+  '#F08A00',
+  '#F2D500',
+  '#FFFFFF',
+  '#008A00',
+  '#00B5CE',
+  '#0070C0',
+  '#002060',
+  '#7030A0',
+  '#FF99FF',
 ];
 
 type TextColorPickerProps = {
@@ -33,15 +43,15 @@ export function TextColorPicker({
         variant="ghost"
         size="icon-sm"
         onClick={() => onOpenChange(!isOpen)}
-        className={`${isOpen ? "bg-accent text-accent-foreground border border-border" : ""} ${currentColor ? "border-2" : ""}`}
+        className={`${isOpen ? 'bg-accent text-accent-foreground border border-border' : ''} ${currentColor ? 'border-2' : ''}`}
         style={currentColor ? { borderColor: currentColor } : undefined}
         aria-label="Couleur du texte"
-        title={currentColor ? `Couleur: ${currentColor}` : "Couleur du texte"}
+        title={currentColor ? `Couleur: ${currentColor}` : 'Couleur du texte'}
       >
         <div className="relative">
           <Palette className="h-4 w-4" />
           {currentColor && (
-            <div 
+            <div
               className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-background"
               style={{ backgroundColor: currentColor }}
             />
@@ -70,4 +80,3 @@ export function TextColorPicker({
     </div>
   );
 }
-

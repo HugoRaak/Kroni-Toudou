@@ -107,10 +107,9 @@ describe('useClickOutside', () => {
     const handler1 = vi.fn();
     const handler2 = vi.fn();
 
-    const { rerender } = renderHook(
-      ({ handler }) => useClickOutside(ref, handler),
-      { initialProps: { handler: handler1 } }
-    );
+    const { rerender } = renderHook(({ handler }) => useClickOutside(ref, handler), {
+      initialProps: { handler: handler1 },
+    });
 
     const outsideElement = document.createElement('div');
     document.body.appendChild(outsideElement);

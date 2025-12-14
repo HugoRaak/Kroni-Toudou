@@ -1,21 +1,33 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { AuthForm } from "./auth-form";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { AuthForm } from './auth-form';
 
 export function AuthDialog() {
   const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const mounted = typeof window !== 'undefined';
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   const handleSuccess = () => {
     setIsOpen(false);
     window.location.href = '/home';
   };
 
-  const handleModeChange = (newMode: "login" | "signup") => {
+  const handleModeChange = (newMode: 'login' | 'signup') => {
     setMode(newMode);
   };
 
@@ -36,30 +48,24 @@ export function AuthDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[95vh] overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
-          <DialogTitle>
-            {mode === "login" ? "Connexion" : "Inscription"}
-          </DialogTitle>
+          <DialogTitle>{mode === 'login' ? 'Connexion' : 'Inscription'}</DialogTitle>
           <DialogDescription>
-            {mode === "login" 
-              ? "Connectez-vous à votre compte pour accéder à votre calendrier."
-              : "Créez un compte pour commencer à organiser vos tâches."
-            }
+            {mode === 'login'
+              ? 'Connectez-vous à votre compte pour accéder à votre calendrier.'
+              : 'Créez un compte pour commencer à organiser vos tâches.'}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-4">
           <AuthForm mode={mode} onSuccess={handleSuccess} />
-          
+
           <div className="text-center mt-4">
             <Button
               variant="link"
-              onClick={() => handleModeChange(mode === "login" ? "signup" : "login")}
+              onClick={() => handleModeChange(mode === 'login' ? 'signup' : 'login')}
               className="text-sm cursor-pointer"
             >
-              {mode === "login" 
-                ? "Pas de compte ? S'inscrire" 
-                : "Déjà un compte ? Se connecter"
-              }
+              {mode === 'login' ? "Pas de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
             </Button>
           </div>
         </div>
@@ -67,4 +73,3 @@ export function AuthDialog() {
     </Dialog>
   );
 }
-

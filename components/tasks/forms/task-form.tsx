@@ -1,10 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import { Task, Frequency } from "@/lib/types";
 import { TASK_TYPES, FREQUENCIES, DAYS_OF_WEEK, TASK_MODES, type TaskType } from "@/lib/tasks/constants/task-constants";
 import { Input } from "@/components/ui/input";
-import { TaskDescriptionEditor } from "../description/task-description-editor";
 import type { CalendarView } from "@/lib/calendar/calendar-navigation";
 
 type TaskFormProps = {
@@ -16,6 +16,23 @@ type TaskFormProps = {
   currentView?: CalendarView;
   dayDate?: Date;
 };
+
+const TaskDescriptionEditor = dynamic(
+  () =>
+    import("../description/task-description-editor").then(
+      (m) => m.TaskDescriptionEditor
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <textarea
+        className="w-full min-h-[80px] border border-input rounded-md bg-background text-sm p-2"
+        placeholder="Description de la tâche"
+        disabled
+      />
+    ),
+  }
+);
 
 export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday = false, onTempTaskChange, currentView = "day", dayDate }: TaskFormProps) {
   // Check if this is a temp task (temp tasks have IDs starting with "temp-")

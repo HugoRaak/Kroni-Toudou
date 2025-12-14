@@ -25,10 +25,9 @@ export function createTaskEditorExtensions() {
 export function createTaskEditorProps(placeholder: string) {
   return {
     attributes: {
-      class: 'prose prose-sm max-w-none focus:outline-none min-h-[80px] px-3 py-2 text-sm text-foreground',
+      class:
+        'prose prose-sm max-w-none focus:outline-none min-h-[80px] px-3 py-2 text-sm text-foreground',
       'data-placeholder': placeholder,
     },
   };
 }
-
-

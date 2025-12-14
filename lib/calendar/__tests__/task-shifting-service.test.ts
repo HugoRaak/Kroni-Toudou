@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  findNextMatchingDate,
-  getPeriodicTasksForDateWithShift,
-} from '../task-shifting-service';
+import { findNextMatchingDate, getPeriodicTasksForDateWithShift } from '../task-shifting-service';
 import { getWorkdaysMap, type WorkMode } from '@/lib/db/workdays';
 import type { Task } from '@/lib/types';
 import { addDays, formatDateLocal, normalizeToMidnight } from '@/lib/utils';
@@ -123,9 +120,7 @@ describe('task-shifting-service', () => {
 
   describe('getPeriodicTasksForDateWithShift', () => {
     it('should return daily tasks without shift', async () => {
-      const tasks = [
-        createMockTask({ id: '1', frequency: 'quotidien' }),
-      ];
+      const tasks = [createMockTask({ id: '1', frequency: 'quotidien' })];
       const date = normalizeToMidnight(new Date(2024, 5, 15));
 
       vi.mocked(getWorkdaysMap).mockResolvedValue({});
@@ -143,7 +138,12 @@ describe('task-shifting-service', () => {
         createMockTask({ id: '1', frequency: 'hebdomadaire', day: 'Lundi' }),
         createMockTask({ id: '2', frequency: 'mensuel', day: 'Lundi' }),
         createMockTask({ id: '3', frequency: 'annuel', start_date: '2024-06-03' }),
-        createMockTask({ id: '4', frequency: 'personnalisé', custom_days: 2, start_date: '2024-06-01' }),
+        createMockTask({
+          id: '4',
+          frequency: 'personnalisé',
+          custom_days: 2,
+          start_date: '2024-06-01',
+        }),
         createMockTask({ id: '5', frequency: 'quotidien' }),
         createMockTask({ id: '6', due_on: '2024-06-15' }), // Not periodic
         createMockTask({ id: '7', in_progress: true }), // Not periodic
@@ -157,7 +157,7 @@ describe('task-shifting-service', () => {
       const result = await getPeriodicTasksForDateWithShift('user1', tasks, date);
 
       // Should include periodic tasks (1-4) and daily tasks (5)
-      const taskIds = result.tasks.map(t => t.id);
+      const taskIds = result.tasks.map((t) => t.id);
       expect(taskIds).toContain('1');
       expect(taskIds).toContain('2');
       expect(taskIds).toContain('3');

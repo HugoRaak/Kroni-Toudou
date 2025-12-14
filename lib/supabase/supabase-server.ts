@@ -1,4 +1,4 @@
-"use server";
+'use server';
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
@@ -22,7 +22,7 @@ export async function supabaseServer(): Promise<SupabaseClient> {
           });
         },
       },
-    }
+    },
   );
 }
 
@@ -42,6 +42,6 @@ export async function supabaseServerReadOnly(): Promise<SupabaseClient> {
           // No-op: Server Components cannot modify cookies
         },
       },
-    }
+    },
   );
 }

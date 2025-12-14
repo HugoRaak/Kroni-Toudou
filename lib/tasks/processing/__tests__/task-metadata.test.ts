@@ -34,7 +34,7 @@ describe('task-metadata', () => {
   describe('getCategoryFilter', () => {
     it('should filter periodic tasks', () => {
       const filter = getCategoryFilter('periodic');
-      
+
       expect(filter({ frequency: 'hebdomadaire' })).toBe(true);
       expect(filter({ frequency: 'mensuel', due_on: '2024-06-15' })).toBe(true);
       expect(filter({ frequency: null })).toBe(false);
@@ -43,7 +43,7 @@ describe('task-metadata', () => {
 
     it('should filter specific tasks', () => {
       const filter = getCategoryFilter('specific');
-      
+
       expect(filter({ due_on: '2024-06-15' })).toBe(true);
       expect(filter({ due_on: '2024-06-15', frequency: null })).toBe(true);
       expect(filter({ frequency: 'hebdomadaire', due_on: '2024-06-15' })).toBe(false);
@@ -52,7 +52,7 @@ describe('task-metadata', () => {
 
     it('should filter when-possible tasks', () => {
       const filter = getCategoryFilter('when-possible');
-      
+
       expect(filter({ frequency: null, due_on: null })).toBe(true);
       expect(filter({})).toBe(true);
       expect(filter({ frequency: 'hebdomadaire' })).toBe(false);
@@ -90,7 +90,7 @@ describe('task-metadata', () => {
       const result = await calculateNextDisplayOrder(
         mockSupabaseClient as any,
         'user1',
-        'periodic'
+        'periodic',
       );
 
       expect(result).toBe(1);
@@ -117,7 +117,7 @@ describe('task-metadata', () => {
       const result = await calculateNextDisplayOrder(
         mockSupabaseClient as any,
         'user1',
-        'periodic'
+        'periodic',
       );
 
       expect(result).toBe(6); // max(3, 5) + 1
@@ -144,7 +144,7 @@ describe('task-metadata', () => {
       const result = await calculateNextDisplayOrder(
         mockSupabaseClient as any,
         'user1',
-        'specific'
+        'specific',
       );
 
       expect(result).toBe(5); // max(2, 4) + 1
@@ -171,7 +171,7 @@ describe('task-metadata', () => {
         mockSupabaseClient as any,
         'user1',
         'periodic',
-        '1' // Exclude task with display_order 5
+        '1', // Exclude task with display_order 5
       );
 
       expect(result).toBe(4); // max(3) + 1, excluding task 1
@@ -198,7 +198,7 @@ describe('task-metadata', () => {
       const result = await calculateNextDisplayOrder(
         mockSupabaseClient as any,
         'user1',
-        'periodic'
+        'periodic',
       );
 
       expect(result).toBe(4); // max(3) + 1, ignoring null/undefined
@@ -219,7 +219,7 @@ describe('task-metadata', () => {
       const result = await calculateNextDisplayOrder(
         mockSupabaseClient as any,
         'user1',
-        'when-possible'
+        'when-possible',
       );
 
       expect(result).toBe(1);

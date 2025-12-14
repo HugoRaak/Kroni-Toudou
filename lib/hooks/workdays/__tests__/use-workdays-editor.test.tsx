@@ -44,12 +44,13 @@ const conflictsMock = {
   }),
 };
 
-
 vi.mock('@/app/actions/workdays', () => ({
   setWorkdayForUserAction: (...args: unknown[]) => mockSetWorkdayForUserAction(...args),
   setWorkdayForUserActionForce: (...args: unknown[]) => mockSetWorkdayForUserActionForce(...args),
-  setWorkdaysForUserActionForceBatch: (...args: unknown[]) => mockSetWorkdaysForUserActionForceBatch(...args),
-  checkWorkdayConflictsBatchForUserAction: (...args: unknown[]) => mockCheckWorkdayConflictsBatchForUserAction(...args),
+  setWorkdaysForUserActionForceBatch: (...args: unknown[]) =>
+    mockSetWorkdaysForUserActionForceBatch(...args),
+  checkWorkdayConflictsBatchForUserAction: (...args: unknown[]) =>
+    mockCheckWorkdayConflictsBatchForUserAction(...args),
 }));
 
 vi.mock('@/app/actions/tasks', () => ({
@@ -100,7 +101,7 @@ describe('useWorkdaysEditor', () => {
     act(() => {
       result.current.handleStartEdit();
     });
-  
+
     // give time to React to re-render the component
     act(() => {
       result.current.handleDayClick(new Date(2024, 5, 10));
@@ -116,17 +117,17 @@ describe('useWorkdaysEditor', () => {
       const actual = await vi.importActual('@/lib/utils');
       return { ...actual, isPastDate: () => true };
     });
-  
+
     const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, vi.fn()));
-  
+
     act(() => {
       result.current.handleStartEdit();
       result.current.handleDayClick(new Date(2024, 5, 10));
     });
-  
+
     // No change expected
     expect(result.current.localWorkdays['2024-06-10']).toBe('Présentiel');
-  });  
+  });
 
   it('handleSave with no changes calls check conflicts and closes editing', async () => {
     mockCheckWorkdayConflictsBatchForUserAction.mockResolvedValue({});
@@ -145,36 +146,42 @@ describe('useWorkdaysEditor', () => {
 
   it('handleSave sets conflicts when returned by API', async () => {
     mockCheckWorkdayConflictsBatchForUserAction.mockResolvedValue({
-      '2024-06-10': [{ type: 'MODE_CONFLICT', taskDate: '2024-06-10', taskMode: 'Présentiel', workMode: 'Distanciel' }],
+      '2024-06-10': [
+        {
+          type: 'MODE_CONFLICT',
+          taskDate: '2024-06-10',
+          taskMode: 'Présentiel',
+          workMode: 'Distanciel',
+        },
+      ],
     });
-  
+
     const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, vi.fn()));
-  
+
     await act(async () => {
       result.current.handleStartEdit();
     });
-  
+
     // give time to React to re-render the component
     await act(async () => {
       // toggle day to create change
       result.current.handleDayClick(new Date(2024, 5, 10));
       await result.current.handleSave();
     });
-  
+
     expect(mockCheckWorkdayConflictsBatchForUserAction).toHaveBeenCalled();
   });
-  
 
   it('handleCancelConflict resets conflicts, exits editing and calls onSaved when some changes were saved before conflicts', async () => {
     const baseWorkdays: Record<string, WorkMode> = {
       '2024-06-10': 'Présentiel',
       '2024-06-11': 'Présentiel',
     };
-  
+
     const onSaved = vi.fn();
-  
+
     const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, onSaved));
-  
+
     await act(async () => {
       result.current.handleStartEdit();
     });
@@ -184,7 +191,7 @@ describe('useWorkdaysEditor', () => {
       result.current.handleDayClick(new Date(2024, 5, 10));
       result.current.handleDayClick(new Date(2024, 5, 11));
     });
-  
+
     mockCheckWorkdayConflictsBatchForUserAction.mockResolvedValue({
       '2024-06-10': [
         {
@@ -196,50 +203,48 @@ describe('useWorkdaysEditor', () => {
       ],
       '2024-06-11': [],
     });
-  
+
     // The batch save of non-conflicts passes well
     mockSetWorkdaysForUserActionForceBatch.mockResolvedValue(true);
-  
+
     // We save → non-conflicts saved, conflicts displayed
     await act(async () => {
       await result.current.handleSave();
     });
-  
+
     // There should have been a batch save for the non-conflicts
     expect(mockSetWorkdaysForUserActionForceBatch).toHaveBeenCalledTimes(1);
-  
+
     // The conflicts have been stored in the conflicts hook
     expect(conflictsMock.setModeConflicts).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({ dateStr: '2024-06-10' }),
-      ])
+      expect.arrayContaining([expect.objectContaining({ dateStr: '2024-06-10' })]),
     );
     expect(conflictsMock.setCurrentConflictIndex).toHaveBeenCalledWith(0);
-  
+
     // We are still in edit mode, and onSaved has not been called yet
     expect(result.current.editing).toBe(true);
     expect(onSaved).not.toHaveBeenCalled();
-  
+
     // The user cancels the resolution of conflicts
     await act(async () => {
       result.current.handleCancelConflict();
     });
-  
+
     expect(onSaved).toHaveBeenCalledTimes(1);
   });
 
   it('handleCancel should reset state without calling onSaved when nothing was saved', () => {
     const onSaved = vi.fn();
     const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, onSaved));
-  
+
     act(() => {
       result.current.handleStartEdit();
     });
-  
+
     act(() => {
       result.current.handleCancel();
     });
-  
+
     expect(result.current.editing).toBe(false);
     expect(onSaved).not.toHaveBeenCalled();
   });
@@ -250,7 +255,7 @@ describe('useWorkdaysEditor', () => {
 
     await act(async () => {
       // Wait for useEffect to run
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(mockGetCurrentUserIdAction).toHaveBeenCalled();
@@ -261,19 +266,17 @@ describe('useWorkdaysEditor', () => {
     const workdays = {
       '2024-06-10': 'INVALID' as unknown as WorkMode,
     };
-  
-    const { result } = renderHook(() =>
-      useWorkdaysEditor(workdays, vi.fn())
-    );
-  
+
+    const { result } = renderHook(() => useWorkdaysEditor(workdays, vi.fn()));
+
     act(() => {
       result.current.handleStartEdit();
     });
-  
+
     act(() => {
       result.current.handleDayClick(new Date(2024, 5, 10)); // 10/06/2024
     });
-  
+
     expect(result.current.localWorkdays['2024-06-10']).toBe('Présentiel');
   });
 
@@ -284,7 +287,7 @@ describe('useWorkdaysEditor', () => {
       const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, vi.fn()));
 
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
       await act(async () => {
@@ -300,7 +303,7 @@ describe('useWorkdaysEditor', () => {
       const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, vi.fn()));
 
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
       await act(async () => {
@@ -316,14 +319,16 @@ describe('useWorkdaysEditor', () => {
       const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, vi.fn()));
 
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
       await act(async () => {
         await result.current.handleDateChange('task-1', '2024-06-15');
       });
 
-      expect(mockToastError).toHaveBeenCalledWith('Erreur lors de la modification de la date de la tâche');
+      expect(mockToastError).toHaveBeenCalledWith(
+        'Erreur lors de la modification de la date de la tâche',
+      );
     });
   });
 
@@ -331,8 +336,26 @@ describe('useWorkdaysEditor', () => {
     beforeEach(() => {
       conflictsMock.currentConflictIndex = 0;
       conflictsMock.modeConflicts = [
-        { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-10', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-10', newMode: 'Distanciel' as const },
-        { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-11', taskMode: 'Présentiel' as const, workMode: 'Distanciel' as const }, dateStr: '2024-06-11', newMode: 'Présentiel' as const },
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-10',
+            taskMode: 'Tous' as const,
+            workMode: 'Congé' as const,
+          },
+          dateStr: '2024-06-10',
+          newMode: 'Distanciel' as const,
+        },
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-11',
+            taskMode: 'Présentiel' as const,
+            workMode: 'Distanciel' as const,
+          },
+          dateStr: '2024-06-11',
+          newMode: 'Présentiel' as const,
+        },
       ];
       conflictsMock.currentConflict = conflictsMock.modeConflicts[0];
       conflictsMock.totalConflicts = 2;
@@ -371,7 +394,12 @@ describe('useWorkdaysEditor', () => {
     });
 
     it('should use force when conflict persists after task move', async () => {
-      mockSetWorkdayForUserAction.mockResolvedValue({ type: 'MODE_CONFLICT', taskDate: '2024-06-10', taskMode: 'Tous', workMode: 'Congé' });
+      mockSetWorkdayForUserAction.mockResolvedValue({
+        type: 'MODE_CONFLICT',
+        taskDate: '2024-06-10',
+        taskMode: 'Tous',
+        workMode: 'Congé',
+      });
       mockSetWorkdayForUserActionForce.mockResolvedValue(true);
       const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, vi.fn()));
 
@@ -385,7 +413,12 @@ describe('useWorkdaysEditor', () => {
     });
 
     it('should show error when force save fails', async () => {
-      mockSetWorkdayForUserAction.mockResolvedValue({ type: 'MODE_CONFLICT', taskDate: '2024-06-10', taskMode: 'Tous', workMode: 'Congé' });
+      mockSetWorkdayForUserAction.mockResolvedValue({
+        type: 'MODE_CONFLICT',
+        taskDate: '2024-06-10',
+        taskMode: 'Tous',
+        workMode: 'Congé',
+      });
       mockSetWorkdayForUserActionForce.mockResolvedValue(false);
       const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, vi.fn()));
 
@@ -393,7 +426,9 @@ describe('useWorkdaysEditor', () => {
         await result.current.handleConflictResolved();
       });
 
-      expect(mockToastError).toHaveBeenCalledWith('Erreur lors de la modification du mode de travail');
+      expect(mockToastError).toHaveBeenCalledWith(
+        'Erreur lors de la modification du mode de travail',
+      );
     });
 
     it('should save confirmed conflicts when resolving last conflict', async () => {
@@ -433,8 +468,26 @@ describe('useWorkdaysEditor', () => {
     beforeEach(() => {
       conflictsMock.currentConflictIndex = 0;
       conflictsMock.modeConflicts = [
-        { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-10', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-10', newMode: 'Distanciel' as const },
-        { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-11', taskMode: 'Présentiel' as const, workMode: 'Distanciel' as const }, dateStr: '2024-06-11', newMode: 'Présentiel' as const },
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-10',
+            taskMode: 'Tous' as const,
+            workMode: 'Congé' as const,
+          },
+          dateStr: '2024-06-10',
+          newMode: 'Distanciel' as const,
+        },
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-11',
+            taskMode: 'Présentiel' as const,
+            workMode: 'Distanciel' as const,
+          },
+          dateStr: '2024-06-11',
+          newMode: 'Présentiel' as const,
+        },
       ];
       conflictsMock.currentConflict = conflictsMock.modeConflicts[0];
       conflictsMock.totalConflicts = 2;
@@ -485,7 +538,9 @@ describe('useWorkdaysEditor', () => {
         result.current.handleConfirmAnyway();
       });
 
-      expect(mockToastError).toHaveBeenCalledWith('Erreur lors de la modification du mode de travail');
+      expect(mockToastError).toHaveBeenCalledWith(
+        'Erreur lors de la modification du mode de travail',
+      );
     });
 
     it('should not process when no conflicts exist', () => {
@@ -505,8 +560,26 @@ describe('useWorkdaysEditor', () => {
     beforeEach(() => {
       conflictsMock.currentConflictIndex = 0;
       conflictsMock.modeConflicts = [
-        { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-10', taskMode: 'Tous' as const, workMode: 'Congé' as const }, dateStr: '2024-06-10', newMode: 'Distanciel' as const },
-        { conflict: { type: 'MODE_CONFLICT' as const, taskDate: '2024-06-11', taskMode: 'Présentiel' as const, workMode: 'Distanciel' as const }, dateStr: '2024-06-11', newMode: 'Présentiel' as const },
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-10',
+            taskMode: 'Tous' as const,
+            workMode: 'Congé' as const,
+          },
+          dateStr: '2024-06-10',
+          newMode: 'Distanciel' as const,
+        },
+        {
+          conflict: {
+            type: 'MODE_CONFLICT' as const,
+            taskDate: '2024-06-11',
+            taskMode: 'Présentiel' as const,
+            workMode: 'Distanciel' as const,
+          },
+          dateStr: '2024-06-11',
+          newMode: 'Présentiel' as const,
+        },
       ];
       conflictsMock.totalConflicts = 2;
     });
@@ -541,46 +614,46 @@ describe('useWorkdaysEditor', () => {
       const baseWorkdays: Record<string, WorkMode> = {
         '2024-06-10': 'Présentiel',
       };
-  
+
       const onSaved = vi.fn();
       const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, onSaved));
-  
+
       // We modify a day
       await act(async () => {
         result.current.handleStartEdit();
         result.current.handleDayClick(new Date(2024, 5, 10));
       });
-  
+
       // No conflicts on this day
       mockCheckWorkdayConflictsBatchForUserAction.mockResolvedValue({
         '2024-06-10': [],
       });
       mockSetWorkdaysForUserActionForceBatch.mockResolvedValue(true);
-  
+
       await act(async () => {
         await result.current.handleSave();
       });
-  
+
       expect(result.current.editing).toBe(false);
       expect(onSaved).toHaveBeenCalledTimes(1);
-  
+
       // If we call handleCancelConflict after, it should do nothing
       await act(async () => {
         result.current.handleCancelConflict();
       });
-  
+
       expect(onSaved).toHaveBeenCalledTimes(1);
     });
-  
+
     it('does not call onSaved after save when conflicts exist, but calls it once on cancel', async () => {
       const baseWorkdays: Record<string, WorkMode> = {
         '2024-06-10': 'Présentiel',
         '2024-06-11': 'Présentiel',
       };
-  
+
       const onSaved = vi.fn();
       const { result } = renderHook(() => useWorkdaysEditor(baseWorkdays, onSaved));
-  
+
       await act(async () => {
         result.current.handleStartEdit();
       });
@@ -590,7 +663,7 @@ describe('useWorkdaysEditor', () => {
         result.current.handleDayClick(new Date(2024, 5, 10));
         result.current.handleDayClick(new Date(2024, 5, 11));
       });
-  
+
       mockCheckWorkdayConflictsBatchForUserAction.mockResolvedValue({
         '2024-06-10': [
           {
@@ -603,17 +676,17 @@ describe('useWorkdaysEditor', () => {
         '2024-06-11': [],
       });
       mockSetWorkdaysForUserActionForceBatch.mockResolvedValue(true);
-  
+
       await act(async () => {
         await result.current.handleSave();
       });
-  
+
       expect(mockSetWorkdaysForUserActionForceBatch).toHaveBeenCalledTimes(1);
       expect(conflictsMock.setModeConflicts).toHaveBeenCalled();
       expect(result.current.editing).toBe(true);
-  
+
       expect(onSaved).not.toHaveBeenCalled();
-  
+
       // The user cancels the resolution of conflicts
       await act(async () => {
         result.current.handleCancelConflict();

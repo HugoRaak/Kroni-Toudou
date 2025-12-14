@@ -7,10 +7,16 @@ export const TASK_TYPES = {
   WHEN_POSSIBLE: 'when-possible',
 } as const;
 
-export type TaskType = typeof TASK_TYPES[keyof typeof TASK_TYPES];
+export type TaskType = (typeof TASK_TYPES)[keyof typeof TASK_TYPES];
 
 // Task frequency constants
-export const FREQUENCIES: Frequency[] = ['quotidien', 'hebdomadaire', 'mensuel', 'annuel', 'personnalisé'];
+export const FREQUENCIES: Frequency[] = [
+  'quotidien',
+  'hebdomadaire',
+  'mensuel',
+  'annuel',
+  'personnalisé',
+];
 
 // Day of week constants
 export const DAYS_OF_WEEK: DayOfWeek[] = [
@@ -39,10 +45,11 @@ export const TASK_TYPE_STYLES = {
 } as const;
 
 // Get task type className
-export function getTaskTypeClassName(taskType: 'periodic' | 'specific' | 'temp' | 'whenPossible'): string {
+export function getTaskTypeClassName(
+  taskType: 'periodic' | 'specific' | 'temp' | 'whenPossible',
+): string {
   if (taskType === 'periodic') return TASK_TYPE_STYLES.periodic;
   if (taskType === 'specific') return TASK_TYPE_STYLES.specific;
   if (taskType === 'temp') return 'border-blue-400/30 bg-blue-100/50';
   return TASK_TYPE_STYLES.whenPossible;
 }
-

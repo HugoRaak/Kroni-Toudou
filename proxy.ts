@@ -22,11 +22,11 @@ export async function proxy(request: NextRequest) {
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   const {
@@ -37,12 +37,13 @@ export async function proxy(request: NextRequest) {
 
   // Protected routes
   const protectedRoutes = ['/home', '/mes-taches'];
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-  const isLoginPage = pathname === '/login';
+  const authOnlyForGuestsRoutes = ['/login', '/forgot-password', '/reset-password'];
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+  const isGuestOnlyRoute = authOnlyForGuestsRoutes.some((route) => pathname.startsWith(route));
   const isRootPage = pathname === '/';
 
   // If user is authenticated and tries to access login, redirect to home
-  if (user && isLoginPage) {
+  if (user && isGuestOnlyRoute) {
     return NextResponse.redirect(new URL('/home', request.url));
   }
 
@@ -55,9 +56,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };
-
-

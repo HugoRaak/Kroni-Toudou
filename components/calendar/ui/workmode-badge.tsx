@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { setWorkdayForUserAction, setWorkdayForUserActionForce } from "@/app/actions/workdays";
-import { ModeConflictError, updateTaskAction, getCurrentUserIdAction } from "@/app/actions/tasks";
-import { formatDateLocal } from "@/lib/utils";
-import { WorkModeConflictDialog } from "@/components/calendar/workmode-conflict-dialog";
-import { toast } from "sonner";
+import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
+import { setWorkdayForUserAction, setWorkdayForUserActionForce } from '@/app/actions/workdays';
+import { ModeConflictError, updateTaskAction, getCurrentUserIdAction } from '@/app/actions/tasks';
+import { formatDateLocal } from '@/lib/utils';
+import { WorkModeConflictDialog } from '@/components/calendar/workmode-conflict-dialog';
+import { toast } from 'sonner';
 
-type WorkMode = "Présentiel" | "Distanciel" | "Congé";
+type WorkMode = 'Présentiel' | 'Distanciel' | 'Congé';
 
 type WorkModeBadgeProps = {
   workMode: WorkMode;
@@ -29,7 +29,7 @@ export function WorkModeBadge({
   date,
   onSaved,
   disabled = false,
-  saveButtonClassName = "h-6 w-6 p-0 grid place-items-center cursor-pointer",
+  saveButtonClassName = 'h-6 w-6 p-0 grid place-items-center cursor-pointer',
 }: WorkModeBadgeProps) {
   const [selectedMode, setSelectedMode] = useState<WorkMode>(workMode);
   const [saving, setSaving] = useState(false);
@@ -50,7 +50,7 @@ export function WorkModeBadge({
 
   const handleClickBadge = () => {
     if (disabled) return;
-    setSelectedMode(prev => cycleMode(prev));
+    setSelectedMode((prev) => cycleMode(prev));
   };
 
   const handleSave = async () => {
@@ -59,11 +59,11 @@ export function WorkModeBadge({
     try {
       const dateStr = formatDateLocal(date);
       const result = await setWorkdayForUserAction(dateStr, selectedMode);
-      
+
       // Check for mode conflict (can be single conflict or array of conflicts)
       if (result && typeof result === 'object') {
         let conflicts: ModeConflictError[] = [];
-        
+
         if (Array.isArray(result)) {
           // Multiple conflicts - keep all conflicts (one per task)
           if (result.length > 0 && result[0].type === 'MODE_CONFLICT') {
@@ -73,7 +73,7 @@ export function WorkModeBadge({
           // Single conflict
           conflicts = [result as ModeConflictError];
         }
-        
+
         if (conflicts.length > 0) {
           setModeConflicts(conflicts);
           setCurrentConflictIndex(0);
@@ -82,9 +82,13 @@ export function WorkModeBadge({
           return;
         }
       }
-      
+
       if (result === true) {
         onSaved?.();
+      } else if (result === false) {
+        // Authentication failure or database error - revert to original mode
+        setSelectedMode(workMode);
+        toast.error('Erreur. Réessayer');
       }
     } finally {
       setSaving(false);
@@ -98,7 +102,7 @@ export function WorkModeBadge({
       // Task updated successfully
       return;
     }
-    toast.error("Erreur lors de la modification de la date de la tâche");
+    toast.error('Erreur lors de la modification de la date de la tâche');
   };
 
   const handleConflictResolved = async () => {
@@ -109,13 +113,16 @@ export function WorkModeBadge({
       // All conflicts resolved, save the work mode change
       if (modeConflicts.length > 0) {
         const lastConflict = modeConflicts[modeConflicts.length - 1];
-        const success = await setWorkdayForUserActionForce(lastConflict.taskDate, lastConflict.workMode);
+        const success = await setWorkdayForUserActionForce(
+          lastConflict.taskDate,
+          lastConflict.workMode,
+        );
         if (success) {
           setModeConflicts([]);
           setCurrentConflictIndex(0);
           onSaved?.();
         } else {
-          toast.error("Erreur lors de la modification du mode de travail");
+          toast.error('Erreur lors de la modification du mode de travail');
         }
       }
     }
@@ -123,12 +130,12 @@ export function WorkModeBadge({
 
   const handleConfirmAnyway = () => {
     if (modeConflicts.length === 0) return;
-    
+
     // Mark current conflict as confirmed
     const newConfirmed = new Set(confirmedConflicts);
     newConfirmed.add(currentConflictIndex);
     setConfirmedConflicts(newConfirmed);
-    
+
     // Move to next conflict or save all if all are confirmed
     if (currentConflictIndex < modeConflicts.length - 1) {
       // There are more conflicts, move to next
@@ -146,16 +153,16 @@ export function WorkModeBadge({
   const saveAllConfirmedConflicts = async (confirmed: Set<number>) => {
     // Save all confirmed conflicts using force
     const conflictsToSave = modeConflicts.filter((_, index) => confirmed.has(index));
-    
+
     try {
       for (const conflict of conflictsToSave) {
         const success = await setWorkdayForUserActionForce(conflict.taskDate, conflict.workMode);
         if (!success) {
-          toast.error("Erreur lors de la modification du mode de travail");
+          toast.error('Erreur lors de la modification du mode de travail');
           return;
         }
       }
-      
+
       // All conflicts saved successfully
       setModeConflicts([]);
       setCurrentConflictIndex(0);
@@ -163,7 +170,7 @@ export function WorkModeBadge({
       onSaved?.();
     } catch (error) {
       console.error('Error saving conflicts:', error);
-      toast.error("Erreur lors de la modification du mode de travail");
+      toast.error('Erreur lors de la modification du mode de travail');
     }
   };
 
@@ -175,8 +182,8 @@ export function WorkModeBadge({
   };
 
   const containerClassName = saveButtonClassName.includes('absolute')
-    ? "relative flex items-center justify-center gap-1"
-    : "flex items-center justify-center gap-1";
+    ? 'relative flex items-center justify-center gap-1'
+    : 'flex items-center justify-center gap-1';
 
   return (
     <div className={containerClassName}>
@@ -188,8 +195,8 @@ export function WorkModeBadge({
           selectedMode === 'Congé'
             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
             : selectedMode === 'Distanciel'
-            ? 'bg-blue-50 text-blue-700 border-blue-200'
-            : 'bg-pink-50 text-pink-700 border-pink-200'
+              ? 'bg-blue-50 text-blue-700 border-blue-200'
+              : 'bg-pink-50 text-pink-700 border-pink-200'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {selectedMode === 'Distanciel' ? 'Distanciel' : selectedMode}
@@ -206,13 +213,22 @@ export function WorkModeBadge({
           {saving ? (
             <span className="text-xs">...</span>
           ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-              <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-7.5 9.5a.75.75 0 0 1-1.093.08l-4-4a.75.75 0 1 1 1.06-1.06l3.41 3.41 6.98-8.846a.75.75 0 0 1 1.052-.136Z" clipRule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className="h-4 w-4"
+            >
+              <path
+                fillRule="evenodd"
+                d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-7.5 9.5a.75.75 0 0 1-1.093.08l-4-4a.75.75 0 1 1 1.06-1.06l3.41 3.41 6.98-8.846a.75.75 0 0 1 1.052-.136Z"
+                clipRule="evenodd"
+              />
             </svg>
           )}
         </Button>
       )}
-      
+
       {modeConflicts.length > 0 && userId && currentConflictIndex < modeConflicts.length && (
         <WorkModeConflictDialog
           open={true}
@@ -222,10 +238,10 @@ export function WorkModeBadge({
             }
           }}
           conflict={modeConflicts[currentConflictIndex]}
-          modeConflicts={modeConflicts.map(conflict => ({
+          modeConflicts={modeConflicts.map((conflict) => ({
             conflict,
             dateStr: conflict.taskDate,
-            newMode: conflict.workMode
+            newMode: conflict.workMode,
           }))}
           userId={userId}
           onDateChange={handleDateChange}
@@ -239,4 +255,3 @@ export function WorkModeBadge({
     </div>
   );
 }
-

@@ -19,7 +19,11 @@ describe('useUnifiedTaskHandlers', () => {
   });
 
   it('updates temp task and refreshes temp list', async () => {
-    mockUpdateTodayTempTask.mockReturnValue({ id: 'temp-1', title: 'Updated', description: 'Desc' });
+    mockUpdateTodayTempTask.mockReturnValue({
+      id: 'temp-1',
+      title: 'Updated',
+      description: 'Desc',
+    });
 
     const { result } = renderHook(() =>
       useUnifiedTaskHandlers({
@@ -40,7 +44,10 @@ describe('useUnifiedTaskHandlers', () => {
     });
 
     expect(response).toBe(true);
-    expect(mockUpdateTodayTempTask).toHaveBeenCalledWith('temp-1', { title: 'Updated', description: 'Desc' });
+    expect(mockUpdateTodayTempTask).toHaveBeenCalledWith('temp-1', {
+      title: 'Updated',
+      description: 'Desc',
+    });
     expect(mockLoadTempTasks).toHaveBeenCalled();
   });
 
@@ -154,9 +161,9 @@ describe('useUnifiedTaskHandlers', () => {
 
   it('dispatches temp-task-updated event when temp task is updated successfully', async () => {
     mockUpdateTodayTempTask.mockReturnValue({ id: 'temp-1' });
-  
+
     const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
-  
+
     const { result } = renderHook(() =>
       useUnifiedTaskHandlers({
         onUpdateTask: mockOnUpdateTask,
@@ -164,18 +171,18 @@ describe('useUnifiedTaskHandlers', () => {
         loadTempTasks: mockLoadTempTasks,
       }),
     );
-  
+
     const formData = new FormData();
     formData.append('id', 'temp-1');
-  
+
     let response;
     await act(async () => {
       response = await result.current.handleUpdateTaskUnified(formData);
     });
-  
+
     expect(response).toBe(true);
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy.mock.calls[0][0]).toBeInstanceOf(Event);
     expect((dispatchSpy.mock.calls[0][0] as Event).type).toBe('temp-task-updated');
-  });  
+  });
 });

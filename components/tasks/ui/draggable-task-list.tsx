@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import { Task } from '@/lib/types';
@@ -40,7 +40,7 @@ export function DraggableTaskList({
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
       const mouseY = e.clientY;
       const elementMiddle = rect.top + rect.height / 2;
-      
+
       if (mouseY < elementMiddle) {
         setDragOverIndex(index);
         setDropPosition('before');
@@ -53,7 +53,7 @@ export function DraggableTaskList({
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
-    
+
     if (draggedIndex === null || dropPosition === null) {
       resetDragState();
       return;
@@ -79,32 +79,36 @@ export function DraggableTaskList({
     items: Task[],
     draggedIndex: number,
     targetIndex: number,
-    position: 'before' | 'after'
+    position: 'before' | 'after',
   ): Task[] => {
     const newItems = [...items];
     const draggedItem = newItems[draggedIndex];
-    
+
     // Remove from old position
     newItems.splice(draggedIndex, 1);
-    
+
     // Calculate insertion index
     let insertIndex = targetIndex;
     if (position === 'after') {
       insertIndex = targetIndex + 1;
     }
-    
+
     // Adjust if we removed before the insertion point
     if (draggedIndex < insertIndex) {
       insertIndex -= 1;
     }
-    
+
     // Insert at new position
     newItems.splice(insertIndex, 0, draggedItem);
-    
+
     return newItems;
   };
 
-  const handleDropZoneDragOver = (e: React.DragEvent, targetIndex: number, position: 'before' | 'after') => {
+  const handleDropZoneDragOver = (
+    e: React.DragEvent,
+    targetIndex: number,
+    position: 'before' | 'after',
+  ) => {
     e.preventDefault();
     e.stopPropagation();
     if (draggedIndex !== null && draggedIndex !== targetIndex) {
@@ -113,7 +117,11 @@ export function DraggableTaskList({
     }
   };
 
-  const handleDropZoneDrop = (e: React.DragEvent, targetIndex: number, position: 'before' | 'after') => {
+  const handleDropZoneDrop = (
+    e: React.DragEvent,
+    targetIndex: number,
+    position: 'before' | 'after',
+  ) => {
     e.preventDefault();
     e.stopPropagation();
     if (draggedIndex !== null) {
@@ -143,7 +151,7 @@ export function DraggableTaskList({
             draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
           } ${
             dragOverIndex === 0 && dropPosition === 'before' && draggedIndex !== null
-              ? 'bg-primary/20 border-t-2 border-dashed border-primary' 
+              ? 'bg-primary/20 border-t-2 border-dashed border-primary'
               : ''
           }`}
         />
@@ -161,7 +169,7 @@ export function DraggableTaskList({
                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                 const mouseY = e.clientY;
                 const middle = rect.top + rect.height / 2;
-                
+
                 if (mouseY < middle) {
                   // Closer to previous task, drop after it
                   handleDropZoneDragOver(e, index - 1, 'after');
@@ -177,7 +185,7 @@ export function DraggableTaskList({
                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                 const mouseY = e.clientY;
                 const middle = rect.top + rect.height / 2;
-                
+
                 if (mouseY < middle) {
                   handleDropZoneDrop(e, index - 1, 'after');
                 } else {
@@ -187,9 +195,11 @@ export function DraggableTaskList({
               className={`h-4 -mt-3 -mb-3 transition-all z-20 ${
                 draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
               } ${
-                (dragOverIndex === index - 1 && dropPosition === 'after' && draggedIndex !== null) ||
+                (dragOverIndex === index - 1 &&
+                  dropPosition === 'after' &&
+                  draggedIndex !== null) ||
                 (dragOverIndex === index && dropPosition === 'before' && draggedIndex !== null)
-                  ? 'bg-primary/20 border-t-2 border-b-2 border-dashed border-primary' 
+                  ? 'bg-primary/20 border-t-2 border-b-2 border-dashed border-primary'
                   : ''
               }`}
             />
@@ -213,9 +223,7 @@ export function DraggableTaskList({
             }}
             onDragEnd={handleDragEnd}
             className={`relative transition-all ${
-              draggedIndex === index 
-                ? 'opacity-50 cursor-grabbing z-50' 
-                : 'cursor-move z-0'
+              draggedIndex === index ? 'opacity-50 cursor-grabbing z-50' : 'cursor-move z-0'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -247,12 +255,18 @@ export function DraggableTaskList({
                 />
               </div>
             </div>
-            {dragOverIndex === index && dropPosition === 'before' && draggedIndex !== null && draggedIndex !== index && (
-              <div className="absolute -top-2 left-0 right-0 h-1 bg-primary/70 rounded-full z-20" />
-            )}
-            {dragOverIndex === index && dropPosition === 'after' && draggedIndex !== null && draggedIndex !== index && (
-              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/70 rounded-full z-20" />
-            )}
+            {dragOverIndex === index &&
+              dropPosition === 'before' &&
+              draggedIndex !== null &&
+              draggedIndex !== index && (
+                <div className="absolute -top-2 left-0 right-0 h-1 bg-primary/70 rounded-full z-20" />
+              )}
+            {dragOverIndex === index &&
+              dropPosition === 'after' &&
+              draggedIndex !== null &&
+              draggedIndex !== index && (
+                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/70 rounded-full z-20" />
+              )}
           </div>
         </div>
       ))}
@@ -275,8 +289,10 @@ export function DraggableTaskList({
           className={`h-4 -mt-3 transition-all ${
             draggedIndex !== null ? 'pointer-events-auto' : 'pointer-events-none'
           } ${
-            dragOverIndex === orderedTasks.length - 1 && dropPosition === 'after' && draggedIndex !== null
-              ? 'bg-primary/20 border-b-2 border-dashed border-primary' 
+            dragOverIndex === orderedTasks.length - 1 &&
+            dropPosition === 'after' &&
+            draggedIndex !== null
+              ? 'bg-primary/20 border-b-2 border-dashed border-primary'
               : ''
           }`}
         />
@@ -284,4 +300,3 @@ export function DraggableTaskList({
     </div>
   );
 }
-

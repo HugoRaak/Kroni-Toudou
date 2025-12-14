@@ -1,4 +1,4 @@
-"use server";
+'use server';
 
 import { supabaseServer } from '@/lib/supabase/supabase-server';
 import { associateLicenseToUser } from '@/lib/db/licenses';
@@ -7,8 +7,11 @@ import { associateLicenseToUser } from '@/lib/db/licenses';
 // This must be a Server Action because it modifies cookies (via supabaseServer)
 export async function processPendingLicenseAction(): Promise<{ success: boolean; error?: string }> {
   const supabase = await supabaseServer();
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
   if (userError || !user) {
     return { success: false, error: 'Utilisateur non authentifié' };
   }
@@ -19,7 +22,7 @@ export async function processPendingLicenseAction(): Promise<{ success: boolean;
   }
 
   const pendingLicenseKey = user.user_metadata?.pending_license_key as string | undefined;
-  
+
   if (!pendingLicenseKey) {
     // No pending license, nothing to do
     return { success: true };
@@ -27,7 +30,7 @@ export async function processPendingLicenseAction(): Promise<{ success: boolean;
 
   // Associate the license
   const association = await associateLicenseToUser(pendingLicenseKey, user.id);
-  
+
   if (!association.success) {
     return association;
   }
@@ -36,7 +39,7 @@ export async function processPendingLicenseAction(): Promise<{ success: boolean;
   const { error } = await supabase.auth.updateUser({
     data: {
       pending_license_key: null,
-    }
+    },
   });
 
   if (error) {
@@ -46,4 +49,3 @@ export async function processPendingLicenseAction(): Promise<{ success: boolean;
 
   return { success: true };
 }
-

@@ -31,13 +31,12 @@ describe('useDayViewState', () => {
 
   it('should read layout from localStorage after mount', () => {
     mockStorage.dayViewLayout.get.mockReturnValue('three-column');
-  
+
     const { result } = renderHook(() => useDayViewState(true));
-  
+
     expect(mockStorage.dayViewLayout.get).toHaveBeenCalled();
     expect(result.current.layout).toBe('three-column');
   });
-  
 
   it('should toggle layout between single and three-column', () => {
     const { result } = renderHook(() => useDayViewState(true));
@@ -155,24 +154,21 @@ describe('useDayViewState', () => {
   it('should register and cleanup task-order-updated event listener on unmount', () => {
     const addSpy = vi.spyOn(window, 'addEventListener');
     const removeSpy = vi.spyOn(window, 'removeEventListener');
-  
+
     const { unmount } = renderHook(() => useDayViewState(true));
-  
+
     // We have registered a handler
-    expect(addSpy).toHaveBeenCalledWith(
-      'task-order-updated',
-      expect.any(Function)
-    );
-  
+    expect(addSpy).toHaveBeenCalledWith('task-order-updated', expect.any(Function));
+
     const handler = addSpy.mock.calls.find(
-      ([eventName]) => eventName === 'task-order-updated'
+      ([eventName]) => eventName === 'task-order-updated',
     )?.[1] as EventListener;
-  
+
     expect(handler).toBeDefined();
-  
+
     unmount();
-  
+
     // We cleaned up with the same handler
     expect(removeSpy).toHaveBeenCalledWith('task-order-updated', handler);
-  });  
+  });
 });

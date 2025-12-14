@@ -64,7 +64,10 @@ describe('useCalendarHandlers', () => {
   it('handleUpdateTask success on today should refresh cache and alerts', async () => {
     mockOnUpdateTask.mockResolvedValue(true);
     mockIsToday.mockReturnValue(true);
-    mockGetCalendarDayDataAction.mockResolvedValue({ dayData: { ...dayTasksData, alerts: [{ taskId: '1' }] }, mode: 'Distanciel' });
+    mockGetCalendarDayDataAction.mockResolvedValue({
+      dayData: { ...dayTasksData, alerts: [{ taskId: '1' }] },
+      mode: 'Distanciel',
+    });
 
     const { result } = renderHook(() => useCalendarHandlers(defaultOptions));
 
@@ -74,7 +77,9 @@ describe('useCalendarHandlers', () => {
     });
 
     expect(mockSaveTodayTasksToStorage).toHaveBeenCalled();
-    expect(mockSetDayTasks).toHaveBeenCalledWith(expect.objectContaining({ alerts: [{ taskId: '1' }] }));
+    expect(mockSetDayTasks).toHaveBeenCalledWith(
+      expect.objectContaining({ alerts: [{ taskId: '1' }] }),
+    );
     expect(mockSetDayWorkMode).toHaveBeenCalledWith('Distanciel');
     expect(mockShowTaskShiftAlerts).toHaveBeenCalledWith([{ taskId: '1' }]);
     expect(mockLoadTasks).not.toHaveBeenCalled();
@@ -160,18 +165,23 @@ describe('useCalendarHandlers', () => {
   });
 
   it('handleUpdateTask with ModeConflictError should return error without reload', async () => {
-    const conflict = { type: 'MODE_CONFLICT', taskDate: '2024-06-10', taskMode: 'Tous', workMode: 'Congé' } as const;
+    const conflict = {
+      type: 'MODE_CONFLICT',
+      taskDate: '2024-06-10',
+      taskMode: 'Tous',
+      workMode: 'Congé',
+    } as const;
     mockOnUpdateTask.mockResolvedValue(conflict);
     mockIsToday.mockReturnValue(true);
-  
+
     const { result } = renderHook(() => useCalendarHandlers(defaultOptions));
-  
+
     let response: boolean | ModeConflictError = false;
     await act(async () => {
       const formData = new FormData();
       response = await result.current.handleUpdateTask(formData);
     });
-  
+
     expect(response).toBe(conflict);
     expect(mockLoadTasks).not.toHaveBeenCalled();
     expect(mockSaveTodayTasksToStorage).not.toHaveBeenCalled();
@@ -180,22 +190,22 @@ describe('useCalendarHandlers', () => {
   it('handleUpdateTask success on non day-like view should not reload or touch cache', async () => {
     mockOnUpdateTask.mockResolvedValue(true);
     mockIsToday.mockReturnValue(true);
-  
+
     const { result } = renderHook(() =>
-      useCalendarHandlers({ 
-        ...defaultOptions, 
+      useCalendarHandlers({
+        ...defaultOptions,
         currentView: 'month' as const,
-      })
+      }),
     );
-  
+
     await act(async () => {
       const formData = new FormData();
       await result.current.handleUpdateTask(formData);
     });
-  
+
     expect(mockLoadTasks).not.toHaveBeenCalled();
     expect(mockSaveTodayTasksToStorage).not.toHaveBeenCalled();
     expect(mockSetDayTasks).not.toHaveBeenCalled();
     expect(mockSetDayWorkMode).not.toHaveBeenCalled();
-  });  
+  });
 });

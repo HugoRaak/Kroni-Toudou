@@ -48,11 +48,23 @@ describe('useTempTasks', () => {
 
   it('should filter temp tasks by work mode', () => {
     const allTempTasks: TempTask[] = [
-      { id: 'temp-1', title: 'Task 1', description: '', created_at: '2024-01-01', mode: 'Présentiel' },
-      { id: 'temp-2', title: 'Task 2', description: '', created_at: '2024-01-02', mode: 'Distanciel' },
+      {
+        id: 'temp-1',
+        title: 'Task 1',
+        description: '',
+        created_at: '2024-01-01',
+        mode: 'Présentiel',
+      },
+      {
+        id: 'temp-2',
+        title: 'Task 2',
+        description: '',
+        created_at: '2024-01-02',
+        mode: 'Distanciel',
+      },
     ];
     const filteredTasks: TempTask[] = [allTempTasks[0]];
-    
+
     mockGetTodayTempTasks.mockReturnValue(allTempTasks);
     mockFilterTasksByWorkMode.mockReturnValue(filteredTasks);
 
@@ -70,12 +82,8 @@ describe('useTempTasks', () => {
       { id: 'temp-2', title: 'Task 2', description: '', created_at: '2024-01-02' },
     ];
 
-    mockGetTodayTempTasks
-      .mockReturnValueOnce(initialTasks)
-      .mockReturnValueOnce(updatedTasks);
-    mockFilterTasksByWorkMode
-      .mockReturnValueOnce(initialTasks)
-      .mockReturnValueOnce(updatedTasks);
+    mockGetTodayTempTasks.mockReturnValueOnce(initialTasks).mockReturnValueOnce(updatedTasks);
+    mockFilterTasksByWorkMode.mockReturnValueOnce(initialTasks).mockReturnValueOnce(updatedTasks);
 
     const { result } = renderHook(() => useTempTasks(true, 'Présentiel'));
 
@@ -90,14 +98,14 @@ describe('useTempTasks', () => {
 
   it('should not read temp tasks from storage when loadTempTasks is called and not isTodayView', () => {
     const { result } = renderHook(() => useTempTasks(false, 'Présentiel'));
-  
+
     act(() => {
       result.current.loadTempTasks();
     });
-  
+
     expect(result.current.tempTasks).toEqual([]);
     expect(mockGetTodayTempTasks).not.toHaveBeenCalled();
-  });  
+  });
 
   it('should update temp tasks when temp-task-updated event is dispatched', () => {
     const initialTasks: TempTask[] = [
@@ -108,12 +116,8 @@ describe('useTempTasks', () => {
       { id: 'temp-2', title: 'Task 2', description: '', created_at: '2024-01-02' },
     ];
 
-    mockGetTodayTempTasks
-      .mockReturnValueOnce(initialTasks)
-      .mockReturnValue(updatedTasks);
-    mockFilterTasksByWorkMode
-      .mockReturnValueOnce(initialTasks)
-      .mockReturnValue(updatedTasks);
+    mockGetTodayTempTasks.mockReturnValueOnce(initialTasks).mockReturnValue(updatedTasks);
+    mockFilterTasksByWorkMode.mockReturnValueOnce(initialTasks).mockReturnValue(updatedTasks);
 
     const { result } = renderHook(() => useTempTasks(true, 'Présentiel'));
 
@@ -161,8 +165,9 @@ describe('useTempTasks', () => {
 
   it('should reload temp tasks when workMode changes', () => {
     const { rerender } = renderHook(
-      ({ workMode }: { workMode: 'Présentiel' | 'Distanciel' | 'Congé' }) => useTempTasks(true, workMode),
-      { initialProps: { workMode: 'Présentiel' } }
+      ({ workMode }: { workMode: 'Présentiel' | 'Distanciel' | 'Congé' }) =>
+        useTempTasks(true, workMode),
+      { initialProps: { workMode: 'Présentiel' } },
     );
 
     expect(mockGetTodayTempTasks).toHaveBeenCalled();

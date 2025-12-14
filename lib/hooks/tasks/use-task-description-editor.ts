@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEditor, Editor } from '@tiptap/react';
 import { useEffect, useState } from 'react';
@@ -121,11 +121,8 @@ export function useTaskDescriptionEditor({
     ? ((editor as any).getAttributes('textStyle')?.color ?? null)
     : null;
 
-  const isHighlightActive = hasIsActive
-    ? (editor as any).isActive('highlight')
-    : false;
+  const isHighlightActive = hasIsActive ? (editor as any).isActive('highlight') : false;
 
-  
   let currentHighlight: string | null = null;
   if (editor) {
     if (isHighlightActive) {
@@ -134,43 +131,43 @@ export function useTaskDescriptionEditor({
         currentHighlight = highlightAttrs.color;
       }
     }
-    
+
     if (!currentHighlight) {
       const storedMarks = editor.state.storedMarks;
       if (storedMarks) {
-        const highlightMark = storedMarks.find(mark => mark.type.name === 'highlight');
+        const highlightMark = storedMarks.find((mark) => mark.type.name === 'highlight');
         if (highlightMark && highlightMark.attrs?.color) {
           currentHighlight = highlightMark.attrs.color;
         }
       }
     }
-    
+
     if (!currentHighlight) {
       const { from } = editor.state.selection;
       const $pos = editor.state.doc.resolve(from);
       const marks = $pos.marks();
-      const highlightMark = marks.find(mark => mark.type.name === 'highlight');
+      const highlightMark = marks.find((mark) => mark.type.name === 'highlight');
       if (highlightMark && highlightMark.attrs?.color) {
         currentHighlight = highlightMark.attrs.color;
       }
     }
-    
+
     if (!currentHighlight) {
       const { from } = editor.state.selection;
       const $pos = editor.state.doc.resolve(from);
       const node = $pos.node();
       if (node && node.marks) {
-        const highlightMark = node.marks.find(mark => mark.type.name === 'highlight');
+        const highlightMark = node.marks.find((mark) => mark.type.name === 'highlight');
         if (highlightMark && highlightMark.attrs?.color) {
           currentHighlight = highlightMark.attrs.color;
         }
       }
     }
-    
+
     if (!currentHighlight && selectedHighlightColor && isHighlightActive) {
       const storedMarks = editor.state.storedMarks;
       if (storedMarks) {
-        const highlightMark = storedMarks.find(mark => mark.type.name === 'highlight');
+        const highlightMark = storedMarks.find((mark) => mark.type.name === 'highlight');
         if (highlightMark) {
           currentHighlight = selectedHighlightColor;
         }
@@ -189,7 +186,7 @@ export function useTaskDescriptionEditor({
 
   const setHighlightColor = (color: string | null) => {
     if (!editor) return;
-    
+
     if (color === null) {
       setSelectedHighlightColor(null);
       editor.chain().focus().unsetHighlight().run();
@@ -201,16 +198,16 @@ export function useTaskDescriptionEditor({
       });
       return;
     }
-    
+
     setSelectedHighlightColor(color);
-    
+
     const { from, to } = editor.state.selection;
     if (from !== to) {
       editor.chain().focus().unsetHighlight().setHighlight({ color }).run();
     } else {
       editor.chain().focus().unsetHighlight().setHighlight({ color }).run();
     }
-    
+
     setTimeout(() => {
       setEditorState((prev) => prev + 1);
     }, 0);
@@ -234,4 +231,3 @@ export function useTaskDescriptionEditor({
     forceUpdate,
   };
 }
-

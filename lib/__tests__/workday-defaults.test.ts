@@ -21,14 +21,14 @@ describe('workday-defaults', () => {
 
     it('should return Congé for Saturday', async () => {
       const saturday = new Date(2024, 5, 15); // June 15, 2024 is a Saturday
-      const result = await getDefaultWorkMode(saturday);
+      const result = getDefaultWorkMode(saturday, new Set<string>());
 
       expect(result).toBe('Congé');
     });
 
     it('should return Congé for Sunday', async () => {
       const sunday = new Date(2024, 5, 16); // June 16, 2024 is a Sunday
-      const result = await getDefaultWorkMode(sunday);
+      const result = getDefaultWorkMode(sunday, new Set<string>());
 
       expect(result).toBe('Congé');
     });
@@ -40,7 +40,7 @@ describe('workday-defaults', () => {
       } as Response);
 
       const monday = new Date(2024, 5, 10); // June 10, 2024 is a Monday
-      const result = await getDefaultWorkMode(monday);
+      const result = getDefaultWorkMode(monday, new Set<string>());
 
       expect(result).toBe('Présentiel');
     });
@@ -52,7 +52,7 @@ describe('workday-defaults', () => {
       } as Response);
 
       const tuesday = new Date(2024, 5, 11); // June 11, 2024 is a Tuesday
-      const result = await getDefaultWorkMode(tuesday);
+      const result = getDefaultWorkMode(tuesday, new Set<string>());
 
       expect(result).toBe('Présentiel');
     });
@@ -64,7 +64,7 @@ describe('workday-defaults', () => {
       } as Response);
 
       const wednesday = new Date(2024, 5, 12); // June 12, 2024 is a Wednesday
-      const result = await getDefaultWorkMode(wednesday);
+      const result = getDefaultWorkMode(wednesday, new Set<string>());
 
       expect(result).toBe('Distanciel');
     });
@@ -76,7 +76,7 @@ describe('workday-defaults', () => {
       } as Response);
 
       const thursday = new Date(2024, 5, 13); // June 13, 2024 is a Thursday
-      const result = await getDefaultWorkMode(thursday);
+      const result = getDefaultWorkMode(thursday, new Set<string>());
 
       expect(result).toBe('Présentiel');
     });
@@ -88,7 +88,7 @@ describe('workday-defaults', () => {
       } as Response);
 
       const friday = new Date(2024, 5, 14); // June 14, 2024 is a Friday
-      const result = await getDefaultWorkMode(friday);
+      const result = getDefaultWorkMode(friday, new Set<string>());
 
       expect(result).toBe('Distanciel');
     });
@@ -104,7 +104,7 @@ describe('workday-defaults', () => {
         }),
       } as Response);
 
-      const result = await getDefaultWorkMode(holidayDate);
+      const result = getDefaultWorkMode(holidayDate, new Set<string>([dateStr]));
 
       expect(result).toBe('Congé');
     });
@@ -113,7 +113,7 @@ describe('workday-defaults', () => {
       vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
       const monday = new Date(2024, 5, 10);
-      const result = await getDefaultWorkMode(monday);
+      const result = getDefaultWorkMode(monday, new Set<string>());
 
       // Should still return Présentiel based on weekday
       expect(result).toBe('Présentiel');
@@ -127,7 +127,7 @@ describe('workday-defaults', () => {
       } as Response);
 
       const monday = new Date(2024, 5, 10);
-      const result = await getDefaultWorkMode(monday);
+      const result = getDefaultWorkMode(monday, new Set<string>());
 
       expect(result).toBe('Présentiel');
     });
@@ -138,7 +138,7 @@ describe('workday-defaults', () => {
         json: async () => ({}),
       } as Response);
 
-      const result = await getDefaultWorkMode('2024-06-10');
+      const result = getDefaultWorkMode('2024-06-10', new Set<string>());
 
       expect(result).toBe('Présentiel');
     });
@@ -151,7 +151,7 @@ describe('workday-defaults', () => {
         }),
       } as Response);
 
-      const result = await getDefaultWorkMode('2024-01-01');
+      const result = getDefaultWorkMode('2024-01-01', new Set<string>(['2024-01-01']));
 
       expect(result).toBe('Congé');
     });
@@ -168,7 +168,7 @@ describe('workday-defaults', () => {
         }),
       } as Response);
 
-      const result = await getDefaultWorkMode(holidayMonday);
+      const result = getDefaultWorkMode(holidayMonday, new Set<string>([dateStr]));
 
       expect(result).toBe('Congé');
     });

@@ -2,7 +2,7 @@
  * Calendar date utilities for month and week views
  */
 
-import { formatDateLocal, normalizeToMidnight } from "@/lib/utils";
+import { formatDateLocal, normalizeToMidnight } from '@/lib/utils';
 
 interface MonthGridDate {
   date: number;
@@ -59,7 +59,11 @@ export function getWeekDateRange(anchorDate: Date): { start: Date; end: Date } {
   const dayOfWeek = anchorDate.getDay();
   const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   // Create dates directly using constructor to guarantee midnight local time
-  const startDate = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate() - daysToMonday);
+  const startDate = new Date(
+    anchorDate.getFullYear(),
+    anchorDate.getMonth(),
+    anchorDate.getDate() - daysToMonday,
+  );
   const endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6); // Sunday
 
   return { start: startDate, end: endDate };
@@ -80,7 +84,7 @@ export function getMonthGridDatesArray(anchorDate: Date): Date[] {
   const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   // Create start date directly using constructor to guarantee midnight local time
   const startDate = new Date(year, month, 1 - daysToMonday);
-  
+
   const dates: Date[] = [];
   for (let i = 0; i < 42; i++) {
     // Create each date directly using constructor to guarantee midnight local time
@@ -88,4 +92,3 @@ export function getMonthGridDatesArray(anchorDate: Date): Date[] {
   }
   return dates;
 }
-

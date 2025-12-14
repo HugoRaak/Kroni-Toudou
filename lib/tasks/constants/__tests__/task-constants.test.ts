@@ -27,7 +27,7 @@ describe('task-constants', () => {
         'whenPossible',
       ];
 
-      types.forEach(type => {
+      types.forEach((type) => {
         const className = getTaskTypeClassName(type);
         expect(typeof className).toBe('string');
         expect(className.length).toBeGreaterThan(0);

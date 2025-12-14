@@ -1,16 +1,25 @@
-"use client";
+'use client';
 
-import { useState, useTransition, useEffect, useDeferredValue } from "react";
-import { Task } from "@/lib/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { TaskForm } from "@/components/tasks/forms/task-form";
-import { toast } from "sonner";
-import { Loader2, Trash2 } from "lucide-react";
-import Image from "next/image";
-import { ModeConflictError, getCurrentUserIdAction } from "@/app/actions/tasks";
-import { ModeConflictDialog } from "@/components/tasks/dialogs/mode-conflict-dialog";
-import { useRouter } from "next/navigation";
+import { useState, useTransition, useEffect, useDeferredValue } from 'react';
+import { Task } from '@/lib/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogClose,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { TaskForm } from '@/components/tasks/forms/task-form';
+import { toast } from 'sonner';
+import { Loader2, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { ModeConflictError, getCurrentUserIdAction } from '@/app/actions/tasks';
+import { ModeConflictDialog } from '@/components/tasks/dialogs/mode-conflict-dialog';
+import { useRouter } from 'next/navigation';
 
 type TaskEditDialogProps = {
   task: Task | (Partial<Task> & { id: string; title: string });
@@ -20,12 +29,12 @@ type TaskEditDialogProps = {
   onSuccess?: () => void;
 };
 
-export function TaskEditDialog({ 
-  task, 
-  trigger, 
-  onSubmit, 
+export function TaskEditDialog({
+  task,
+  trigger,
+  onSubmit,
   onDelete,
-  onSuccess 
+  onSuccess,
 }: TaskEditDialogProps) {
   const [open, setOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -36,7 +45,7 @@ export function TaskEditDialog({
   const [conflictFormData, setConflictFormData] = useState<FormData | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
-  
+
   const deferredOpen = useDeferredValue(open);
 
   useEffect(() => {
@@ -44,7 +53,7 @@ export function TaskEditDialog({
       getCurrentUserIdAction().then(setUserId);
     }
   }, [open, userId]);
-  
+
   useEffect(() => {
     if (open) {
       const timer = requestAnimationFrame(() => {
@@ -58,22 +67,27 @@ export function TaskEditDialog({
 
   const handleSubmit = async (formData: FormData) => {
     const result = await onSubmit(formData);
-    
+
     // Check for mode conflict
-    if (result && typeof result === 'object' && 'type' in result && result.type === 'MODE_CONFLICT') {
+    if (
+      result &&
+      typeof result === 'object' &&
+      'type' in result &&
+      result.type === 'MODE_CONFLICT'
+    ) {
       setModeConflict(result as ModeConflictError);
       setConflictFormData(formData);
       return;
     }
-    
+
     if (result) {
-      toast.success("Tâche modifiée avec succès");
+      toast.success('Tâche modifiée avec succès');
       setOpen(false);
       // Notify calendar to reload tasks from DB
       window.dispatchEvent(new Event('task-updated'));
       onSuccess?.();
     } else {
-      toast.error("Erreur lors de la modification de la tâche");
+      toast.error('Erreur lors de la modification de la tâche');
     }
   };
 
@@ -89,23 +103,23 @@ export function TaskEditDialog({
 
   const handleConfirmAnyway = async () => {
     if (!conflictFormData || !userId) return;
-    
+
     setModeConflict(null);
-    
+
     startTransition(async () => {
       // Import updateTaskFromFormAction dynamically to avoid circular dependencies
       const { updateTaskFromFormAction } = await import('@/app/actions/tasks');
       const result = await updateTaskFromFormAction(conflictFormData, true);
-      
+
       if (result === true) {
-        toast.success("Tâche modifiée avec succès");
+        toast.success('Tâche modifiée avec succès');
         setOpen(false);
         window.dispatchEvent(new Event('task-updated'));
         onSuccess?.();
       } else {
-        toast.error("Erreur lors de la modification de la tâche");
+        toast.error('Erreur lors de la modification de la tâche');
       }
-      
+
       setConflictFormData(null);
     });
   };
@@ -131,14 +145,14 @@ export function TaskEditDialog({
     try {
       const result = await onDelete(task.id);
       if (result) {
-        toast.success("Tâche supprimée avec succès");
+        toast.success('Tâche supprimée avec succès');
         setDeleteConfirmOpen(false);
         setOpen(false);
         // Notify calendar to reload tasks from DB
         window.dispatchEvent(new Event('task-deleted'));
         onSuccess?.();
       } else {
-        toast.error("Erreur lors de la suppression de la tâche");
+        toast.error('Erreur lors de la suppression de la tâche');
       }
     } finally {
       setIsDeleting(false);
@@ -154,19 +168,15 @@ export function TaskEditDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogTrigger asChild>
-          {trigger}
-        </DialogTrigger>
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
 
         {deferredOpen && (
           <DialogContent className="sm:max-w-lg max-h-[95vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle>Modifier la tâche</DialogTitle>
-              <DialogDescription>
-                Modifiez les détails de votre tâche.
-              </DialogDescription>
+              <DialogDescription>Modifiez les détails de votre tâche.</DialogDescription>
             </DialogHeader>
-            
+
             {shouldRenderContent && (
               <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent pr-4 pl-4">
                 <form
@@ -178,33 +188,42 @@ export function TaskEditDialog({
                   className="space-y-4"
                 >
                   <input type="hidden" name="id" defaultValue={task.id} />
-                  
+
                   <TaskForm task={task as Task} />
-                  
+
                   <div className="flex flex-col gap-3 pt-4">
                     <div className="relative">
-                      <Image 
-                        src="/kroni-pointing-down2.png" 
-                        alt="Kroni pointe vers le bas" 
-                        width={72} 
-                        height={72} 
+                      <Image
+                        src="/kroni-pointing-down2.webp"
+                        alt="Kroni pointe vers le bas"
+                        width={72}
+                        height={72}
                         className="absolute left-3/4 -translate-x-1/2 -top-13 rounded-md pointer-events-none select-none z-10"
                         priority={false}
                       />
                       <div className="flex space-x-2 w-full">
                         <DialogClose asChild>
-                          <Button type="button" variant="outline" className="flex-1 cursor-pointer" disabled={isPending || isDeleting}>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="flex-1 cursor-pointer"
+                            disabled={isPending || isDeleting}
+                          >
                             Annuler
                           </Button>
                         </DialogClose>
-                        <Button type="submit" className="flex-1 cursor-pointer" disabled={isPending || isDeleting}>
+                        <Button
+                          type="submit"
+                          className="flex-1 cursor-pointer"
+                          disabled={isPending || isDeleting}
+                        >
                           {isPending ? (
                             <>
                               <Loader2 className="h-4 w-4 animate-spin" />
                               Enregistrement...
                             </>
                           ) : (
-                            "Enregistrer"
+                            'Enregistrer'
                           )}
                         </Button>
                       </div>
@@ -236,25 +255,26 @@ export function TaskEditDialog({
               <DialogHeader>
                 <div className="flex flex-col items-center gap-4 mb-4">
                   <DialogTitle className="text-center">Supprimer la tâche ?</DialogTitle>
-                  <Image 
-                    src="/kroni-sad.png" 
-                    alt="Kroni triste" 
-                    width={80} 
-                    height={80} 
+                  <Image
+                    src="/kroni-sad.webp"
+                    alt="Kroni triste"
+                    width={80}
+                    height={80}
                     className="rounded-md"
-                    priority={false}
+                    loading="lazy"
                   />
                   <DialogDescription className="text-center">
-                    Êtes-vous sûr de vouloir supprimer la tâche <strong>&quot;{task.title}&quot;</strong> ?<br />
+                    Êtes-vous sûr de vouloir supprimer la tâche{' '}
+                    <strong>&quot;{task.title}&quot;</strong> ?<br />
                     Cette action est irréversible.
                   </DialogDescription>
                 </div>
               </DialogHeader>
               <DialogFooter className="flex-col sm:flex-row sm:justify-end gap-2">
                 <DialogClose asChild>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     className="w-full sm:w-auto cursor-pointer"
                     disabled={isDeleting}
                   >
@@ -285,7 +305,7 @@ export function TaskEditDialog({
           )}
         </Dialog>
       )}
-      
+
       {modeConflict && userId && (
         <ModeConflictDialog
           open={!!modeConflict}
@@ -302,4 +322,3 @@ export function TaskEditDialog({
     </>
   );
 }
-

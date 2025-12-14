@@ -8,7 +8,7 @@ export type TaskCategory = 'periodic' | 'specific' | 'when-possible';
  */
 export function getTaskCategory(
   frequency: Frequency | null | undefined,
-  due_on: string | null | undefined
+  due_on: string | null | undefined,
 ): TaskCategory {
   if (frequency) return 'periodic';
   if (due_on) return 'specific';
@@ -19,7 +19,7 @@ export function getTaskCategory(
  * Retourne un filtre pour identifier les tâches d'une catégorie
  */
 export function getCategoryFilter(
-  category: TaskCategory
+  category: TaskCategory,
 ): (task: { frequency?: string | null; due_on?: string | null }) => boolean {
   if (category === 'periodic') {
     return (task) => !!task.frequency;
@@ -33,10 +33,7 @@ export function getCategoryFilter(
 /**
  * Extrait la catégorie depuis les données d'un formulaire
  */
-export function getCategoryFromFormData(
-  frequency?: Frequency,
-  due_on?: string
-): TaskCategory {
+export function getCategoryFromFormData(frequency?: Frequency, due_on?: string): TaskCategory {
   return getTaskCategory(frequency ?? null, due_on ?? null);
 }
 
@@ -47,27 +44,27 @@ export async function calculateNextDisplayOrder(
   supabase: SupabaseClient,
   userId: string,
   category: TaskCategory,
-  excludeTaskId?: string
+  excludeTaskId?: string,
 ): Promise<number> {
   const categoryFilter = getCategoryFilter(category);
-  
+
   const { data: categoryTasks } = await supabase
     .from('tasks')
     .select('id, display_order, frequency, due_on')
     .eq('user_id', userId);
-  
+
   if (!categoryTasks) return 1;
-  
+
   const tasksInCategory = categoryTasks.filter(categoryFilter);
   const filteredTasks = excludeTaskId
-    ? tasksInCategory.filter(t => t.id !== excludeTaskId)
+    ? tasksInCategory.filter((t) => t.id !== excludeTaskId)
     : tasksInCategory;
-  
+
   const maxDisplayOrder = filteredTasks
-    .map(t => t.display_order)
+    .map((t) => t.display_order)
     .filter((order): order is number => typeof order === 'number')
     .reduce((max, order) => Math.max(max, order), 0);
-  
+
   return maxDisplayOrder + 1;
 }
 
@@ -78,10 +75,9 @@ export function hasCategoryChanged(
   oldFrequency: Frequency | null | undefined,
   oldDueOn: string | null | undefined,
   newFrequency: Frequency | null | undefined,
-  newDueOn: string | null | undefined
+  newDueOn: string | null | undefined,
 ): boolean {
   const oldCategory = getTaskCategory(oldFrequency, oldDueOn);
   const newCategory = getTaskCategory(newFrequency, newDueOn);
   return oldCategory !== newCategory;
 }
-

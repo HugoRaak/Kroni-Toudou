@@ -1,84 +1,84 @@
-"use client";
+'use client';
 
-import DayCell from "@/components/calendar/ui/day-cell";
-import CalendarHeader from "@/components/calendar/ui/calendar-header";
-import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar/calendar-utils";
-import { formatDateLocal, normalizeToMidnight, isPastDate } from "@/lib/utils";
-import { useWorkdaysEditor } from "@/lib/hooks/workdays/use-workdays-editor";
-import { getWeekDateRange } from "@/lib/calendar/calendar-date-utils";
-import { useMemo, memo, useCallback } from "react";
-import type { ModeConflictError } from "@/app/actions/tasks";
-import { WorkModeLegend } from "@/components/calendar/ui/workmode-legend";
-import { CalendarDialogs } from "@/components/calendar/ui/calendar-dialogs";
+import DayCell from '@/components/calendar/ui/day-cell';
+import CalendarHeader from '@/components/calendar/ui/calendar-header';
+import {
+  CalendarTask,
+  getTasksForDate,
+  filterTasksByWorkMode,
+} from '@/lib/calendar/calendar-utils';
+import { formatDateLocal, normalizeToMidnight, isPastDate } from '@/lib/utils';
+import { useWorkdaysEditor } from '@/lib/hooks/workdays/use-workdays-editor';
+import { getWeekDateRange } from '@/lib/calendar/calendar-date-utils';
+import { useMemo, memo, useCallback } from 'react';
+import type { ModeConflictError } from '@/app/actions/tasks';
+import { WorkModeLegend } from '@/components/calendar/ui/workmode-legend';
+import { CalendarDialogs } from '@/components/calendar/ui/calendar-dialogs';
 
 // Memoized wrapper component for DayCell in week view
-const WeekDayCellWrapper = memo(({
-  dayDate,
-  dayName,
-  dayNumber,
-  isToday,
-  tasks,
-  workdays,
-  localWorkdays,
-  editing,
-  loading,
-  onDayClick,
-}: {
-  dayDate: Date;
-  dayName: string;
-  dayNumber: number;
-  isToday: boolean;
-  tasks: CalendarTask[];
-  workdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
-  localWorkdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
-  editing: boolean;
-  loading: boolean;
-  onDayClick: (date: Date) => void;
-}) => {
-  const dayTasksAll = useMemo(
-    () => getTasksForDate(tasks, dayDate),
-    [tasks, dayDate]
-  );
-  const iso = useMemo(() => formatDateLocal(dayDate), [dayDate]);
-  const mode = useMemo(
-    () => (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel',
-    [editing, localWorkdays, workdays, iso]
-  );
-  const dayTasks = useMemo(
-    () => filterTasksByWorkMode(dayTasksAll, mode),
-    [dayTasksAll, mode]
-  );
+const WeekDayCellWrapper = memo(
+  ({
+    dayDate,
+    dayName,
+    dayNumber,
+    isToday,
+    tasks,
+    workdays,
+    localWorkdays,
+    editing,
+    loading,
+    onDayClick,
+  }: {
+    dayDate: Date;
+    dayName: string;
+    dayNumber: number;
+    isToday: boolean;
+    tasks: CalendarTask[];
+    workdays: Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>;
+    localWorkdays: Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>;
+    editing: boolean;
+    loading: boolean;
+    onDayClick: (date: Date) => void;
+  }) => {
+    const dayTasksAll = useMemo(() => getTasksForDate(tasks, dayDate), [tasks, dayDate]);
+    const iso = useMemo(() => formatDateLocal(dayDate), [dayDate]);
+    const mode = useMemo(
+      () => (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel',
+      [editing, localWorkdays, workdays, iso],
+    );
+    const dayTasks = useMemo(() => filterTasksByWorkMode(dayTasksAll, mode), [dayTasksAll, mode]);
 
-  const isPast = useMemo(() => isPastDate(dayDate), [dayDate]);
-  
-  const handleClick = useCallback(() => {
-    // Only prevent clicks when editing past dates; allow viewing past dates
-    if (editing && isPast) {
-      return;
-    }
-    onDayClick(dayDate);
-  }, [onDayClick, dayDate, isPast, editing]);
+    const isPast = useMemo(() => isPastDate(dayDate), [dayDate]);
 
-  return (
-    <div onClick={handleClick}>
-      <DayCell
-        titleTop={dayName}
-        titleMain={dayNumber}
-        mode={mode}
-        loading={loading}
-        editing={editing}
-        isToday={isToday}
-        isCurrentMonth={true}
-        tasks={dayTasks}
-        taskLimit={3}
-        minContentHeight={60}
-        disabled={editing && isPast}
-      />
-    </div>
-  );
-});
+    const handleClick = useCallback(() => {
+      // Only prevent clicks when editing past dates; allow viewing past dates
+      if (editing && isPast) {
+        return;
+      }
+      onDayClick(dayDate);
+    }, [onDayClick, dayDate, isPast, editing]);
 
-WeekDayCellWrapper.displayName = "WeekDayCellWrapper";
+    return (
+      <div onClick={handleClick}>
+        <DayCell
+          titleTop={dayName}
+          titleMain={dayNumber}
+          mode={mode}
+          loading={loading}
+          editing={editing}
+          isToday={isToday}
+          isCurrentMonth={true}
+          tasks={dayTasks}
+          taskLimit={3}
+          minContentHeight={60}
+          disabled={editing && isPast}
+        />
+      </div>
+    );
+  },
+);
+
+WeekDayCellWrapper.displayName = 'WeekDayCellWrapper';
 
 function WeekView({
   anchorDate,
@@ -93,7 +93,7 @@ function WeekView({
 }: {
   anchorDate: Date;
   tasks: CalendarTask[];
-  workdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
+  workdays: Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>;
   loading: boolean;
   onPrev: () => void;
   onNext: () => void;
@@ -122,10 +122,10 @@ function WeekView({
     handleCancelConflict,
     handleConflictResolved,
   } = useWorkdaysEditor(workdays, onSaved);
-  
+
   const { start: startOfWeek, end: endOfWeek } = useMemo(
     () => getWeekDateRange(anchorDate),
-    [anchorDate]
+    [anchorDate],
   );
 
   const weekDates = useMemo(() => {
@@ -133,10 +133,14 @@ function WeekView({
     const todayStr = formatDateLocal(today);
     const normalizedStart = normalizeToMidnight(startOfWeek);
     return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(normalizedStart.getFullYear(), normalizedStart.getMonth(), normalizedStart.getDate() + i);
+      const date = new Date(
+        normalizedStart.getFullYear(),
+        normalizedStart.getMonth(),
+        normalizedStart.getDate() + i,
+      );
       return {
         date: date.getDate(),
-        dayName: date.toLocaleDateString("fr-FR", { weekday: "short" }),
+        dayName: date.toLocaleDateString('fr-FR', { weekday: 'short' }),
         isToday: formatDateLocal(date) === todayStr,
         dateObj: date,
       };
@@ -144,8 +148,8 @@ function WeekView({
   }, [startOfWeek]);
 
   const subtitle = useMemo(() => {
-    const startMonth = startOfWeek.toLocaleDateString("fr-FR", { month: "short" });
-    const endMonth = endOfWeek.toLocaleDateString("fr-FR", { month: "short" });
+    const startMonth = startOfWeek.toLocaleDateString('fr-FR', { month: 'short' });
+    const endMonth = endOfWeek.toLocaleDateString('fr-FR', { month: 'short' });
     // Capitalize first letter of month names
     const startMonthCap = startMonth.charAt(0).toUpperCase() + startMonth.slice(1);
     const endMonthCap = endMonth.charAt(0).toUpperCase() + endMonth.slice(1);
@@ -155,7 +159,7 @@ function WeekView({
   return (
     <div className="space-y-4">
       <CalendarHeader
-        title={"Semaine"}
+        title={'Semaine'}
         subtitle={subtitle}
         loading={loading}
         editing={editing}
@@ -208,5 +212,3 @@ function WeekView({
 }
 
 export default WeekView;
-
-

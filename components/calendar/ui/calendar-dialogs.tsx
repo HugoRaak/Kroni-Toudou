@@ -1,18 +1,22 @@
-"use client";
+'use client';
 
-import { DayTasksDialog } from "@/components/calendar/dialogs/day-tasks-dialog";
-import { WorkModeConflictDialog } from "@/components/calendar/workmode-conflict-dialog";
-import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar/calendar-utils";
-import { formatDateLocal } from "@/lib/utils";
-import type { ModeConflictError } from "@/app/actions/tasks";
-import type { ModeConflict } from "@/lib/hooks/workdays/use-mode-conflicts";
+import { DayTasksDialog } from '@/components/calendar/dialogs/day-tasks-dialog';
+import { WorkModeConflictDialog } from '@/components/calendar/workmode-conflict-dialog';
+import {
+  CalendarTask,
+  getTasksForDate,
+  filterTasksByWorkMode,
+} from '@/lib/calendar/calendar-utils';
+import { formatDateLocal } from '@/lib/utils';
+import type { ModeConflictError } from '@/app/actions/tasks';
+import type { ModeConflict } from '@/lib/hooks/workdays/use-mode-conflicts';
 
 type CalendarDialogsProps = {
   selectedDate: Date | null;
   dialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
   tasks: CalendarTask[];
-  workdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
+  workdays: Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>;
   onUpdateTask: (formData: FormData) => Promise<boolean | ModeConflictError>;
   onDeleteTask: (id: string) => Promise<boolean>;
   onSaved: () => void;
@@ -53,7 +57,10 @@ export function CalendarDialogs({
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           date={selectedDate}
-          tasks={filterTasksByWorkMode(getTasksForDate(tasks, selectedDate), workdays[formatDateLocal(selectedDate)] ?? 'Présentiel')}
+          tasks={filterTasksByWorkMode(
+            getTasksForDate(tasks, selectedDate),
+            workdays[formatDateLocal(selectedDate)] ?? 'Présentiel',
+          )}
           workMode={workdays[formatDateLocal(selectedDate)] ?? 'Présentiel'}
           onUpdateTask={onUpdateTask}
           onDeleteTask={onDeleteTask}
@@ -78,4 +85,3 @@ export function CalendarDialogs({
     </>
   );
 }
-

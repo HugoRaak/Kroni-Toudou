@@ -1,6 +1,6 @@
-import { Navbar } from "@/components/navbar";
-import { AuthDialog } from "@/components/auth/auth-dialog";
-import Image from "next/image";
+import { Navbar } from '@/components/navbar';
+import { AuthDialog } from '@/components/auth/auth-dialog';
+import Image from 'next/image';
 
 export default async function LoginPage({
   searchParams,
@@ -9,7 +9,7 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const error = params.error;
-  
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar user={null} />
@@ -17,28 +17,27 @@ export default async function LoginPage({
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">
             <Image
-              src="/kroni.png"
+              src="/kroni.webp"
               alt="Kroni le dinosaure"
               width={120}
               height={120}
-              style={{ height: "auto", width: "auto" }}
+              style={{ height: 'auto', width: 'auto' }}
               className="mx-auto rounded-full"
-              loading="eager"
+              priority={true}
             />
-            <h2 className="text-2xl font-bold text-foreground">
-              Bienvenue sur Kroni-Toudou !
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground">Bienvenue sur Kroni-Toudou !</h2>
             <p className="text-muted-foreground max-w-md">
-              Connectez-vous ou créez un compte pour commencer à gérer vos tâches 
-              avec votre ami Kroni le dinosaure.
+              Connectez-vous ou créez un compte pour commencer à gérer vos tâches avec votre ami
+              Kroni le dinosaure.
             </p>
-            
+
             {error === 'confirmation_failed' && (
               <div className="text-sm text-destructive bg-destructive/10 p-3 rounded max-w-md mx-auto">
-                La confirmation de votre email a échoué. Veuillez réessayer ou vous inscrire à nouveau.
+                La confirmation de votre email a échoué. Veuillez réessayer ou vous inscrire à
+                nouveau.
               </div>
             )}
-            
+
             <div className="pt-4">
               <AuthDialog />
             </div>

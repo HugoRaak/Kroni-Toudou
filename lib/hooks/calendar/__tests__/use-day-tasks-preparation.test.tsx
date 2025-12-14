@@ -34,15 +34,7 @@ describe('useDayTasksPreparation', () => {
 
   it('should return empty preparedTasks when tasks is null', () => {
     const { result } = renderHook(() =>
-      useDayTasksPreparation(
-        null,
-        [],
-        true,
-        false,
-        0,
-        () => [],
-        'single'
-      )
+      useDayTasksPreparation(null, [], true, false, 0, () => [], 'single'),
     );
 
     expect(result.current.preparedTasks).toEqual([]);
@@ -51,15 +43,7 @@ describe('useDayTasksPreparation', () => {
 
   it('should return empty preparedTasks when not isTodayView', () => {
     const { result } = renderHook(() =>
-      useDayTasksPreparation(
-        defaultTasks,
-        [],
-        false,
-        false,
-        0,
-        () => [],
-        'single'
-      )
+      useDayTasksPreparation(defaultTasks, [], false, false, 0, () => [], 'single'),
     );
 
     expect(result.current.preparedTasks).toEqual([]);
@@ -68,15 +52,7 @@ describe('useDayTasksPreparation', () => {
 
   it('should return empty preparedTasks when loading', () => {
     const { result } = renderHook(() =>
-      useDayTasksPreparation(
-        defaultTasks,
-        [],
-        true,
-        true,
-        0,
-        () => [],
-        'single'
-      )
+      useDayTasksPreparation(defaultTasks, [], true, true, 0, () => [], 'single'),
     );
 
     expect(result.current.preparedTasks).toEqual([]);
@@ -86,26 +62,27 @@ describe('useDayTasksPreparation', () => {
   it('should call prepareTasksForToday with correct arguments when conditions are met', () => {
     const tasks: DayTasksData = {
       ...defaultTasks,
-      periodic: [{ id: '1', title: 'Task 1', description: '', user_id: 'user1', created_at: '', updated_at: '' } as Task],
+      periodic: [
+        {
+          id: '1',
+          title: 'Task 1',
+          description: '',
+          user_id: 'user1',
+          created_at: '',
+          updated_at: '',
+        } as Task,
+      ],
     };
-    const tempTasks: TempTask[] = [{ id: 'temp-1', title: 'Temp Task', description: '', created_at: '' }];
+    const tempTasks: TempTask[] = [
+      { id: 'temp-1', title: 'Temp Task', description: '', created_at: '' },
+    ];
     const getHiddenTempTaskIds = vi.fn(() => ['temp-1']);
 
     mockGetTodayHiddenTaskIds.mockReturnValue(['1']);
-    mockPrepareTasksForToday.mockReturnValue([
-      { id: '1', title: 'Task 1', taskType: 'periodic' },
-    ]);
+    mockPrepareTasksForToday.mockReturnValue([{ id: '1', title: 'Task 1', taskType: 'periodic' }]);
 
     renderHook(() =>
-      useDayTasksPreparation(
-        tasks,
-        tempTasks,
-        true,
-        false,
-        0,
-        getHiddenTempTaskIds,
-        'single'
-      )
+      useDayTasksPreparation(tasks, tempTasks, true, false, 0, getHiddenTempTaskIds, 'single'),
     );
 
     expect(mockGetTodayHiddenTaskIds).toHaveBeenCalled();
@@ -116,41 +93,23 @@ describe('useDayTasksPreparation', () => {
       ['1'],
       ['temp-1'],
       true,
-      false
+      false,
     );
   });
 
   it('should return groupedPreparedTasks as null when layout is single', () => {
     const { result } = renderHook(() =>
-      useDayTasksPreparation(
-        defaultTasks,
-        [],
-        true,
-        false,
-        0,
-        () => [],
-        'single'
-      )
+      useDayTasksPreparation(defaultTasks, [], true, false, 0, () => [], 'single'),
     );
 
     expect(result.current.groupedPreparedTasks).toBeNull();
   });
 
   it('should return groupedPreparedTasks as null when not isTodayView', () => {
-    mockPrepareTasksForToday.mockReturnValue([
-      { id: '1', title: 'Task 1', taskType: 'periodic' },
-    ]);
+    mockPrepareTasksForToday.mockReturnValue([{ id: '1', title: 'Task 1', taskType: 'periodic' }]);
 
     const { result } = renderHook(() =>
-      useDayTasksPreparation(
-        defaultTasks,
-        [],
-        false,
-        false,
-        0,
-        () => [],
-        'three-column'
-      )
+      useDayTasksPreparation(defaultTasks, [], false, false, 0, () => [], 'three-column'),
     );
 
     expect(result.current.groupedPreparedTasks).toBeNull();
@@ -160,15 +119,7 @@ describe('useDayTasksPreparation', () => {
     mockPrepareTasksForToday.mockReturnValue([]);
 
     const { result } = renderHook(() =>
-      useDayTasksPreparation(
-        defaultTasks,
-        [],
-        true,
-        false,
-        0,
-        () => [],
-        'three-column'
-      )
+      useDayTasksPreparation(defaultTasks, [], true, false, 0, () => [], 'three-column'),
     );
 
     expect(result.current.groupedPreparedTasks).toBeNull();
@@ -182,15 +133,7 @@ describe('useDayTasksPreparation', () => {
     ]);
 
     const { result } = renderHook(() =>
-      useDayTasksPreparation(
-        defaultTasks,
-        [],
-        true,
-        false,
-        0,
-        () => [],
-        'three-column'
-      )
+      useDayTasksPreparation(defaultTasks, [], true, false, 0, () => [], 'three-column'),
     );
 
     expect(result.current.groupedPreparedTasks).toEqual({
@@ -204,22 +147,12 @@ describe('useDayTasksPreparation', () => {
   });
 
   it('should update preparedTasks when orderVersion changes', () => {
-    mockPrepareTasksForToday.mockReturnValue([
-      { id: '1', title: 'Task 1', taskType: 'periodic' },
-    ]);
+    mockPrepareTasksForToday.mockReturnValue([{ id: '1', title: 'Task 1', taskType: 'periodic' }]);
 
     const { result, rerender } = renderHook(
       ({ orderVersion }) =>
-        useDayTasksPreparation(
-          defaultTasks,
-          [],
-          true,
-          false,
-          orderVersion,
-          () => [],
-          'single'
-        ),
-      { initialProps: { orderVersion: 0 } }
+        useDayTasksPreparation(defaultTasks, [], true, false, orderVersion, () => [], 'single'),
+      { initialProps: { orderVersion: 0 } },
     );
 
     expect(result.current.preparedTasks).toHaveLength(1);

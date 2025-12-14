@@ -1,84 +1,84 @@
-"use client";
+'use client';
 
-import DayCell from "@/components/calendar/ui/day-cell";
-import CalendarHeader from "@/components/calendar/ui/calendar-header";
-import { CalendarTask, getTasksForDate, filterTasksByWorkMode } from "@/lib/calendar/calendar-utils";
-import { formatDateLocal, normalizeToMidnight, isPastDate } from "@/lib/utils";
-import { useWorkdaysEditor } from "@/lib/hooks/workdays/use-workdays-editor";
-import { getMonthGridDates, getMonthGridDatesArray } from "@/lib/calendar/calendar-date-utils";
-import { useMemo, useCallback, memo } from "react";
-import type { ModeConflictError } from "@/app/actions/tasks";
-import { WorkModeLegend } from "@/components/calendar/ui/workmode-legend";
-import { CalendarDialogs } from "@/components/calendar/ui/calendar-dialogs";
+import DayCell from '@/components/calendar/ui/day-cell';
+import CalendarHeader from '@/components/calendar/ui/calendar-header';
+import {
+  CalendarTask,
+  getTasksForDate,
+  filterTasksByWorkMode,
+} from '@/lib/calendar/calendar-utils';
+import { formatDateLocal, normalizeToMidnight, isPastDate } from '@/lib/utils';
+import { useWorkdaysEditor } from '@/lib/hooks/workdays/use-workdays-editor';
+import { getMonthGridDates, getMonthGridDatesArray } from '@/lib/calendar/calendar-date-utils';
+import { useMemo, useCallback, memo } from 'react';
+import type { ModeConflictError } from '@/app/actions/tasks';
+import { WorkModeLegend } from '@/components/calendar/ui/workmode-legend';
+import { CalendarDialogs } from '@/components/calendar/ui/calendar-dialogs';
 
 // Constants extracted outside component
-const WEEK_DAYS = ["L", "M", "M", "J", "V", "S", "D"] as const;
+const WEEK_DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'] as const;
 
 // Memoized wrapper component for DayCell to avoid unnecessary rerenders
-const DayCellWrapper = memo(({
-  date,
-  tasks,
-  workdays,
-  localWorkdays,
-  editing,
-  loading,
-  onDayClick,
-}: {
-  date: { year: number; month: number; date: number; isToday: boolean; isCurrentMonth: boolean };
-  tasks: CalendarTask[];
-  workdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
-  localWorkdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
-  editing: boolean;
-  loading: boolean;
-  onDayClick: (date: Date) => void;
-}) => {
-  const dayDateObj = useMemo(
-    () => normalizeToMidnight(new Date(date.year, date.month, date.date)),
-    [date.year, date.month, date.date]
-  );
-  const dayTasksAll = useMemo(
-    () => getTasksForDate(tasks, dayDateObj),
-    [tasks, dayDateObj]
-  );
-  const iso = useMemo(() => formatDateLocal(dayDateObj), [dayDateObj]);
-  const mode = useMemo(
-    () => (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel',
-    [editing, localWorkdays, workdays, iso]
-  );
-  const dayTasks = useMemo(
-    () => filterTasksByWorkMode(dayTasksAll, mode),
-    [dayTasksAll, mode]
-  );
-  
-  const isPast = useMemo(() => isPastDate(dayDateObj), [dayDateObj]);
-  
-  const handleClick = useCallback(() => {
-    // Only prevent clicks when editing past dates; allow viewing past dates
-    if (editing && isPast) {
-      return;
-    }
-    onDayClick(dayDateObj);
-  }, [onDayClick, dayDateObj, isPast, editing]);
+const DayCellWrapper = memo(
+  ({
+    date,
+    tasks,
+    workdays,
+    localWorkdays,
+    editing,
+    loading,
+    onDayClick,
+  }: {
+    date: { year: number; month: number; date: number; isToday: boolean; isCurrentMonth: boolean };
+    tasks: CalendarTask[];
+    workdays: Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>;
+    localWorkdays: Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>;
+    editing: boolean;
+    loading: boolean;
+    onDayClick: (date: Date) => void;
+  }) => {
+    const dayDateObj = useMemo(
+      () => normalizeToMidnight(new Date(date.year, date.month, date.date)),
+      [date.year, date.month, date.date],
+    );
+    const dayTasksAll = useMemo(() => getTasksForDate(tasks, dayDateObj), [tasks, dayDateObj]);
+    const iso = useMemo(() => formatDateLocal(dayDateObj), [dayDateObj]);
+    const mode = useMemo(
+      () => (editing ? localWorkdays[iso] : workdays[iso]) ?? 'Présentiel',
+      [editing, localWorkdays, workdays, iso],
+    );
+    const dayTasks = useMemo(() => filterTasksByWorkMode(dayTasksAll, mode), [dayTasksAll, mode]);
 
-  return (
-    <div onClick={handleClick}>
-      <DayCell
-        titleMain={date.date}
-        mode={mode}
-        loading={loading}
-        editing={editing}
-        isToday={date.isToday}
-        isCurrentMonth={date.isCurrentMonth}
-        tasks={dayTasks}
-        taskLimit={2}
-        minContentHeight={50}
-        disabled={editing && isPast}
-      />
-    </div>
-  );
-});
+    const isPast = useMemo(() => isPastDate(dayDateObj), [dayDateObj]);
 
-DayCellWrapper.displayName = "DayCellWrapper";
+    const handleClick = useCallback(() => {
+      // Only prevent clicks when editing past dates; allow viewing past dates
+      if (editing && isPast) {
+        return;
+      }
+      onDayClick(dayDateObj);
+    }, [onDayClick, dayDateObj, isPast, editing]);
+
+    return (
+      <div onClick={handleClick}>
+        <DayCell
+          titleMain={date.date}
+          mode={mode}
+          loading={loading}
+          editing={editing}
+          isToday={date.isToday}
+          isCurrentMonth={date.isCurrentMonth}
+          tasks={dayTasks}
+          taskLimit={2}
+          minContentHeight={50}
+          disabled={editing && isPast}
+        />
+      </div>
+    );
+  },
+);
+
+DayCellWrapper.displayName = 'DayCellWrapper';
 
 function MonthView({
   anchorDate,
@@ -93,7 +93,7 @@ function MonthView({
 }: {
   anchorDate: Date;
   tasks: CalendarTask[];
-  workdays: Record<string, "Présentiel" | "Distanciel" | "Congé">;
+  workdays: Record<string, 'Présentiel' | 'Distanciel' | 'Congé'>;
   loading: boolean;
   onPrev: () => void;
   onNext: () => void;
@@ -102,7 +102,7 @@ function MonthView({
   onDeleteTask: (id: string) => Promise<boolean>;
 }) {
   const getDatesToSave = useCallback(() => getMonthGridDatesArray(anchorDate), [anchorDate]);
-  
+
   const {
     editing,
     localWorkdays,
@@ -124,11 +124,11 @@ function MonthView({
     handleCancelConflict,
     handleConflictResolved,
   } = useWorkdaysEditor(workdays, onSaved, getDatesToSave);
-  
+
   const monthDates = useMemo(() => getMonthGridDates(anchorDate), [anchorDate]);
 
   const monthName = useMemo(() => {
-    const monthStr = anchorDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+    const monthStr = anchorDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
     // Capitalize first letter of month name
     return monthStr.charAt(0).toUpperCase() + monthStr.slice(1);
   }, [anchorDate]);
@@ -190,5 +190,3 @@ function MonthView({
 }
 
 export default MonthView;
-
-

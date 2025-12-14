@@ -22,11 +22,10 @@ describe('TaskForm', () => {
 
   it('should render form with default specific type for new task', () => {
     render(<TaskForm />);
-  
+
     expect(screen.getByLabelText(/Type de la tâche/i)).toBeInTheDocument();
     expect(screen.getByDisplayValue(TASK_TYPES.SPECIFIC)).toBeInTheDocument();
   });
-  
 
   it('should render periodic task fields when type is periodic', () => {
     render(<TaskForm />);
@@ -130,18 +129,17 @@ describe('TaskForm', () => {
       created_at: '2024-01-01T00:00:00Z',
       updated_at: '2024-01-01T00:00:00Z',
     };
-  
+
     render(<TaskForm task={task} />);
-  
+
     expect(screen.getByDisplayValue('Test Task')).toBeInTheDocument();
-  
+
     const frequencySelect = screen.getByLabelText(/Fréquence/i) as HTMLSelectElement;
     expect(frequencySelect.value).toBe('hebdomadaire');
-  
+
     const daySelect = screen.getByLabelText(/Jour de la répétition/i) as HTMLSelectElement;
     expect(daySelect.value).toBe('Lundi');
   });
-  
 
   it('should render temp task checkbox for new tasks', () => {
     render(<TaskForm />);
@@ -152,9 +150,7 @@ describe('TaskForm', () => {
   it('should hide task type selector when temp task is checked', () => {
     render(<TaskForm isViewingToday={true} />);
 
-    expect(
-      screen.queryByLabelText(/Type de la tâche/i)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Type de la tâche/i)).not.toBeInTheDocument();
   });
 
   it('should show temp task indicator when editing temp task', () => {
