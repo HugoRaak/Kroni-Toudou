@@ -46,16 +46,29 @@ export interface TaskShiftAlert {
 }
 
 // Filter tasks by type
+// Rules:
+// PERIODIC: frequency != null
+// WHEN_POSSIBLE: frequency == null && in_progress != null (boolean)
+// SPECIFIC: frequency == null && due_on != null && in_progress == null
 function filterTasksByType(tasks: Task[]): {
   periodic: Task[];
   specific: Task[];
   whenPossible: Task[];
 } {
   return {
+    // PERIODIC: frequency != null
     periodic: tasks.filter((task) => task.frequency !== null && task.frequency !== undefined),
-    specific: tasks.filter((task) => task.due_on !== null && task.due_on !== undefined),
+    // SPECIFIC: frequency == null && due_on != null && in_progress == null
+    specific: tasks.filter(
+      (task) =>
+        !task.frequency &&
+        task.due_on !== null &&
+        task.due_on !== undefined &&
+        task.in_progress == null,
+    ),
+    // WHEN_POSSIBLE: frequency == null && in_progress != null (boolean)
     whenPossible: tasks.filter(
-      (task) => task.in_progress !== null && task.in_progress !== undefined,
+      (task) => !task.frequency && task.in_progress != null,
     ),
   };
 }

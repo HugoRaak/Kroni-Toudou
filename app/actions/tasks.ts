@@ -106,7 +106,7 @@ export async function updateTaskAction(
   // Get current task to check category and for mode conflict check
   const { data: currentTask } = await supabase
     .from('tasks')
-    .select('frequency, due_on, mode')
+    .select('frequency, due_on, in_progress, mode')
     .eq('id', id)
     .single();
 
@@ -260,7 +260,7 @@ export async function updateTasksDisplayOrderAction(taskIds: string[]): Promise<
   // Get all tasks to determine category
   const { data: allUserTasks, error: fetchAllError } = await supabase
     .from('tasks')
-    .select('id, frequency, due_on, display_order')
+    .select('id, frequency, due_on, in_progress, display_order')
     .eq('user_id', user.id)
     .order('display_order', { ascending: true, nullsFirst: false });
 
@@ -278,7 +278,11 @@ export async function updateTasksDisplayOrderAction(taskIds: string[]): Promise<
 
   // Determine category from first reordered task
   const firstTask = reorderedTasksForVerification[0];
-  const category = getTaskCategory(firstTask.frequency, firstTask.due_on);
+  const category = getTaskCategory(
+    firstTask.frequency,
+    firstTask.due_on,
+    firstTask.in_progress ?? null,
+  );
 
   const success = await updateTasksDisplayOrder(supabase, user.id, taskIds, category);
 

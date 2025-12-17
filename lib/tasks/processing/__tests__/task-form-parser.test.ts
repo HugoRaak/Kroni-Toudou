@@ -357,7 +357,7 @@ describe('task-form-parser', () => {
       expect(result.due_on).toBe('2024-06-15');
       expect(result.postponed_days).toBe(5);
       expect(result.frequency).toBeUndefined();
-      expect(result.in_progress).toBeUndefined();
+      expect(result.in_progress).toBeNull();
     });
 
     it('should convert parsed data to task updates for when-possible task', () => {

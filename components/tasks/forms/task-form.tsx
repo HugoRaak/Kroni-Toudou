@@ -42,6 +42,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
   const getInitialTaskType = (): typeof TASK_TYPES[keyof typeof TASK_TYPES] => {
     if (task && !isEditingTempTask) {
       if ((task as Task).frequency) return TASK_TYPES.PERIODIC;
+      if ((task as Task).in_progress) return TASK_TYPES.WHEN_POSSIBLE;
       if ((task as Task).due_on) return TASK_TYPES.SPECIFIC;
       return TASK_TYPES.WHEN_POSSIBLE;
     }
@@ -62,7 +63,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
     return `${year}-${month}-${day}`;
   };
 
-  // Déterminer la date initiale pour les tâches à date précise
+  // Déterminer la date initiale pour les tâches à date précise ou "quand je peux" avec échéance
   const getInitialDueDate = (): string => {
     if (task?.due_on) {
       return task.due_on.includes('T') ? task.due_on.split('T')[0] : task.due_on;
@@ -79,6 +80,7 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
   const [dueDate, setDueDate] = useState<string>(getInitialDueDate());
   // If isViewingToday is true and not editing an existing task, default to temp task
   const [isTempTask, setIsTempTask] = useState(isEditingTempTask || (!task && isViewingToday));
+  const [inProgress, setInProgress] = useState<boolean>(!!task?.in_progress);
 
   useEffect(() => {
     if (onTaskTypeChange) {
@@ -327,17 +329,32 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
 
       {/* Champs pour tâches "Quand je peux" */}
       {!isTempTask && taskType === TASK_TYPES.WHEN_POSSIBLE && (
-        <div className="flex items-center space-x-2">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              name="in_progress"
-              defaultChecked={!!task?.in_progress}
-              className="rounded cursor-pointer"
+        <>
+          <div className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="in_progress"
+                checked={inProgress}
+                onChange={(e) => setInProgress(e.target.checked)}
+                className="rounded cursor-pointer"
+              />
+              <span className="text-sm font-medium text-foreground">En cours</span>
+            </label>
+          </div>
+          <div>
+            <label htmlFor={`due_on-when-possible-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
+              Échéance (optionnel)
+            </label>
+            <Input
+              id={`due_on-when-possible-${prefix}`}
+              name="due_on"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
             />
-            <span className="text-sm font-medium text-foreground">En cours</span>
-          </label>
-        </div>
+          </div>
+        </>
       )}
 
       {/* Work mode for all types (except temporary tasks) */}
