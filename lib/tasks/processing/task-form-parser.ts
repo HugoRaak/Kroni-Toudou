@@ -94,6 +94,7 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
       }
       result.start_date = start_dateRaw;
     }
+    // PERIODIC: in_progress not used, leave undefined
     result.in_progress = undefined;
   } else if (taskTypeRaw === TASK_TYPES.SPECIFIC) {
     if (due_onRaw && validateDueOn(due_onRaw)) {
@@ -102,9 +103,17 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
     if (postponed_daysRaw && validatePostponedDays(postponed_daysRaw)) {
       result.postponed_days = Number(postponed_daysRaw);
     }
+    // SPECIFIC: force in_progress to undefined (tasks with specific dates don't use in_progress)
+    // Note: We'll set it to null in parsedDataToTaskUpdates to clear it in DB
     result.in_progress = undefined;
   } else if (taskTypeRaw === TASK_TYPES.WHEN_POSSIBLE) {
-    result.in_progress = formData.get('in_progress') != null;
+    // WHEN_POSSIBLE: force in_progress to be boolean (true or false, never null/undefined)
+    const inProgressValue = formData.get('in_progress') != null;
+    result.in_progress = inProgressValue;
+    // Allow due_on for "when possible" tasks regardless of in_progress state
+    if (due_onRaw && validateDueOn(due_onRaw)) {
+      result.due_on = due_onRaw;
+    }
   }
 
   return result;
@@ -158,11 +167,21 @@ export function parsedDataToTaskUpdates(
     if (parsed.frequency === 'annuel') {
       updates.start_date = parsed.start_date;
     }
+    // PERIODIC: don't set in_progress (leave undefined to not modify it)
+    updates.in_progress = undefined;
   } else if (parsed.taskType === TASK_TYPES.SPECIFIC) {
     updates.due_on = parsed.due_on;
     updates.postponed_days = parsed.postponed_days;
+    // SPECIFIC: force in_progress to null (to clear it in DB)
+    // Type assertion needed because Task type allows boolean | undefined, but DB accepts null
+    (updates as any).in_progress = null;
   } else if (parsed.taskType === TASK_TYPES.WHEN_POSSIBLE) {
-    updates.in_progress = parsed.in_progress;
+    // WHEN_POSSIBLE: force in_progress to be boolean (true or false)
+    updates.in_progress = parsed.in_progress ?? false;
+    // Include due_on if provided (allowed for both in_progress true and false)
+    if (parsed.due_on !== undefined) {
+      updates.due_on = parsed.due_on || undefined;
+    }
   }
 
   return updates;

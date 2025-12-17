@@ -2,9 +2,10 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Task, Frequency } from '@/lib/types';
-import { formatDateLocal, normalizeToMidnight } from '@/lib/utils';
+import { formatDateLocal, normalizeToMidnight, parseDateLocal } from '@/lib/utils';
 import TaskItem from '@/components/tasks/items/task-item';
 import { DraggableTaskList } from '@/components/tasks/ui/draggable-task-list';
+import { groupInProgressTasksByDueDate } from '@/lib/tasks/processing/task-filtering';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -132,6 +133,23 @@ export function SectionWithFilters({
       { upcomingTasks: [] as Task[], pastTasks: [] as Task[] },
     );
   }, [filteredTasks, showDateStatusSplit, todayIso]);
+
+  const { inProgressTasks, notStartedTasks, inProgressGrouped } = useMemo(() => {
+    if (!showProgressStatus) {
+      return { inProgressTasks: [], notStartedTasks: filteredTasks, inProgressGrouped: { upcoming: [], overdue: [], noDue: [] } };
+    }
+
+    const inProgress = filteredTasks.filter((t) => t.in_progress === true);
+    const notStarted = filteredTasks.filter((t) => t.in_progress !== true);
+    const grouped = groupInProgressTasksByDueDate(inProgress);
+
+    return { inProgressTasks: inProgress, notStartedTasks: notStarted, inProgressGrouped: grouped };
+  }, [filteredTasks, showProgressStatus]);
+
+  const formatDateDisplay = (dateStr: string): string => {
+    const date = parseDateLocal(dateStr);
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
 
   const c = useMemo(() => ACCENT_CLASSES[accent], [accent]);
   const hasActiveFilters = useMemo(() => {
@@ -356,6 +374,105 @@ export function SectionWithFilters({
                     )}
                   </div>
                 </div>
+              </div>
+            ) : showProgressStatus ? (
+              <div className="space-y-4">
+                {inProgressTasks.length > 0 && (
+                  <div>
+                    <h4 className="mb-3 text-sm font-medium text-foreground">
+                      En cours ({inProgressTasks.length})
+                    </h4>
+                    <div className="space-y-4">
+                      {inProgressGrouped.overdue.length > 0 && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            Échéance dépassée ({inProgressGrouped.overdue.length})
+                          </h5>
+                          <div className="mt-2 space-y-3">
+                            {inProgressGrouped.overdue.map((task) => (
+                              <div key={task.id}>
+                                <TaskItem
+                                  task={task}
+                                  onSubmit={onSubmit}
+                                  onDelete={onDelete}
+                                  showProgressStatus={showProgressStatus}
+                                />
+                                {task.due_on && (
+                                  <div className="text-xs text-muted-foreground mt-1 ml-4">
+                                    {formatDateDisplay(task.due_on)}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {inProgressGrouped.upcoming.length > 0 && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            Avec échéance à venir ({inProgressGrouped.upcoming.length})
+                          </h5>
+                          <div className="mt-2 space-y-3">
+                            {inProgressGrouped.upcoming.map((task) => (
+                              <div key={task.id}>
+                                <TaskItem
+                                  task={task}
+                                  onSubmit={onSubmit}
+                                  onDelete={onDelete}
+                                  showProgressStatus={showProgressStatus}
+                                />
+                                {task.due_on && (
+                                  <div className="text-xs text-muted-foreground mt-1 ml-4">
+                                    {formatDateDisplay(task.due_on)}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {inProgressGrouped.noDue.length > 0 && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            Sans échéance ({inProgressGrouped.noDue.length})
+                          </h5>
+                          <div className="mt-2 space-y-3">
+                            {inProgressGrouped.noDue.map((task) => (
+                              <TaskItem
+                                key={task.id}
+                                task={task}
+                                onSubmit={onSubmit}
+                                onDelete={onDelete}
+                                showProgressStatus={showProgressStatus}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {notStartedTasks.length > 0 && (
+                  <div>
+                    <h4 className="mb-3 text-sm font-medium text-foreground">
+                      Pas encore commencées ({notStartedTasks.length})
+                    </h4>
+                    <div className="space-y-3">
+                      {notStartedTasks.map((task) => (
+                        <TaskItem
+                          key={task.id}
+                          task={task}
+                          onSubmit={onSubmit}
+                          onDelete={onDelete}
+                          showProgressStatus={showProgressStatus}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               tasksToDisplay.map((task) => (

@@ -39,7 +39,7 @@ interface UpdateTaskData {
   start_date?: string | null;
   due_on?: string | null;
   postponed_days?: number | null;
-  in_progress?: boolean | null;
+  in_progress?: boolean | null | undefined;
   mode?: 'Tous' | 'Présentiel' | 'Distanciel' | null;
   display_order?: number | null;
 }
@@ -58,7 +58,7 @@ export async function createTask(
     if (modeConflict) return modeConflict;
   }
 
-  const category = getCategoryFromFormData(taskData.frequency, taskData.due_on);
+  const category = getCategoryFromFormData(taskData.frequency, taskData.due_on, taskData.in_progress);
   const display_order = await calculateNextDisplayOrder(supabase, taskData.userId, category);
 
   const sanitizedDescription = sanitizeServer(taskData.description);
@@ -99,6 +99,7 @@ export async function updateTask(
   currentTask: {
     frequency?: Frequency | null;
     due_on?: string | null;
+    in_progress?: boolean | null;
     mode?: 'Tous' | 'Présentiel' | 'Distanciel' | null;
   },
   options?: { ignoreConflict?: boolean },
@@ -113,16 +114,30 @@ export async function updateTask(
   // Determine if category is changing
   const frequencyIsBeingUpdated = 'frequency' in updates;
   const dueOnIsBeingUpdated = 'due_on' in updates;
+  const inProgressIsBeingUpdated = 'in_progress' in updates;
 
   const currentFrequency = frequencyIsBeingUpdated
     ? (updates.frequency ?? null)
     : currentTask.frequency;
   const currentDueOn = dueOnIsBeingUpdated ? (updates.due_on ?? null) : currentTask.due_on;
+  const currentInProgress = inProgressIsBeingUpdated
+    ? (updates.in_progress ?? null)
+    : currentTask.in_progress ?? null;
+
+  // Get old in_progress from currentTask (need to fetch it if not available)
+  const oldInProgress = currentTask.in_progress ?? null;
 
   if (
-    hasCategoryChanged(currentTask.frequency, currentTask.due_on, currentFrequency, currentDueOn)
+    hasCategoryChanged(
+      currentTask.frequency,
+      currentTask.due_on,
+      oldInProgress,
+      currentFrequency,
+      currentDueOn,
+      currentInProgress,
+    )
   ) {
-    const newCategory = getTaskCategory(currentFrequency, currentDueOn);
+    const newCategory = getTaskCategory(currentFrequency, currentDueOn, currentInProgress);
     const newDisplayOrder = await calculateNextDisplayOrder(supabase, userId, newCategory, taskId);
     updates.display_order = newDisplayOrder;
   }
