@@ -152,7 +152,7 @@ describe('DayView', () => {
       />,
     );
 
-    expect(screen.getByText(/Là c'est repos !/i)).toBeInTheDocument();
+    expect(screen.getByText(/Aucune tâche pour ce jour/i)).toBeInTheDocument();
   });
 
   it('should render tasks with single column layout', () => {
