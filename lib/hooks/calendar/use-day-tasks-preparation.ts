@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { DayTasksData } from '@/components/calendar/views/day-view';
 import { TempTask } from '@/lib/types';
 import { prepareTasksForToday } from '@/lib/tasks/processing/task-preparation';
@@ -13,8 +13,16 @@ export function useDayTasksPreparation(
   getHiddenTempTaskIds: () => string[],
   layout?: 'single' | 'three-column',
 ) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true);
+  }, []);
+
   const preparedTasks = useMemo(() => {
-    if (!tasks || !isTodayView || loading) return [];
+    // Return empty array during SSR or before mount to avoid hydration mismatch
+    if (!isMounted || !tasks || !isTodayView || loading) return [];
 
     const hiddenIds = getTodayHiddenTaskIds();
     const hiddenTempTaskIds = getHiddenTempTaskIds();
@@ -27,7 +35,7 @@ export function useDayTasksPreparation(
       isTodayView,
       loading,
     );
-  }, [tasks, tempTasks, loading, isTodayView, orderVersion, getHiddenTempTaskIds]);
+  }, [isMounted, tasks, tempTasks, loading, isTodayView, orderVersion, getHiddenTempTaskIds]);
 
   const groupedPreparedTasks = useMemo(() => {
     if (!isTodayView || layout !== 'three-column' || !preparedTasks.length) return null;

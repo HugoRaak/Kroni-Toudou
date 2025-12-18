@@ -1,3 +1,5 @@
+'use client';
+
 import { Task } from '@/lib/types';
 import { TaskItemCompact } from '@/components/tasks/items/task-item-compact';
 import { TASK_TYPE_STYLES } from '@/lib/tasks/constants/task-constants';
