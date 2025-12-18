@@ -1,3 +1,5 @@
+'use client';
+
 import { Task } from '@/lib/types';
 import { TaskItemCompact } from '@/components/tasks/items/task-item-compact';
 import { TASK_TYPE_STYLES } from '@/lib/tasks/constants/task-constants';
@@ -53,14 +55,15 @@ export function TaskSectionWhenPossible({
       )}
 
       {inProgress.length > 0 && (
-        <div className="mb-4">
-          <h4 className="mb-2 text-sm font-medium text-foreground">
+        <div className="mb-6">
+          <h4 className="mb-3 text-sm font-medium text-foreground">
             En cours ({inProgress.length})
           </h4>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {overdue.length > 0 && (
-              <div>
-                <h5 className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <div className="rounded-lg border-2 border-red-400/70 bg-red-100/90 p-3">
+                <h5 className="mb-3 text-xs font-semibold text-red-900 uppercase tracking-wide flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-red-700"></span>
                   Échéance dépassée ({overdue.length})
                 </h5>
                 <div className="space-y-2">
@@ -85,8 +88,9 @@ export function TaskSectionWhenPossible({
             )}
 
             {upcoming.length > 0 && (
-              <div>
-                <h5 className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <div className="rounded-lg border-2 border-amber-400/70 bg-amber-100/90 p-3">
+                <h5 className="mb-3 text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-amber-600"></span>
                   Avec échéance à venir ({upcoming.length})
                 </h5>
                 <div className="space-y-2">
@@ -111,8 +115,9 @@ export function TaskSectionWhenPossible({
             )}
 
             {noDue.length > 0 && (
-              <div>
-                <h5 className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <div className="rounded-lg border-2 border-orange-400/70 bg-orange-100/90 p-3">
+                <h5 className="mb-3 text-xs font-semibold text-orange-900 uppercase tracking-wide flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-orange-600"></span>
                   Sans échéance ({noDue.length})
                 </h5>
                 <div className="space-y-2">
@@ -134,8 +139,9 @@ export function TaskSectionWhenPossible({
       )}
 
       {notStarted.length > 0 && (
-        <div>
-          <h4 className="mb-2 text-sm font-medium text-foreground">
+        <div className="rounded-lg border-2 border-slate-400/70 bg-slate-100/90 p-3">
+          <h4 className="mb-3 text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-slate-500"></span>
             Pas encore commencées ({notStarted.length})
           </h4>
           <div className="space-y-2">

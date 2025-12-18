@@ -257,9 +257,7 @@ function DayView({
             </div>
           </div>
         ) : !tasks ? (
-          <p className="text-center text-muted-foreground">
-            {workMode === 'Congé' ? "Là c'est repos !" : 'Aucune tâche pour ce jour'}
-          </p>
+          <p className="text-center text-muted-foreground">Aucune tâche pour ce jour</p>
         ) : state.layout === 'three-column' ? (
           <ThreeColumnLayout
             isTodayView={isTodayView}
