@@ -43,9 +43,7 @@ export function ThreeColumnLayout({
 }: ThreeColumnLayoutProps) {
   if (!tasks) {
     return (
-      <p className="text-center text-muted-foreground">
-        {workMode === 'Congé' ? "Là c'est repos !" : 'Aucune tâche pour ce jour'}
-      </p>
+      <p className="text-center text-muted-foreground">Aucune tâche pour ce jour</p>
     );
   }
 
@@ -54,41 +52,40 @@ export function ThreeColumnLayout({
       {isTodayView ? (
         // Today view: grouped by type
         <>
-          <div>
-            <h3 className="mb-3 text-lg font-semibold text-yellow-900 flex items-center gap-2">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                className="text-yellow-700"
-              >
-                <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                <path d="M12 6v6l4 2" strokeWidth="2" />
-              </svg>
-              Périodiques
-            </h3>
-            {groupedPreparedTasks && groupedPreparedTasks.periodic.length > 0 ? (
-              <TaskColumnDraggable
-                columnTasks={groupedPreparedTasks.periodic}
-                allTasks={preparedTasks}
-                onUpdate={handleUpdateTaskUnified}
-                onDelete={handleDeleteTaskUnified}
-                onHide={onHideTaskClick}
-                onSuccess={() => {
-                  loadTempTasks();
-                  onModeSaved?.();
-                }}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">Aucune tâche périodique.</p>
-            )}
-          </div>
-          <div>
-            {workMode === 'Congé' && (
-              <p className="mb-3 text-center text-muted-foreground">Là c&apos;est repos !</p>
-            )}
+          {workMode !== 'Congé' && (
+            <div>
+              <h3 className="mb-3 text-lg font-semibold text-yellow-900 flex items-center gap-2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  className="text-yellow-700"
+                >
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                  <path d="M12 6v6l4 2" strokeWidth="2" />
+                </svg>
+                Périodiques
+              </h3>
+              {groupedPreparedTasks && groupedPreparedTasks.periodic.length > 0 ? (
+                <TaskColumnDraggable
+                  columnTasks={groupedPreparedTasks.periodic}
+                  allTasks={preparedTasks}
+                  onUpdate={handleUpdateTaskUnified}
+                  onDelete={handleDeleteTaskUnified}
+                  onHide={onHideTaskClick}
+                  onSuccess={() => {
+                    loadTempTasks();
+                    onModeSaved?.();
+                  }}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">Aucune tâche périodique.</p>
+              )}
+            </div>
+          )}
+          <div className={workMode === 'Congé' ? 'lg:col-start-2' : ''}>
             <h3 className="mb-3 text-lg font-semibold text-violet-800 flex items-center gap-2">
               <svg
                 width="14"
@@ -121,37 +118,39 @@ export function ThreeColumnLayout({
               <p className="text-sm text-muted-foreground">Aucune tâche à date précise.</p>
             )}
           </div>
-          <div>
-            <h3 className="mb-3 text-lg font-semibold text-orange-800 flex items-center gap-2">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                className="text-orange-700"
-              >
-                <path
-                  d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z"
-                  strokeWidth="2"
+          {workMode !== 'Congé' && (
+            <div>
+              <h3 className="mb-3 text-lg font-semibold text-orange-800 flex items-center gap-2">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  className="text-orange-700"
+                >
+                  <path
+                    d="M12 5.5l1.6 3.7 3.7 1.6-3.7 1.6L12 16.1l-1.6-3.7L6.7 10.8l3.7-1.6L12 5.5z"
+                    strokeWidth="2"
+                  />
+                </svg>
+                Quand je peux
+              </h3>
+              {tasks.whenPossible.inProgress.length > 0 ||
+              tasks.whenPossible.notStarted.length > 0 ? (
+                <TaskSectionWhenPossible
+                  inProgress={tasks.whenPossible.inProgress}
+                  notStarted={tasks.whenPossible.notStarted}
+                  onUpdateTask={onUpdateTask}
+                  onDeleteTask={onDeleteTask}
+                  onSuccess={onModeSaved}
+                  hideTitle={true}
                 />
-              </svg>
-              Quand je peux
-            </h3>
-            {tasks.whenPossible.inProgress.length > 0 ||
-            tasks.whenPossible.notStarted.length > 0 ? (
-              <TaskSectionWhenPossible
-                inProgress={tasks.whenPossible.inProgress}
-                notStarted={tasks.whenPossible.notStarted}
-                onUpdateTask={onUpdateTask}
-                onDeleteTask={onDeleteTask}
-                onSuccess={onModeSaved}
-                hideTitle={true}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">Aucune tâche libre.</p>
-            )}
-          </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Aucune tâche libre.</p>
+              )}
+            </div>
+          )}
         </>
       ) : (
         // Normal day view: separated sections
@@ -182,9 +181,6 @@ export function ThreeColumnLayout({
             />
           </div>
           <div>
-            {workMode === 'Congé' && (
-              <p className="mb-3 text-center text-muted-foreground">Là c&apos;est repos !</p>
-            )}
             <TaskSectionSpecific
               tasks={tasks.specific}
               onUpdateTask={onUpdateTask}

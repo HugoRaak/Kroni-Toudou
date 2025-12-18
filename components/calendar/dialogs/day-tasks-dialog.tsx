@@ -70,9 +70,7 @@ export function DayTasksDialog({
         <div className="max-h-[60vh] overflow-y-auto space-y-6 mt-4">
           {isEmpty ? (
             <p className="text-center text-muted-foreground">
-              {workMode === 'Congé'
-                ? "Là c'est repos !"
-                : 'Aucune tâche à date précise pour ce jour'}
+              Aucune tâche à date précise pour ce jour
             </p>
           ) : (
             <TaskSectionSpecific

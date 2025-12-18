@@ -37,9 +37,7 @@ export function SingleColumnLayout({
 }: SingleColumnLayoutProps) {
   if (!tasks) {
     return (
-      <p className="text-center text-muted-foreground">
-        {workMode === 'Congé' ? "Là c'est repos !" : 'Aucune tâche pour ce jour'}
-      </p>
+      <p className="text-center text-muted-foreground">Aucune tâche pour ce jour</p>
     );
   }
 
@@ -47,10 +45,7 @@ export function SingleColumnLayout({
     // Today view: merged list with drag & drop (including temp tasks) - single column
     return (
       <div className="space-y-6">
-        {workMode === 'Congé' && (
-          <p className="text-center text-muted-foreground">Là c&apos;est repos !</p>
-        )}
-        {preparedTasks.length > 0 && (
+        {workMode !== 'Congé' && preparedTasks.length > 0 && (
           <div>
             <h2 className="mb-3 text-xl font-bold text-foreground flex items-center gap-2">
               <svg
@@ -84,13 +79,28 @@ export function SingleColumnLayout({
           </div>
         )}
 
-        <TaskSectionWhenPossible
-          inProgress={tasks.whenPossible.inProgress}
-          notStarted={tasks.whenPossible.notStarted}
-          onUpdateTask={onUpdateTask}
-          onDeleteTask={onDeleteTask}
-          onSuccess={onModeSaved}
-        />
+        {workMode === 'Congé' && (
+          <TaskSectionSpecific
+            tasks={tasks.specific}
+            onUpdateTask={onUpdateTask}
+            onDeleteTask={onDeleteTask}
+            onSuccess={onModeSaved}
+          />
+        )}
+
+        {workMode !== 'Congé' && (
+          <TaskSectionWhenPossible
+            inProgress={tasks.whenPossible.inProgress}
+            notStarted={tasks.whenPossible.notStarted}
+            onUpdateTask={onUpdateTask}
+            onDeleteTask={onDeleteTask}
+            onSuccess={onModeSaved}
+          />
+        )}
+
+        {workMode === 'Congé' && tasks.specific.length === 0 && (
+          <p className="text-center text-muted-foreground">Aucune tâche pour ce jour</p>
+        )}
 
         {workMode !== 'Congé' &&
           preparedTasks.length === 0 &&
@@ -128,9 +138,6 @@ export function SingleColumnLayout({
         onSuccess={onModeSaved}
         accentColor="yellow"
       />
-      {workMode === 'Congé' && (
-        <p className="mb-3 text-center text-muted-foreground">Là c&apos;est repos !</p>
-      )}
       <TaskSectionSpecific
         tasks={tasks.specific}
         onUpdateTask={onUpdateTask}
