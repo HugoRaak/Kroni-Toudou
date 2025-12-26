@@ -6,7 +6,6 @@ import {
   isValidMode,
   validateTaskTitle,
   validateTaskDescription,
-  validatePostponedDays,
   validateDueOn,
   validateCustomDays,
   validateStartDate,
@@ -110,36 +109,6 @@ describe('task-validation', () => {
     it('should return false for descriptions exceeding max length', () => {
       expect(validateTaskDescription('a'.repeat(TASK_DESCRIPTION_MAX_LENGTH + 1))).toBe(false);
       expect(validateTaskDescription('a'.repeat(TASK_DESCRIPTION_MAX_LENGTH * 2))).toBe(false);
-    });
-  });
-
-  describe('validatePostponedDays', () => {
-    it('should return true for positive integers', () => {
-      expect(validatePostponedDays('1')).toBe(true);
-      expect(validatePostponedDays('5')).toBe(true);
-      expect(validatePostponedDays('100')).toBe(true);
-    });
-
-    it('should return false for zero', () => {
-      expect(validatePostponedDays('0')).toBe(false);
-    });
-
-    it('should return false for negative numbers', () => {
-      expect(validatePostponedDays('-1')).toBe(false);
-      expect(validatePostponedDays('-5')).toBe(false);
-    });
-
-    it('should return false for non-integers', () => {
-      expect(validatePostponedDays('1.5')).toBe(false);
-    });
-
-    it('should accept integer-like values with .0', () => {
-      expect(validatePostponedDays('2.0')).toBe(true);
-    });
-
-    it('should return false for non-numeric strings', () => {
-      expect(validatePostponedDays('abc')).toBe(false);
-      expect(validatePostponedDays('')).toBe(false);
     });
   });
 

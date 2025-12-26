@@ -311,19 +311,6 @@ export function TaskForm({ task, formId = "", onTaskTypeChange, isViewingToday =
             />
           </div>
 
-          <div>
-            <label htmlFor={`postponed_days-${prefix}`} className="block text-sm font-medium text-foreground mb-1">
-              À reporter dans (jours)
-            </label>
-            <Input
-              id={`postponed_days-${prefix}`}
-              name="postponed_days"
-              type="number"
-              defaultValue={typeof task?.postponed_days === "number" ? String(task.postponed_days) : ""}
-              placeholder="0"
-            min="1"
-            />
-          </div>
         </>
       )}
 

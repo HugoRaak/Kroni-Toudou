@@ -42,7 +42,6 @@ async function createTaskAction(
   max_shifting_days?: number,
   start_date?: string,
   due_on?: string,
-  postponed_days?: number,
   in_progress?: boolean,
   mode?: 'Tous' | 'Présentiel' | 'Distanciel',
   ignoreConflict?: boolean,
@@ -68,7 +67,6 @@ async function createTaskAction(
       max_shifting_days,
       start_date,
       due_on,
-      postponed_days,
       in_progress,
       mode,
     },
@@ -89,7 +87,6 @@ export async function updateTaskAction(
       | 'max_shifting_days'
       | 'start_date'
       | 'due_on'
-      | 'postponed_days'
       | 'in_progress'
       | 'mode'
       | 'display_order'
@@ -164,7 +161,6 @@ export async function createTaskFromForm(
     parsed.max_shifting_days,
     parsed.start_date,
     parsed.due_on,
-    parsed.postponed_days,
     parsed.in_progress,
     parsed.mode,
     ignoreConflict,

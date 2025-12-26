@@ -24,7 +24,6 @@ interface CreateTaskData {
   max_shifting_days?: number;
   start_date?: string;
   due_on?: string;
-  postponed_days?: number;
   in_progress?: boolean;
   mode?: 'Tous' | 'Présentiel' | 'Distanciel';
 }
@@ -38,7 +37,6 @@ interface UpdateTaskData {
   max_shifting_days?: number | null;
   start_date?: string | null;
   due_on?: string | null;
-  postponed_days?: number | null;
   in_progress?: boolean | null | undefined;
   mode?: 'Tous' | 'Présentiel' | 'Distanciel' | null;
   display_order?: number | null;
@@ -77,7 +75,6 @@ export async function createTask(
       due_on: taskData.due_on,
       in_progress: taskData.in_progress,
       mode: taskData.mode,
-      postponed_days: taskData.postponed_days,
       display_order,
     })
     .select()

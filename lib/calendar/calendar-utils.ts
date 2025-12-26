@@ -248,7 +248,6 @@ export function calendarTaskToTaskLike(
     due_on: calendarTask.due_on,
     in_progress: calendarTask.in_progress,
     mode: calendarTask.mode,
-    postponed_days: undefined,
   };
 }
 

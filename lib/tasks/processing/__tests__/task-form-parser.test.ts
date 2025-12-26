@@ -215,21 +215,6 @@ describe('task-form-parser', () => {
         expect(result!.due_on).toBe('2024-06-15');
         expect(result!.in_progress).toBeUndefined();
       });
-
-      it('should parse optional postponed_days', () => {
-        const formData = createFormData({
-          title: 'Test Task',
-          description: '',
-          taskType: TASK_TYPES.SPECIFIC,
-          due_on: '2024-06-15',
-          postponed_days: '5',
-        });
-
-        const result = parseTaskFormData(formData);
-
-        expect(result).not.toBeNull();
-        expect(result!.postponed_days).toBe(5);
-      });
     });
 
     describe('when-possible tasks', () => {
@@ -348,14 +333,12 @@ describe('task-form-parser', () => {
         taskType: TASK_TYPES.SPECIFIC,
         mode: 'Tous' as Task['mode'],
         due_on: '2024-06-15',
-        postponed_days: 5,
       };
 
       const result = parsedDataToTaskUpdates(parsed);
 
       expect(result.title).toBe('Test Task');
       expect(result.due_on).toBe('2024-06-15');
-      expect(result.postponed_days).toBe(5);
       expect(result.frequency).toBeUndefined();
       expect(result.in_progress).toBeNull();
     });

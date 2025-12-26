@@ -26,11 +26,6 @@ export function validateTaskDescription(description: string): boolean {
   return description.length <= TASK_DESCRIPTION_MAX_LENGTH;
 }
 
-export function validatePostponedDays(days: string): boolean {
-  const parsed = Number(days);
-  return Number.isInteger(parsed) && parsed > 0;
-}
-
 export function validateDueOn(dueOn: string): boolean {
   // Validate YYYY-MM-DD format to avoid timezone issues
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
