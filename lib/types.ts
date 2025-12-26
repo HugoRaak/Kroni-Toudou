@@ -19,7 +19,6 @@ export interface Task {
   max_shifting_days?: number;
   start_date?: string;
   due_on?: string;
-  postponed_days?: number;
   in_progress?: boolean;
   mode?: 'Tous' | 'Présentiel' | 'Distanciel';
   display_order?: number;

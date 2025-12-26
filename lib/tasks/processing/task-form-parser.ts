@@ -7,7 +7,6 @@ import {
   isValidMode,
   validateTaskTitle,
   validateTaskDescription,
-  validatePostponedDays,
   validateDueOn,
   validateCustomDays,
   validateStartDate,
@@ -25,7 +24,6 @@ interface ParsedTaskFormData {
   max_shifting_days?: number;
   start_date?: string;
   due_on?: string;
-  postponed_days?: number;
   in_progress?: boolean;
 }
 
@@ -39,7 +37,6 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
   const max_shifting_daysRaw = String(formData.get('max_shifting_days') || '');
   const start_dateRaw = String(formData.get('start_date') || '');
   const due_onRaw = String(formData.get('due_on') || '');
-  const postponed_daysRaw = String(formData.get('postponed_days') || '');
   const modeRaw = String(formData.get('mode') || 'Tous');
 
   // Validate common fields
@@ -100,9 +97,6 @@ export function parseTaskFormData(formData: FormData): ParsedTaskFormData | null
     if (due_onRaw && validateDueOn(due_onRaw)) {
       result.due_on = due_onRaw;
     }
-    if (postponed_daysRaw && validatePostponedDays(postponed_daysRaw)) {
-      result.postponed_days = Number(postponed_daysRaw);
-    }
     // SPECIFIC: force in_progress to undefined (tasks with specific dates don't use in_progress)
     // Note: We'll set it to null in parsedDataToTaskUpdates to clear it in DB
     result.in_progress = undefined;
@@ -132,7 +126,6 @@ export function parsedDataToTaskUpdates(
     | 'max_shifting_days'
     | 'start_date'
     | 'due_on'
-    | 'postponed_days'
     | 'in_progress'
     | 'mode'
   >
@@ -147,7 +140,6 @@ export function parsedDataToTaskUpdates(
     max_shifting_days: undefined,
     start_date: undefined,
     due_on: undefined,
-    postponed_days: undefined,
     in_progress: undefined,
   };
 
@@ -171,7 +163,6 @@ export function parsedDataToTaskUpdates(
     updates.in_progress = undefined;
   } else if (parsed.taskType === TASK_TYPES.SPECIFIC) {
     updates.due_on = parsed.due_on;
-    updates.postponed_days = parsed.postponed_days;
     // SPECIFIC: force in_progress to null (to clear it in DB)
     // Type assertion needed because Task type allows boolean | undefined, but DB accepts null
     (updates as any).in_progress = null;

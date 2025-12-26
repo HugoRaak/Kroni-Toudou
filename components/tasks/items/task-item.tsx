@@ -90,11 +90,6 @@ export default function TaskItem({
             {formattedDueOn && (
               <span className="px-2 py-1 rounded border bg-muted/50">{formattedDueOn}</span>
             )}
-            {typeof task.postponed_days === 'number' ? (
-              <span className="px-2 py-1 rounded border bg-muted/50">
-                à reporter dans {task.postponed_days} jours
-              </span>
-            ) : null}
             {showProgressStatus && task.in_progress && (
               <span className="px-2 py-1 rounded border bg-muted/50">En cours</span>
             )}

@@ -729,7 +729,7 @@ describe('calendar-utils', () => {
   });
 
   describe('calendarTaskToTaskLike', () => {
-    it('should convert CalendarTask to Task-like object and set postponed_days to undefined', () => {
+    it('should convert CalendarTask to Task-like object', () => {
       const task: CalendarTask = {
         id: '1',
         title: 'Test',
@@ -746,7 +746,6 @@ describe('calendar-utils', () => {
       const result = calendarTaskToTaskLike(task);
       expect(result.id).toBe('1');
       expect(result.title).toBe('Test');
-      expect(result.postponed_days).toBeUndefined();
     });
   });
 });

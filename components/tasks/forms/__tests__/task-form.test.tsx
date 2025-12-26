@@ -86,7 +86,6 @@ describe('TaskForm', () => {
     fireEvent.change(taskTypeSelect, { target: { value: TASK_TYPES.SPECIFIC } });
 
     expect(screen.getByLabelText(/Date de la tâche/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/À reporter dans/i)).toBeInTheDocument();
   });
 
   it('should render when-possible task fields when type is when-possible', () => {

@@ -345,7 +345,6 @@ export function createMockTask(overrides: Partial<any> = {}) {
     max_shifting_days: null,
     start_date: null,
     due_on: null,
-    postponed_days: null,
     in_progress: false,
     mode: 'Tous' as const,
     display_order: 1,
